@@ -317,7 +317,7 @@ WHERE [Id] = @Id
 IF (@@ROWCOUNT = 0) 
     BEGIN 
         INSERT INTO [SqlBulkTools].[dbo].[Books] ([WarehouseId], [ISBN], [Title], [Description], [Price])  
-        VALUES(@WarehouseId, @ISBN, @Title, @Description, @Price) 
+        VALUES (@WarehouseId, @ISBN, @Title, @Description, @Price) 
     END 
     
 SET @Id=SCOPE_IDENTITY()
@@ -360,7 +360,7 @@ The above fluent expression translates to:
 ```sql
 INSERT INTO [SqlBulkTools].[dbo].[Books] 
 ([WarehouseId], [ISBN], [Title], [Description], [Price])  
-VALUES(@WarehouseId, @ISBN, @Title, @Description, @Price) 
+VALUES (@WarehouseId, @ISBN, @Title, @Description, @Price) 
 ```
 
 ###Update One or Many entities based on condition
@@ -444,7 +444,7 @@ AND [Description] IS NULL
 
 All setups include support for asynchronous transactions. Please note that you must supply
 the argument 'TransactionScopeAsyncFlowOption.Enabled' to TransactionScope. 
-
+```c#
 using (TransactionScope trans = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
 {
 	using (SqlConnection conn = new SqlConnection(ConfigurationManager
@@ -460,6 +460,7 @@ using (TransactionScope trans = new TransactionScope(TransactionScopeAsyncFlowOp
 
 	trans.Complete();
 }
+```
 
 ###Custom Mappings
 ---------------
