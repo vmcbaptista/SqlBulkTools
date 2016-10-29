@@ -84,6 +84,7 @@
     <Compile Include="Model\SchemaTest2.cs" />
     <Compile Include="Model\SchemaTest1.cs" />
     <Compile Include="Data\TestContext.cs" />
+    <Compile Include="QueryOperationsAsyncIT.cs" />
     <Compile Include="QueryOperationsIT.cs" />
   </ItemGroup>
   <ItemGroup>
