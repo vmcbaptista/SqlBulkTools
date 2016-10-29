@@ -1,15 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq.Expressions;
-using Castle.Components.DictionaryAdapter;
 using Moq;
 using NUnit.Framework;
-using SqlBulkTools.IntegrationTests;
 using SqlBulkTools.IntegrationTests.Model;
-using SqlBulkTools.IntegrationTests.TestEnvironment;
 using SqlBulkTools.UnitTests.Model;
 
 namespace SqlBulkTools.UnitTests

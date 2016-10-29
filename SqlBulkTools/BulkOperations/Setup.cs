@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
+﻿using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Security.Principal;
-using System.Transactions;
 
 // ReSharper disable once CheckNamespace
 namespace SqlBulkTools
