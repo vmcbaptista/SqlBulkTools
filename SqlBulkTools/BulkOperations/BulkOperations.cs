@@ -4,7 +4,7 @@ namespace SqlBulkTools
     /// <summary>
     /// 
     /// </summary>
-    public class BulkOperations
+    public class BulkOperations : IBulkOperations
     {
         /// <summary>
         /// Each transaction requires a valid setup. Examples available at: https://github.com/gtaylor44/SqlBulkTools 
