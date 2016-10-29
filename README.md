@@ -56,13 +56,13 @@ using (TransactionScope trans = new TransactionScope())
     using (SqlConnection conn = new SqlConnection(ConfigurationManager
     .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
     {
-    bulk.Setup<Book>()
-        .ForCollection(books)
-        .WithTable("Books")
-        .AddAllColumns()
-        .BulkInsert()
-        .SetIdentityColumn(x => x.Id, ColumnDirection.Output)
-        .Commit(conn); 
+        bulk.Setup<Book>()
+            .ForCollection(books)
+            .WithTable("Books")
+            .AddAllColumns()
+            .BulkInsert()
+            .SetIdentityColumn(x => x.Id, ColumnDirection.Output)
+            .Commit(conn); 
     }
 
     trans.Complete();
