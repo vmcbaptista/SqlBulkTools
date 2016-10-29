@@ -50,18 +50,18 @@ books = GetBooks();
 using (TransactionScope trans = new TransactionScope())
 {
 using (SqlConnection conn = new SqlConnection(ConfigurationManager
-.ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
-{
-bulk.Setup<Book>()
-.ForCollection(books)
-.WithTable("Books")
-.AddAllColumns()
-.BulkInsert()
-.SetIdentityColumn(x => x.Id, ColumnDirection.Output); 
+    .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+    {
+    bulk.Setup<Book>()
+        .ForCollection(books)
+        .WithTable("Books")
+        .AddAllColumns()
+        .BulkInsert()
+        .SetIdentityColumn(x => x.Id, ColumnDirection.Output)
+        .Commit(conn); 
+    }
 
-}
-
-trans.Complete();
+    trans.Complete();
 }
 
 /* With the above example, the value of the Id property (identity column) on each record in 
@@ -84,29 +84,44 @@ for more info.
 var bulk = new BulkOperations();
 books = GetBooks();
 
-bulk.Setup<Book>()
-.ForCollection(books)
-.WithTable("Books")
-.AddColumn(x => x.ISBN)
-.AddColumn(x => x.Title)
-.AddColumn(x => x.Description)
-.BulkInsertOrUpdate()
-.MatchTargetOn(x => x.ISBN)
+using (TransactionScope trans = new TransactionScope())
+{
+	using (SqlConnection conn = new SqlConnection(ConfigurationManager
+	.ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+	{
+        bulk.Setup<Book>()
+            .ForCollection(books)
+            .WithTable("Books")
+            .AddColumn(x => x.ISBN)
+            .AddColumn(x => x.Title)
+            .AddColumn(x => x.Description)
+            .BulkInsertOrUpdate()
+            .MatchTargetOn(x => x.ISBN)
+            .Commit(conn);
+	}
 
-bulk.CommitTransaction("DefaultConnection");
-
+	trans.Complete();
+}
 
 // Another example matching an identity column
 
-bulk.Setup<Book>()
-.ForCollection(books)
-.WithTable("Books")
-.AddAllColumns()
-.BulkInsertOrUpdate()
-.SetIdentityColumn(x => x.Id)
-.MatchTargetOn(x => x.Id)
+using (TransactionScope trans = new TransactionScope())
+{
+	using (SqlConnection conn = new SqlConnection(ConfigurationManager
+	.ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+	{
+        bulk.Setup<Book>()
+            .ForCollection(books)
+            .WithTable("Books")
+            .AddAllColumns()
+            .BulkInsertOrUpdate()
+            .SetIdentityColumn(x => x.Id)
+            .MatchTargetOn(x => x.Id)
+            .Commit(conn);
+	}
 
-bulk.CommitTransaction("DefaultConnection");
+	trans.Complete();
+}
 
 /* 
 Notes: 
