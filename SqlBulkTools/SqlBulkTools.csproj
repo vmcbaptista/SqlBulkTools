@@ -49,17 +49,20 @@
   <ItemGroup>
     <Compile Include="BulkOperations\BulkCopy\AbstractColumnSelection.cs" />
     <Compile Include="BulkOperations\BulkCopy\AbstractOperation.cs" />
-    <Compile Include="BulkOperations\SimpleQuery\Delete\DeleteQuery.cs" />
-    <Compile Include="BulkOperations\SimpleQuery\Delete\DeleteQueryReady.cs" />
-    <Compile Include="BulkOperations\SimpleQuery\Delete\DeleteQueryTable.cs" />
-    <Compile Include="BulkOperations\SimpleQuery\Delete\DeleteQueryObject.cs" />
-    <Compile Include="BulkOperations\SimpleQuery\Update\UpdateQueryReady.cs" />
-    <Compile Include="BulkOperations\SimpleQuery\Update\UpdateQuery.cs" />
-    <Compile Include="BulkOperations\SimpleQuery\Update\UpdateQueryTable.cs" />
+    <Compile Include="BulkOperations\BulkOperationsUtility.cs" />
+    <Compile Include="BulkOperations\SimpleQuery\Delete\SimpleDeleteQueryCondition.cs" />
+    <Compile Include="BulkOperations\SimpleQuery\Delete\SimpleDeleteQueryReady.cs" />
+    <Compile Include="BulkOperations\SimpleQuery\Delete\SimpleDeleteQueryTable.cs" />
+    <Compile Include="BulkOperations\SimpleQuery\Delete\SimpleDeleteQuery.cs" />
+    <Compile Include="BulkOperations\SimpleQuery\SimpleInsertQueryReady.cs" />
+    <Compile Include="BulkOperations\SimpleQuery\SimpleQueryAddColumnList.cs" />
+    <Compile Include="BulkOperations\SimpleQuery\SimpleQueryForObject.cs" />
+    <Compile Include="BulkOperations\SimpleQuery\SimpleQueryTable.cs" />
+    <Compile Include="BulkOperations\SimpleQuery\SimpleUpdateQueryReady.cs" />
+    <Compile Include="BulkOperations\SimpleQuery\SimpleUpdateQueryCondition.cs" />
+    <Compile Include="BulkOperations\SimpleQuery\SimpleQueryAddColumn.cs" />
+    <Compile Include="BulkOperations\SimpleQuery\SimpleUpsertQueryReady.cs" />
     <Compile Include="Helper\Condition.cs" />
-    <Compile Include="BulkOperations\SimpleQuery\Update\UpdateQueryObject.cs" />
-    <Compile Include="BulkOperations\SimpleQuery\Update\UpdateQueryAddColumn.cs" />
-    <Compile Include="Helper\SqlTypeMap.cs" />
     <Compile Include="BulkOperations\BulkCopy\BulkTable.cs" />
     <Compile Include="DataTableOperations\DataTableAbstractColumnSelect.cs" />
     <Compile Include="DataTableOperations\DataTableOperations.cs" />
@@ -75,7 +78,6 @@
     <Compile Include="Helper\Constants.cs" />
     <Compile Include="DataTableOperations\DataTableColumns.cs" />
     <Compile Include="DataTableOperations\IDataTableOperations.cs" />
-    <Compile Include="BulkOperations\IBulkOperations.cs" />
     <Compile Include="DataTableOperations\IDataTableTransaction.cs" />
     <Compile Include="Exception\IdentityException.cs" />
     <Compile Include="BulkOperations\ITransaction.cs" />
@@ -86,6 +88,7 @@
     <Compile Include="Exception\SqlBulkToolsException.cs" />
     <Compile Include="BulkOperations\BulkCopy\BulkForCollection.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

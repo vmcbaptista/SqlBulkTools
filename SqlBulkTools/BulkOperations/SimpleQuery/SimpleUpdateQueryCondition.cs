@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
 namespace SqlBulkTools
@@ -13,7 +10,7 @@ namespace SqlBulkTools
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class UpdateQuery<T>
+    public class SimpleUpdateQueryCondition<T>
     {
         private readonly T _singleEntity;
         private readonly string _tableName;
@@ -21,12 +18,9 @@ namespace SqlBulkTools
         private readonly HashSet<string> _columns;
         private readonly Dictionary<string, string> _customColumnMappings;
         private readonly int _sqlTimeout;
-        private readonly BulkOperations _ext;
         private readonly List<Condition> _whereConditions;
-        private readonly List<Condition> _andConditions;
-        private readonly List<Condition> _orConditions;
         private int _conditionSortOrder;
-        private readonly List<SqlParameter> _parameters;      
+        private readonly List<SqlParameter> _sqlParams;
 
         /// <summary>
         /// 
@@ -37,9 +31,9 @@ namespace SqlBulkTools
         /// <param name="columns"></param>
         /// <param name="customColumnMappings"></param>
         /// <param name="sqlTimeout"></param>
-        /// <param name="ext"></param>
-        public UpdateQuery(T singleEntity, string tableName, string schema, HashSet<string> columns, 
-            Dictionary<string, string> customColumnMappings, int sqlTimeout, BulkOperations ext)
+        /// <param name="sqlParams"></param>
+        public SimpleUpdateQueryCondition(T singleEntity, string tableName, string schema, HashSet<string> columns, 
+            Dictionary<string, string> customColumnMappings, int sqlTimeout, List<SqlParameter> sqlParams)
         {
             _singleEntity = singleEntity;
             _tableName = tableName;
@@ -47,11 +41,8 @@ namespace SqlBulkTools
             _columns = columns;
             _customColumnMappings = customColumnMappings;
             _sqlTimeout = sqlTimeout;
-            _ext = ext;
             _whereConditions = new List<Condition>();
-            _andConditions = new List<Condition>();
-            _orConditions = new List<Condition>();
-            _parameters = new List<SqlParameter>();
+            _sqlParams = sqlParams;
             _conditionSortOrder = 1;
         }
 
@@ -59,16 +50,16 @@ namespace SqlBulkTools
         /// </summary>
         /// <param name="expression"></param>
         /// <returns></returns>
-        public UpdateQueryReady<T> Where(Expression<Func<T, bool>> expression)
+        public SimpleUpdateQueryReady<T> Where(Expression<Func<T, bool>> expression)
         {
             // _whereConditions list will only ever contain one element.
-            BulkOperationsHelper.AddPredicate(expression, PredicateType.Where, _whereConditions, _parameters, 
+            BulkOperationsHelper.AddPredicate(expression, PredicateType.Where, _whereConditions, _sqlParams, 
                 _conditionSortOrder, appendParam: Constants.UniqueParamIdentifier);
 
             _conditionSortOrder++;
 
-            return new UpdateQueryReady<T>(_singleEntity, _tableName, _schema, _columns, _customColumnMappings, 
-                _sqlTimeout, _ext, _conditionSortOrder, _whereConditions, _parameters);
+            return new SimpleUpdateQueryReady<T>(_singleEntity, _tableName, _schema, _columns, _customColumnMappings, 
+                _sqlTimeout, _conditionSortOrder, _whereConditions, _sqlParams);
         }
 
     }

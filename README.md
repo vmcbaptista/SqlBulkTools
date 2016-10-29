@@ -1,7 +1,9 @@
 <img src="http://gregnz.com/images/SqlBulkTools/icon-large.png" alt="SqlBulkTools"> 
 #SqlBulkTools
 -----------------------------
-High-performance C# Bulk operations for SQL Server (starting from 2008) and Azure SQL Database. Includes Bulk Insert, Update, Delete & Merge. Uses SQLBulkCopy under the hood. Please leave a Github star if you find this project useful. 
+High-performance C# Bulk operations for SQL Server (starting from 2008) and Azure SQL Database. Supports Bulk Insert, Update, Delete & Merge and more. Uses SQLBulkCopy under the hood.
+
+Please leave a Github star if you find this project useful.
 
 ##Examples
 
@@ -13,7 +15,9 @@ using SqlBulkTools;
   // Mockable IBulkOperations and IDataTableOperations Interface.
   public class BookClub(IBulkOperations bulk, IDataTableOperations dtOps) {
 
-  private IBulkOperations _bulk; // Use this for bulk operations (Bulk Insert, Update, Merge, Delete)
+  private IBulkOperations _bulk; // Use this for bulk and single entity operations 
+  (e.g. Bulk Insert, Update, Merge, Delete)
+  
   private IDataTableOperations _dtOps; // Use this for Data Table helper 
   
   public BookClub(IBulkOperations bulk) {
@@ -32,114 +36,40 @@ var dtOps = new DataTableOperations() // for Data Table Tools.
 // The following examples are based on a cut down Book model
 
 public class Book {
-    public int Id {get; set;}
-    public string ISBN {get; set;}
-    public string Description {get; set;}
+    public int Id { get; set; }
+    public string Title { get; set; }
+    public string ISBN { get; set; }
+    public decimal Price { get; set; }
+    public string Description { get; set; }
     public int WarehouseId { get; set; }
 }
-```
-
-###SimpleUpdateQuery (from version 2.4)
-```c#
-/* Easily update one or more records. */
-
-var bulk = new BulkOperations();
-Book bookToUpdate = new Book()
-{
-    ISBN = "123456789ABCD",
-    Description = "I'm a bit dusty, update me!"
-    Price = 49.99
-};
-
-bulk.Setup<Book>()
-.ForSimpleUpdateQuery(bookToUpdate)
-.WithTable("Books")
-.AddColumn(x => x.Price)
-.AddColumn(x => x.Description)
-.Update()
-.Where(x => x.ISBN == book.ISBN)
-
-int updatedRecords = bulk.CommitTransaction("DefaultConnection"); /* updatedRecords will be 1 if a 
-record with the above ISBN exists. */
-
-```
-
-##FAQ:##
-
-Sure, that's pretty cool and convenient but have you thought about SQL injection? 
-
-Yes. The above fluent expression translates to:
-
-```sql
-UPDATE [SqlBulkTools].[dbo].[Books] 
-SET [SqlBulkTools].[dbo].[Books].[Price] = @Price, 
-[SqlBulkTools].[dbo].[Books].[Description] = @Description 
-WHERE [ISBN] = @ISBNCondition1
-```
-
-Why is the number 1 appended to @ISBNCondition?
-
-It's perfectly legal to have more than one AND/OR conditions for the same 
-column. SQLBulkTools will create a new parameter for each predicate. 
-
-Can I change the schema from [dbo]? 
-Yes. See advanced options at the bottom of this page. 
-
-What about if my table column(s) doesn't match the corresponding model representation in C#?
-Do a custom column mapping... There's an example somewhere in this documentation. 
-
-What about comparing to null values? 
-SqlBulkTools will make a comparison using IS NULL or IS NOT NULL and skip sending parameter. 
-
-###SimpleDeleteQuery (from version 2.4)
-```c#
-/* Easily delete one or more records in a single roundtrip. */
-
-bulk.Setup<Book>()
-.ForSimpleDeleteQuery()
-.WithTable("Books")
-.Delete()
-.Where(x => x.Warehouse == 1)
-.And(x => x.Price >= 100)
-.And(x => x.Description == null)
-
-int affectedRecords = bulk.CommitTransaction("DefaultConnection");
-```
-
-This translates to:
-
-```sql
-DELETE FROM [SqlBulkTools].[dbo].[Books]  
-WHERE [WarehouseId] = @WarehouseIdCondition1 
-AND [Price] >= @PriceCondition2 
-AND [Description] IS NULL
 ```
 
 ###BulkInsert
 ---------------
 ```c#
+var bulk = new BulkOperations();
 books = GetBooks();
 
-bulk.Setup<Book>()
-.ForCollection(books)
-.WithTable("Books")
-.AddAllColumns()
-.BulkInsert();
+using (TransactionScope trans = new TransactionScope())
+{
+    using (SqlConnection conn = new SqlConnection(ConfigurationManager
+    .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+    {
+    bulk.Setup<Book>()
+        .ForCollection(books)
+        .WithTable("Books")
+        .AddAllColumns()
+        .BulkInsert()
+        .SetIdentityColumn(x => x.Id, ColumnDirection.Output)
+        .Commit(conn); 
+    }
 
-bulk.CommitTransaction("DefaultConnection");
+    trans.Complete();
+}
 
-// Another example with identity output.
-
-bulk.Setup<Book>()
-.ForCollection(books)
-.WithTable("Books")
-.AddAllColumns()
-.BulkInsert()
-.SetIdentityColumn(x => x.Id, ColumnDirection.InputOutput);
-
-bulk.CommitTransaction("DefaultConnection");
-
-// The value of the Id property (identity column) on each record in 'books' will be updated to reflect the value in database.  
+/* With the above example, the value of the Id property in 'books' collection will be updated 
+to reflect the value added in database. */
 
 /* 
 Notes: 
@@ -158,36 +88,51 @@ for more info.
 var bulk = new BulkOperations();
 books = GetBooks();
 
-bulk.Setup<Book>()
-.ForCollection(books)
-.WithTable("Books")
-.AddColumn(x => x.ISBN)
-.AddColumn(x => x.Title)
-.AddColumn(x => x.Description)
-.BulkInsertOrUpdate()
-.MatchTargetOn(x => x.ISBN)
+using (TransactionScope trans = new TransactionScope())
+{
+	using (SqlConnection conn = new SqlConnection(ConfigurationManager
+	.ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+	{
+        bulk.Setup<Book>()
+            .ForCollection(books)
+            .WithTable("Books")
+            .AddColumn(x => x.ISBN)
+            .AddColumn(x => x.Title)
+            .AddColumn(x => x.Description)
+            .BulkInsertOrUpdate()
+            .MatchTargetOn(x => x.ISBN)
+            .Commit(conn);
+	}
 
-bulk.CommitTransaction("DefaultConnection");
-
+	trans.Complete();
+}
 
 // Another example matching an identity column
 
-bulk.Setup<Book>()
-.ForCollection(books)
-.WithTable("Books")
-.AddAllColumns()
-.BulkInsertOrUpdate()
-.SetIdentityColumn(x => x.Id)
-.MatchTargetOn(x => x.Id)
+using (TransactionScope trans = new TransactionScope())
+{
+	using (SqlConnection conn = new SqlConnection(ConfigurationManager
+	.ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+	{
+        bulk.Setup<Book>()
+            .ForCollection(books)
+            .WithTable("Books")
+            .AddAllColumns()
+            .BulkInsertOrUpdate()
+            .SetIdentityColumn(x => x.Id)
+            .MatchTargetOn(x => x.Id)
+            .Commit(conn);
+	}
 
-bulk.CommitTransaction("DefaultConnection");
+	trans.Complete();
+}
 
 /* 
 Notes: 
 
 (1) It's possible to use AddAllColumns for operations BulkInsert/BulkInsertOrUpdate/BulkUpdate. 
-(2) MatchTargetOn is mandatory for BulkUpdate, BulkInsertOrUpdate and BulkDelete... unless you want to eat 
-an SqlBulkToolsException. 
+(2) MatchTargetOn is mandatory for BulkUpdate, BulkInsertOrUpdate and BulkDelete... unless you want 
+to eat an SqlBulkToolsException. 
 (3) If model property name does not match the actual SQL column name, you can set up a custom 
 mapping. An example of this is shown in a dedicated section somewhere in this documentation...
 (4) BulkInsertOrUpdate also supports DeleteWhenNotMatched which is false by default. With power 
@@ -195,9 +140,9 @@ comes responsibility. You can specify a DeleteWhen condition to filter specific 
 (5) If your model contains an identity column and it's included (via AddAllColumns, AddColumn or 
 MatchTargetOn) in your setup, you must use SetIdentityColumn to mark it as your identity column. 
 This is because identity columns are immutable and SQL will have a whinge when you try to update it. 
-You can of course update based on an identity column (using MatchTargetOn) but just make sure to use SetIdentityColumn 
-to mark it as an identity column so we can sort it out. A user friendly exception will be thrown if you 
-forget. 
+You can of course update based on an identity column (using MatchTargetOn) but just make sure to use 
+SetIdentityColumn to mark it as an identity column so we can sort it out. A user friendly exception will 
+be thrown if you forget. 
 */
 ```
 
@@ -207,14 +152,24 @@ forget.
 var bulk = new BulkOperations();
 books = GetBooksToUpdate();
 
-bulk.Setup<Book>()
-.ForCollection(books)
-.WithTable("Books")
-.AddColumn(x => x.ISBN)
-.AddColumn(x => x.Title)
-.AddColumn(x => x.Description)
-.BulkUpdate()
-.MatchTargetOn(x => x.ISBN) 
+using (TransactionScope trans = new TransactionScope())
+{
+	using (SqlConnection conn = new SqlConnection(ConfigurationManager
+	.ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+	{
+        bulk.Setup<Book>()
+            .ForCollection(books)
+            .WithTable("Books")
+            .AddColumn(x => x.ISBN)
+            .AddColumn(x => x.Title)
+            .AddColumn(x => x.Description)
+            .BulkUpdate()
+            .MatchTargetOn(x => x.ISBN) 
+            .Commit(conn);
+	}
+
+	trans.Complete();
+}
 
 /* Notes: 
 
@@ -230,28 +185,30 @@ column (using MatchTargetOn) but just make sure to use SetIdentityColumn to mark
 identity column.  
 */
 
-bulk.CommitTransaction("DefaultConnection");
 ```
 ###BulkDelete
 ---------------
 ```c#
-/* Tip: Consider using SimpleDeleteQuery instead. */
-
-public class BookDto {
-    public string ISBN {get; set;}
-}
 
 var bulk = new BulkOperations();
 books = GetBooksIDontLike();
 
-bulk.Setup<BookDto>()
-.ForCollection(books)
-.WithTable("Books")
-.AddColumn(x => x.ISBN)
-.BulkDelete()
-.MatchTargetOn(x => x.ISBN)
+using (TransactionScope trans = new TransactionScope())
+{
+	using (SqlConnection conn = new SqlConnection(ConfigurationManager
+	.ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+	{
+        bulk.Setup<BookDto>()
+            .ForCollection(books)
+            .WithTable("Books")
+            .AddColumn(x => x.ISBN)
+            .BulkDelete()
+            .MatchTargetOn(x => x.ISBN)
+            .Commit(conn);
+	}
 
-bulk.CommitTransaction("DefaultConnection");
+	trans.Complete();
+}
 
 /* 
 Notes: 
@@ -266,40 +223,241 @@ an SqlBulkToolsException.
 ###UpdateWhen & DeleteWhen
 ---------------
 ```c#
-/* Only update/delete records when the target satisfies a speicific requirement. This is used alongside
-MatchTargetOn and is available to BulkUpdate, BulkInsertOrUpdate and BulkDelete methods. Internally, SqlBulkTools will 
-use a parameterized query for each (potentially unsafe) input and respect any custom column mappings that are applied.
+/* Only update or delete records when the target satisfies a speicific requirement. This is used alongside
+MatchTargetOn and is available to BulkUpdate, BulkInsertOrUpdate and BulkDelete methods. Internally, 
+SqlBulkTools will use a parameterized query for each (potentially unsafe) input and respect any custom 
+column mappings that are applied.
 */
 
+var bulk = new BulkOperations();
 books = GetBooks();
+
+using (TransactionScope trans = new TransactionScope())
+{
+	using (SqlConnection conn = new SqlConnection(ConfigurationManager
+	.ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+	{
+        /* BulkUpdate example */
+
+        bulk.Setup<Book>()
+            .ForCollection(books)
+            .WithTable("Books")
+            .AddColumn(x => x.Price)
+            .BulkUpdate()
+            .MatchTargetOn(x => x.ISBN)
+            .UpdateWhen(x => x.Price <= 20)
+            .Commit(conn); 
+
+        /* BulkInsertOrUpdate example */
+
+        bulk.Setup<Book>()
+        .ForCollection(books)
+        .WithTable("Books")
+        .AddAllColumns()
+        .BulkInsertOrUpdate()
+        .MatchTargetOn(x => x.ISBN)
+        .SetIdentityColumn(x => x.Id)
+        .DeleteWhenNotMatched(true)
+        .DeleteWhen(x => x.WarehouseId == 1)
+        .Commit(conn); 
+
+        /* BulkInsertOrUpdate also supports UpdateWhen which applies to the records that are being updated. */
+	}
+
+	trans.Complete();
+}
+
+```
+
+###Upsert a single record
+```c#
+
 var bulk = new BulkOperations();
 
-/* BulkUpdate example */
+var book = new Book(){
+    Title = "Programming your life away?"
+    ISBN = "1234567",
+    Price = 29.95,
+    Description = "Nice book bro",
+    WarehouseId = 1
+};
 
-bulk.Setup<Book>()
-    .ForCollection(books)
-    .WithTable("Books")
-    .AddColumn(x => x.Price)
-    .BulkUpdate()
-    .MatchTargetOn(x => x.ISBN)
-    .UpdateWhen(x => x.Price <= 20); 
+using (TransactionScope trans = new TransactionScope())
+{
+	using (SqlConnection conn = new SqlConnection(ConfigurationManager
+	.ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+	{   
+        bulk.Setup<Book>()
+        .ForObject(book)
+        .WithTable("Books")
+        .AddAllColumns()
+        .Upsert()
+        .SetIdentityColumn(x => x.Id, ColumnDirection.Output)
+        .MatchTargetOn(x => x.Id)
+        .Commit(con);
+	}
 
-bulk.CommitTransaction("DefaultConnection");
+	trans.Complete();
+}
+```
 
-/* BulkInsertOrUpdate example */
+The above fluent expression translates to:
 
-bulk.Setup<Book>()
-.ForCollection(books)
-.WithTable("Books")
-.AddAllColumns()
-.BulkInsertOrUpdate()
-.MatchTargetOn(x => x.ISBN)
-.SetIdentityColumn(x => x.Id)
-.DeleteWhenNotMatched(true)
-.DeleteWhen(x => x.WarehouseId == 1); /* BulkInsertOrUpdate also supports UpdateWhen which applies to the records that are being updated. */
+```sql
+UPDATE [SqlBulkTools].[dbo].[Books] 
+SET [WarehouseId] = @WarehouseId, 
+[ISBN] = @ISBN, 
+[Title] = @Title, 
+[Description] = @Description, 
+[Price] = @Price, 
+WHERE [Id] = @Id 
 
-bulk.CommitTransaction("DefaultConnection");
+IF (@@ROWCOUNT = 0) 
+    BEGIN 
+        INSERT INTO [SqlBulkTools].[dbo].[Books] ([WarehouseId], [ISBN], [Title], [Description], [Price])  
+        VALUES (@WarehouseId, @ISBN, @Title, @Description, @Price) 
+    END 
+    
+SET @Id=SCOPE_IDENTITY()
+```
 
+###Insert a single record
+```c#
+
+var bulk = new BulkOperations();
+
+var book = new Book(){
+    Title = "Programming your life away?"
+    ISBN = "1234567",
+    Price = 29.95,
+    Description = "Nice book bro",
+    WarehouseId = 1
+};
+
+using (TransactionScope trans = new TransactionScope())
+{
+	using (SqlConnection conn = new SqlConnection(ConfigurationManager
+	.ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+	{   
+        bulk.Setup<Book>()
+        .ForObject(book)
+        .WithTable("Books")
+        .AddAllColumns()
+        .Insert()
+        .SetIdentityColumn(x => x.Id)
+        .MatchTargetOn(x => x.Id)
+        .Commit(con);
+	}
+
+	trans.Complete();
+}
+```
+
+The above fluent expression translates to:
+
+```sql
+INSERT INTO [SqlBulkTools].[dbo].[Books] 
+([WarehouseId], [ISBN], [Title], [Description], [Price])  
+VALUES (@WarehouseId, @ISBN, @Title, @Description, @Price) 
+```
+
+###Update One or Many entities based on condition
+```c#
+
+var bulk = new BulkOperations();
+
+Book bookToUpdate = new Book()
+{
+    ISBN = "123456789ABCD",
+    Description = "I'm a bit dusty, update me!"
+    Price = 49.99
+};
+
+using (TransactionScope trans = new TransactionScope())
+{
+	using (SqlConnection conn = new SqlConnection(ConfigurationManager
+	.ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+	{
+        int updatedRecords = bulk.Setup<Book>()
+            .ForObject(bookToUpdate)
+            .WithTable("Books")
+            .AddColumn(x => x.Price)
+            .AddColumn(x => x.Description)
+            .Update()
+            .Where(x => x.ISBN == book.ISBN)
+            .Commit(conn);
+        
+        /* updatedRecords will be 1 if a record with the above ISBN exists 
+        and the transaction is successful. */
+	}
+
+	trans.Complete();
+}
+
+```
+
+The above fluent expression translates to:
+
+```sql
+UPDATE [SqlBulkTools].[dbo].[Books] 
+SET [SqlBulkTools].[dbo].[Books].[Price] = @Price, 
+[SqlBulkTools].[dbo].[Books].[Description] = @Description 
+WHERE [ISBN] = @ISBNCondition1
+```
+
+###Delete One or Many entities based on condition
+```c#
+/* Easily delete one or more records in a single roundtrip. */
+
+using (TransactionScope trans = new TransactionScope())
+{
+	using (SqlConnection conn = new SqlConnection(ConfigurationManager
+	.ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+	{
+        int affectedRecords = bulk.Setup<Book>()
+        .ForDeleteQuery()
+        .WithTable("Books")
+        .Delete()
+        .Where(x => x.Warehouse == 1)
+        .And(x => x.Price >= 100)
+        .And(x => x.Description == null)
+        .Commit(conn);
+	}
+
+	trans.Complete();
+}
+
+```
+
+The above fluent expression translates to:
+
+```sql
+DELETE FROM [SqlBulkTools].[dbo].[Books]  
+WHERE [WarehouseId] = @WarehouseIdCondition1 
+AND [Price] >= @PriceCondition2 
+AND [Description] IS NULL
+```
+
+###Async Transactions (CommitAsync)
+
+All setups include support for asynchronous transactions. Please note that you must supply
+the argument 'TransactionScopeAsyncFlowOption.Enabled' to TransactionScope. 
+```c#
+using (TransactionScope trans = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+{
+	using (SqlConnection conn = new SqlConnection(ConfigurationManager
+	.ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+	{
+        await bulk.Setup<Book>()
+            .ForDeleteQuery()
+            .WithTable("Books")
+            .Delete()
+            .Where(x => x.WarehouseId == 1)
+            .CommitAsync(conn);
+	}
+
+	trans.Complete();
+}
 ```
 
 ###Custom Mappings
@@ -312,14 +470,22 @@ name in database which is defined in the C# model as 'Title' */
 var bulk = new BulkOperations();
 books = GetBooks();
 
-bulk.Setup<Book>()
-.ForCollection(books)
-.WithTable("Books")
-.AddAllColumns()
-.CustomColumnMapping(x => x.Title, "BookTitle") 
-.BulkInsert();
+using (TransactionScope trans = new TransactionScope())
+{
+	using (SqlConnection conn = new SqlConnection(ConfigurationManager
+	.ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+	{
+        bulk.Setup<Book>()
+            .ForCollection(books)
+            .WithTable("Books")
+            .AddAllColumns()
+            .CustomColumnMapping(x => x.Title, "BookTitle") 
+            .BulkInsert()
+            .Commit(conn);
+	}
 
-bulk.CommitTransaction("DefaultConnection");
+	trans.Complete();
+}
 
 ```
 
@@ -337,16 +503,18 @@ DataTableOperations dtOps = new DataTableOperations();
 books = GetBooks();
 
 var dt = dtOps.SetupDataTable<Book>()
-.ForCollection(books)
-.AddColumn(x => x.Id)
-.AddColumn(x => x.ISBN)
-.AddColumn(x => x.Description)
-.CustomColumnMapping(x => x.Description, "BookDescription")
-.PrepareDataTable();
+    .ForCollection(books)
+    .AddColumn(x => x.Id)
+    .AddColumn(x => x.ISBN)
+    .AddColumn(x => x.Description)
+    .CustomColumnMapping(x => x.Description, "BookDescription")
+    .PrepareDataTable();
 
-/* PrepareDataTable() returns a DataTable. Here you can apply additional configuration.
-
-You can use GetColumn<T> to get the name of your property as a string. Any custom column mappings previously configured are applied */
+/* 
+PrepareDataTable() returns a DataTable. Here you can apply additional configuration.
+You can use GetColumn<T> to get the name of your property as a string. Any custom column 
+mappings previously configured are applied 
+*/
 
 dt.Columns[dtOps.GetColumn<Book>(x => x.Id)].AutoIncrement = true;
 dt.Columns[dtOps.GetColumn<Book>(x => x.ISBN)].AllowDBNull = false;
@@ -362,7 +530,7 @@ dt = dtOps.BuildPreparedDataTable();
 var dt = dtOps.SetupDataTable<Book>()
 .ForCollection(books)
 .AddAllColumns()
-.RemoveColumn(x => x.Description) // Use RemoveColumn if you want to exclude a column. 
+.RemoveColumn(x => x.Description) // Use RemoveColumn to exclude a column. 
 .PrepareDataTable();
 
 // .....
@@ -378,16 +546,16 @@ var bulk = new BulkOperations();
 books = GetBooks();
 
 bulk.Setup<Book>()
-.ForCollection(books)
-.WithTable("Books")
-.WithSchema("Api") // Specify a schema 
-.WithBulkCopyBatchSize(4000)
-.WithBulkCopyCommandTimeout(720) // Default is 600 seconds
-.WithBulkCopyEnableStreaming(false)
-.WithBulkCopyNotifyAfter(300)
-.WithSqlCommandTimeout(720) // Default is 600 seconds
-.WithSqlBulkCopyOptions(SqlBulkCopyOptions.TableLock)
-.AddColumn(x =>  // ........
+    .ForCollection(books)
+    .WithTable("Books")
+    .WithSchema("Api") // Specify a schema 
+    .WithBulkCopyBatchSize(4000)
+    .WithBulkCopyCommandTimeout(720) // Default is 600 seconds
+    .WithBulkCopyEnableStreaming(false)
+    .WithBulkCopyNotifyAfter(300)
+    .WithSqlCommandTimeout(720) // Default is 600 seconds
+    .WithSqlBulkCopyOptions(SqlBulkCopyOptions.TableLock)
+    .AddColumn(x =>  // ........
 
 /* SqlBulkTools gives you the ability to disable all or selected non-clustered indexes during 
 the transaction. Indexes are rebuilt once the transaction is completed. If at any time during 
@@ -397,15 +565,13 @@ to their initial state. */
 // Example
 
 bulk.Setup<Book>()
-.ForCollection(books)
-.WithTable("Books")
-.WithBulkCopyBatchSize(5000)
-.WithSqlBulkCopyOptions(SqlBulkCopyOptions.TableLock)
-.AddAllColumns()
-.TmpDisableAllNonClusteredIndexes()
-.BulkInsert();
-
-bulk.CommitTransaction("DefaultConnection");
+    .ForCollection(books)
+    .WithTable("Books")
+    .WithBulkCopyBatchSize(5000)
+    .WithSqlBulkCopyOptions(SqlBulkCopyOptions.TableLock)
+    .AddAllColumns()
+    .TmpDisableAllNonClusteredIndexes()
+    .BulkInsert();
 
 ```
 

@@ -25,15 +25,14 @@ namespace SqlBulkTools
         /// <param name="bulkCopyNotifyAfter"></param>
         /// <param name="bulkCopyBatchSize"></param>
         /// <param name="sqlBulkCopyOptions"></param>
-        /// <param name="ext"></param>
         /// <param name="bulkCopyDelegates"></param>
         public BulkAddColumnList(IEnumerable<T> list, string tableName, HashSet<string> columns, string schema,
             int sqlTimeout, int bulkCopyTimeout, bool bulkCopyEnableStreaming, int? bulkCopyNotifyAfter, 
-            int? bulkCopyBatchSize, SqlBulkCopyOptions sqlBulkCopyOptions, BulkOperations ext, 
+            int? bulkCopyBatchSize, SqlBulkCopyOptions sqlBulkCopyOptions, 
             IEnumerable<SqlRowsCopiedEventHandler> bulkCopyDelegates) 
             :
             base(list, tableName, columns, schema, sqlTimeout, bulkCopyTimeout, bulkCopyEnableStreaming, bulkCopyNotifyAfter, bulkCopyBatchSize, 
-                sqlBulkCopyOptions, ext, bulkCopyDelegates)
+                sqlBulkCopyOptions, bulkCopyDelegates)
         {
 
         }

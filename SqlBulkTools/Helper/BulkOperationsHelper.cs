@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Data.SqlTypes;
@@ -13,6 +12,7 @@ using System.Threading.Tasks;
 
 [assembly: InternalsVisibleTo("SqlBulkTools.UnitTests")]
 [assembly: InternalsVisibleTo("SqlBulkTools.IntegrationTests")]
+// ReSharper disable once CheckNamespace
 namespace SqlBulkTools
 {
     internal static class BulkOperationsHelper
@@ -90,7 +90,7 @@ namespace SqlBulkTools
 
             command.Append(paramListConcatenated);
 
-            if (outputIdentity == ColumnDirection.InputOutput)
+            if (outputIdentity == ColumnDirection.Output)
             {
                 command.Append(", [" + Constants.InternalId + "] int");
             }
@@ -311,9 +311,9 @@ namespace SqlBulkTools
         /// Specificially for UpdateQuery and DeleteQuery
         /// </summary>
         /// <param name="columns"></param>
-        /// <param name="fullQualifiedTableName"></param>
+        /// <param name="identityColumn"></param>
         /// <returns></returns>
-        internal static string BuildUpdateSet(HashSet<string> columns, string fullQualifiedTableName)
+        internal static string BuildUpdateSet(HashSet<string> columns, string identityColumn)
         {
             StringBuilder command = new StringBuilder();
             List<string> paramsSeparated = new List<string>();
@@ -322,7 +322,8 @@ namespace SqlBulkTools
 
             foreach (var column in columns.ToList())
             {
-                paramsSeparated.Add(fullQualifiedTableName + "." + "[" + column + "]" + " = @" + column);
+                if (column != identityColumn)
+                    paramsSeparated.Add($"[{column}] = @{column}");
             }
 
             command.Append(string.Join(", ", paramsSeparated));
@@ -357,13 +358,13 @@ namespace SqlBulkTools
             return command.ToString();
         }
 
-        internal static string BuildInsertIntoSet(HashSet<string> columns, string identityColumn, string tableName)
+        internal static string BuildInsertIntoSet(HashSet<string> columns, string identityColumn, string fullQualifiedTableName)
         {
             StringBuilder command = new StringBuilder();
             List<string> insertColumns = new List<string>();
 
             command.Append("INSERT INTO ");
-            command.Append(tableName);
+            command.Append(fullQualifiedTableName);
             command.Append(" (");
 
             foreach (var column in columns)
@@ -374,6 +375,23 @@ namespace SqlBulkTools
 
             command.Append(string.Join(", ", insertColumns));
             command.Append(") ");
+
+            return command.ToString();
+        }
+
+        internal static string BuildValueSet(HashSet<string> columns, string identityColumn)
+        {
+            StringBuilder command = new StringBuilder();
+            List<string> valueList = new List<string>();
+
+            command.Append("(");
+            foreach (var column in columns)
+            {
+                if (column != identityColumn)
+                    valueList.Add($"@{column}");
+            }
+            command.Append(string.Join(", ", valueList));
+            command.Append(")");
 
             return command.ToString();
         }
@@ -440,7 +458,7 @@ namespace SqlBulkTools
                 columns = CheckForAdditionalColumns(columns, matchOnColumns);
             }
 
-            if (outputIdentity.HasValue && outputIdentity.Value == ColumnDirection.InputOutput)
+            if (outputIdentity.HasValue && outputIdentity.Value == ColumnDirection.Output)
             {
                 columns.Add(Constants.InternalId);
             }
@@ -504,7 +522,8 @@ namespace SqlBulkTools
         }
 
         // Loops through object properties, checks if column has been added, adds as sql parameter. Used for the UpdateQuery method. 
-        public static void AddSqlParamsForUpdateQuery<T>(List<SqlParameter> sqlParameters, HashSet<string> columns, T item)
+        public static void AddSqlParamsForQuery<T>(List<SqlParameter> sqlParameters, HashSet<string> columns, T item, 
+            string identityColumn = null, ColumnDirection direction = ColumnDirection.Input, Dictionary<string, string> customColumns = null)
         {
             PropertyInfo[] props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
@@ -514,9 +533,30 @@ namespace SqlBulkTools
                 {
                     if (props[i].Name == column && item != null && CheckForValidDataType(props[i].PropertyType, throwIfInvalid: true))
                     {
-                        DbType sqlType = SqlTypeMap.GetSqlTypeFromNetType(props[i].PropertyType);
-                        SqlParameter param = new SqlParameter($"@{column}", sqlType);
-                        param.Value = props[i].GetValue(item, null);
+                        DbType sqlType = BulkOperationsUtility.GetSqlTypeFromDotNetType(props[i].PropertyType);
+
+                        string actualColumnName;
+                        SqlParameter param;
+
+                        if (customColumns != null && customColumns.TryGetValue(column, out actualColumnName))
+                        {
+                            param = new SqlParameter($"@{actualColumnName}", sqlType);
+                        }
+                        else
+                            param = new SqlParameter($"@{column}", sqlType);
+
+                        object propValue = props[i].GetValue(item, null);
+
+                        if (propValue == null)
+                        {
+                            param.Value = DBNull.Value;
+                        }
+
+                        else
+                            param.Value = propValue;
+                       
+                        if (column == identityColumn && direction == ColumnDirection.Output)
+                            param.Direction = ParameterDirection.Output;
 
                         sqlParameters.Add(param);
                     }
@@ -571,26 +611,6 @@ namespace SqlBulkTools
                     }
                 count++;
             }
-        }
-
-        internal static SqlConnection GetSqlConnection(string connectionName, SqlCredential credentials, SqlConnection connection)
-        {
-            SqlConnection conn = null;
-
-            if (connection != null)
-            {
-                conn = connection;
-                return conn;
-            }
-
-            if (connectionName != null)
-            {
-                conn = new SqlConnection(ConfigurationManager
-                    .ConnectionStrings[connectionName].ConnectionString, credentials);
-                return conn;
-            }
-
-            throw new SqlBulkToolsException("Could not create SQL connection. Please check your arguments into CommitTransaction");
         }
 
         internal static string GetFullQualifyingTableName(string databaseName, string schemaName, string tableName)
@@ -755,7 +775,7 @@ namespace SqlBulkTools
         {
 
             StringBuilder sb = new StringBuilder();
-            if (identityColumn == null || outputIdentity != ColumnDirection.InputOutput)
+            if (identityColumn == null || outputIdentity != ColumnDirection.Output)
             {
                 return null;
             }
@@ -777,10 +797,10 @@ namespace SqlBulkTools
         {
 
             if (operation == OperationType.Insert)
-                return (outputIdentity == ColumnDirection.InputOutput ? "CREATE TABLE " + tmpTablename + "(" + "[" + identityColumn + "] int); " : "");
+                return (outputIdentity == ColumnDirection.Output ? "CREATE TABLE " + tmpTablename + "(" + "[" + identityColumn + "] int); " : "");
 
             else if (operation == OperationType.InsertOrUpdate || operation == OperationType.Update || operation == OperationType.Delete)
-                return (outputIdentity == ColumnDirection.InputOutput ? "CREATE TABLE " + tmpTablename + "("
+                return (outputIdentity == ColumnDirection.Output ? "CREATE TABLE " + tmpTablename + "("
                     + "[" + Constants.InternalId + "]" + " int, [" + identityColumn + "] int); " : "");
 
             return string.Empty;
@@ -843,10 +863,10 @@ namespace SqlBulkTools
             return dtCols;
         }
 
-        internal static void InsertToTmpTable(SqlConnection conn, SqlTransaction transaction, DataTable dt, bool bulkCopyEnableStreaming,
+        internal static void InsertToTmpTable(SqlConnection conn, DataTable dt, bool bulkCopyEnableStreaming,
             int? bulkCopyBatchSize, int? bulkCopyNotifyAfter, int bulkCopyTimeout, SqlBulkCopyOptions sqlBulkCopyOptions, IEnumerable<SqlRowsCopiedEventHandler> bulkCopyDelegates)
         {
-            using (SqlBulkCopy bulkcopy = new SqlBulkCopy(conn, sqlBulkCopyOptions, transaction))
+            using (SqlBulkCopy bulkcopy = new SqlBulkCopy(conn, sqlBulkCopyOptions, null))
             {
                 bulkcopy.DestinationTableName = Constants.TempTableName;
 
@@ -1065,7 +1085,7 @@ namespace SqlBulkTools
                                 SortOrder = sortOrder
                             };
 
-                            DbType sqlType = SqlTypeMap.GetSqlTypeFromNetType(condition.ValueType);
+                            DbType sqlType = BulkOperationsUtility.GetSqlTypeFromDotNetType(condition.ValueType);
 
                             string paramName = appendParam != null ? leftName + appendParam + sortOrder : leftName;
                             SqlParameter param = new SqlParameter($"@{paramName}", sqlType);
@@ -1109,7 +1129,7 @@ namespace SqlBulkTools
                                 SortOrder = sortOrder
                             };
 
-                            DbType sqlType = SqlTypeMap.GetSqlTypeFromNetType(condition.ValueType);
+                            DbType sqlType = BulkOperationsUtility.GetSqlTypeFromDotNetType(condition.ValueType);
                             string paramName = appendParam != null ? leftName + appendParam + sortOrder : leftName;
                             SqlParameter param = new SqlParameter($"@{paramName}", sqlType);
                             param.Value = condition.Value;
@@ -1231,7 +1251,7 @@ namespace SqlBulkTools
             predicateList.Add(condition);
 
 
-            DbType sqlType = SqlTypeMap.GetSqlTypeFromNetType(condition.ValueType);
+            DbType sqlType = BulkOperationsUtility.GetSqlTypeFromDotNetType(condition.ValueType);
             string paramName = appendParam != null ? leftName + appendParam + sortOrder : leftName;
             SqlParameter param = new SqlParameter($"@{paramName}", sqlType);
             param.Value = condition.Value;

@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq.Expressions;
 using Moq;
 using NUnit.Framework;
-using SqlBulkTools.IntegrationTests;
 using SqlBulkTools.IntegrationTests.Model;
-using SqlBulkTools.IntegrationTests.TestEnvironment;
 using SqlBulkTools.UnitTests.Model;
 
 namespace SqlBulkTools.UnitTests
@@ -532,6 +529,51 @@ namespace SqlBulkTools.UnitTests
         }
 
         [Test]
+        public void BulkOperationsHelper_BuildValueSet_WithOneValue()
+        {
+            // Arrange
+            HashSet<String> columns = new HashSet<string>();
+            columns.Add("TestColumn");
+
+            // Act
+            string result = BulkOperationsHelper.BuildValueSet(columns, "Id");
+
+            // Assert
+            Assert.AreEqual("(@TestColumn)", result);
+        }
+
+        [Test]
+        public void BulkOperationsHelper_BuildValueSet_WithMultipleValues()
+        {
+            // Arrange
+            HashSet<String> columns = new HashSet<string>();
+            columns.Add("TestColumnA");
+            columns.Add("TestColumnB");
+
+            // Act
+            string result = BulkOperationsHelper.BuildValueSet(columns, "Id");
+
+            // Assert
+            Assert.AreEqual("(@TestColumnA, @TestColumnB)", result);
+        }
+
+        [Test]
+        public void BulkOperationsHelper_BuildValueSet_WithMultipleValuesWhenIdentitySet()
+        {
+            // Arrange
+            HashSet<String> columns = new HashSet<string>();
+            columns.Add("TestColumnA");
+            columns.Add("TestColumnB");
+            columns.Add("Id");
+
+            // Act
+            string result = BulkOperationsHelper.BuildValueSet(columns, "Id");
+
+            // Assert
+            Assert.AreEqual("(@TestColumnA, @TestColumnB)", result);
+        }
+
+        [Test]
         public void BulkOperationsHelper_AddSqlParamsForUpdateQuery_GetsTypeAndValue()
         {
             Book book = new Book()
@@ -548,7 +590,7 @@ namespace SqlBulkTools.UnitTests
 
             List<SqlParameter> sqlParams = new List<SqlParameter>();
 
-            BulkOperationsHelper.AddSqlParamsForUpdateQuery(sqlParams, columns, book);
+            BulkOperationsHelper.AddSqlParamsForQuery(sqlParams, columns, book);
 
             Assert.AreEqual(3, sqlParams.Count);
         }

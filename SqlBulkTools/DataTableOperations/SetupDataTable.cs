@@ -21,7 +21,7 @@ namespace SqlBulkTools
         }
 
         /// <summary>
-        /// 
+        /// Supply the collection that you want a DataTable generated for.
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>

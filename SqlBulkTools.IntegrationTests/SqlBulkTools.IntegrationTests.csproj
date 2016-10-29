@@ -58,6 +58,7 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Transactions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -83,6 +84,7 @@
     <Compile Include="Model\SchemaTest2.cs" />
     <Compile Include="Model\SchemaTest1.cs" />
     <Compile Include="Data\TestContext.cs" />
+    <Compile Include="QueryOperationsAsyncIT.cs" />
     <Compile Include="QueryOperationsIT.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -5,6 +5,7 @@ using Ploeh.AutoFixture;
 using Ploeh.AutoFixture.Kernel;
 using SqlBulkTools.IntegrationTests.Model;
 
+// ReSharper disable once CheckNamespace
 namespace SqlBulkTools.IntegrationTests
 {
 #pragma warning disable 618

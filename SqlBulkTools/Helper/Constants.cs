@@ -24,7 +24,7 @@ namespace SqlBulkTools
 #pragma warning disable 1591
     public enum ColumnDirection
     {        
-        Input, InputOutput       
+        Input, Output       
     }
     
 
@@ -37,5 +37,6 @@ namespace SqlBulkTools
     {
         Update, Delete, Where, And, Or
     }
+
 #pragma warning restore 1591
 }
