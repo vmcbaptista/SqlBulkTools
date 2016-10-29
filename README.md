@@ -277,6 +277,7 @@ using (TransactionScope trans = new TransactionScope())
 ```
 
 ###Upsert a single record
+---------------
 ```c#
 
 var bulk = new BulkOperations();
@@ -329,6 +330,7 @@ SET @Id=SCOPE_IDENTITY()
 ```
 
 ###Insert a single record
+---------------
 ```c#
 
 var bulk = new BulkOperations();
@@ -369,6 +371,7 @@ VALUES (@WarehouseId, @ISBN, @Title, @Description, @Price)
 ```
 
 ###Update One or Many entities based on condition
+---------------
 ```c#
 
 var bulk = new BulkOperations();
@@ -413,6 +416,7 @@ WHERE [ISBN] = @ISBNCondition1
 ```
 
 ###Delete One or Many entities based on condition
+---------------
 ```c#
 /* Easily delete one or more records in a single roundtrip. */
 
@@ -446,6 +450,7 @@ AND [Description] IS NULL
 ```
 
 ###Async Transactions (CommitAsync)
+---------------
 
 All setups include support for asynchronous transactions. Please note that you must supply
 the argument 'TransactionScopeAsyncFlowOption.Enabled' to TransactionScope. 
