@@ -15,7 +15,9 @@ using SqlBulkTools;
   // Mockable IBulkOperations and IDataTableOperations Interface.
   public class BookClub(IBulkOperations bulk, IDataTableOperations dtOps) {
 
-  private IBulkOperations _bulk; // Use this for bulk operations (Bulk Insert, Update, Merge, Delete)
+  private IBulkOperations _bulk; // Use this for bulk and single entity operations 
+  (e.g. Bulk Insert, Update, Merge, Delete)
+  
   private IDataTableOperations _dtOps; // Use this for Data Table helper 
   
   public BookClub(IBulkOperations bulk) {
@@ -43,10 +45,10 @@ public class Book {
 }
 ```
 
-
 ###BulkInsert
 ---------------
 ```c#
+var bulk = new BulkOperations();
 books = GetBooks();
 
 using (TransactionScope trans = new TransactionScope())
@@ -66,8 +68,8 @@ using (TransactionScope trans = new TransactionScope())
     trans.Complete();
 }
 
-/* With the above example, the value of the Id property (identity column) on each record in 
-'books' will be updated to reflect the value in database. */
+/* With the above example, the value of the Id property in 'books' collection will be updated 
+to reflect the value added in database. */
 
 /* 
 Notes: 
@@ -187,11 +189,6 @@ identity column.
 ###BulkDelete
 ---------------
 ```c#
-/* Tip: Consider using SimpleDeleteQuery instead. */
-
-public class BookDto {
-    public string ISBN {get; set;}
-}
 
 var bulk = new BulkOperations();
 books = GetBooksIDontLike();
@@ -226,13 +223,14 @@ an SqlBulkToolsException.
 ###UpdateWhen & DeleteWhen
 ---------------
 ```c#
-/* Only update/delete records when the target satisfies a speicific requirement. This is used alongside
-MatchTargetOn and is available to BulkUpdate, BulkInsertOrUpdate and BulkDelete methods. Internally, SqlBulkTools will 
-use a parameterized query for each (potentially unsafe) input and respect any custom column mappings that are applied.
+/* Only update or delete records when the target satisfies a speicific requirement. This is used alongside
+MatchTargetOn and is available to BulkUpdate, BulkInsertOrUpdate and BulkDelete methods. Internally, 
+SqlBulkTools will use a parameterized query for each (potentially unsafe) input and respect any custom 
+column mappings that are applied.
 */
 
-books = GetBooks();
 var bulk = new BulkOperations();
+books = GetBooks();
 
 using (TransactionScope trans = new TransactionScope())
 {
@@ -512,9 +510,11 @@ var dt = dtOps.SetupDataTable<Book>()
     .CustomColumnMapping(x => x.Description, "BookDescription")
     .PrepareDataTable();
 
-/* PrepareDataTable() returns a DataTable. Here you can apply additional configuration.
-
-You can use GetColumn<T> to get the name of your property as a string. Any custom column mappings previously configured are applied */
+/* 
+PrepareDataTable() returns a DataTable. Here you can apply additional configuration.
+You can use GetColumn<T> to get the name of your property as a string. Any custom column 
+mappings previously configured are applied 
+*/
 
 dt.Columns[dtOps.GetColumn<Book>(x => x.Id)].AutoIncrement = true;
 dt.Columns[dtOps.GetColumn<Book>(x => x.ISBN)].AllowDBNull = false;
@@ -530,7 +530,7 @@ dt = dtOps.BuildPreparedDataTable();
 var dt = dtOps.SetupDataTable<Book>()
 .ForCollection(books)
 .AddAllColumns()
-.RemoveColumn(x => x.Description) // Use RemoveColumn if you want to exclude a column. 
+.RemoveColumn(x => x.Description) // Use RemoveColumn to exclude a column. 
 .PrepareDataTable();
 
 // .....
@@ -546,16 +546,16 @@ var bulk = new BulkOperations();
 books = GetBooks();
 
 bulk.Setup<Book>()
-.ForCollection(books)
-.WithTable("Books")
-.WithSchema("Api") // Specify a schema 
-.WithBulkCopyBatchSize(4000)
-.WithBulkCopyCommandTimeout(720) // Default is 600 seconds
-.WithBulkCopyEnableStreaming(false)
-.WithBulkCopyNotifyAfter(300)
-.WithSqlCommandTimeout(720) // Default is 600 seconds
-.WithSqlBulkCopyOptions(SqlBulkCopyOptions.TableLock)
-.AddColumn(x =>  // ........
+    .ForCollection(books)
+    .WithTable("Books")
+    .WithSchema("Api") // Specify a schema 
+    .WithBulkCopyBatchSize(4000)
+    .WithBulkCopyCommandTimeout(720) // Default is 600 seconds
+    .WithBulkCopyEnableStreaming(false)
+    .WithBulkCopyNotifyAfter(300)
+    .WithSqlCommandTimeout(720) // Default is 600 seconds
+    .WithSqlBulkCopyOptions(SqlBulkCopyOptions.TableLock)
+    .AddColumn(x =>  // ........
 
 /* SqlBulkTools gives you the ability to disable all or selected non-clustered indexes during 
 the transaction. Indexes are rebuilt once the transaction is completed. If at any time during 
@@ -565,13 +565,13 @@ to their initial state. */
 // Example
 
 bulk.Setup<Book>()
-.ForCollection(books)
-.WithTable("Books")
-.WithBulkCopyBatchSize(5000)
-.WithSqlBulkCopyOptions(SqlBulkCopyOptions.TableLock)
-.AddAllColumns()
-.TmpDisableAllNonClusteredIndexes()
-.BulkInsert();
+    .ForCollection(books)
+    .WithTable("Books")
+    .WithBulkCopyBatchSize(5000)
+    .WithSqlBulkCopyOptions(SqlBulkCopyOptions.TableLock)
+    .AddAllColumns()
+    .TmpDisableAllNonClusteredIndexes()
+    .BulkInsert();
 
 ```
 
