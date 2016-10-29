@@ -31,7 +31,8 @@ namespace SqlBulkTools
         }
 
         /// <summary>
-        /// 
+        /// All rows matching the condition(s) selected will be deleted. If you need to delete a collection of objects that can't be
+        /// matched by a generic condition, use the BulkDelete method instead. 
         /// </summary>
         /// <returns></returns>
         public SimpleDeleteQueryCondition<T> Delete()

@@ -533,7 +533,7 @@ namespace SqlBulkTools
                 {
                     if (props[i].Name == column && item != null && CheckForValidDataType(props[i].PropertyType, throwIfInvalid: true))
                     {
-                        DbType sqlType = SqlTypeMap.GetSqlTypeFromNetType(props[i].PropertyType);
+                        DbType sqlType = BulkOperationsUtility.GetSqlTypeFromDotNetType(props[i].PropertyType);
 
                         string actualColumnName;
                         SqlParameter param;
@@ -1085,7 +1085,7 @@ namespace SqlBulkTools
                                 SortOrder = sortOrder
                             };
 
-                            DbType sqlType = SqlTypeMap.GetSqlTypeFromNetType(condition.ValueType);
+                            DbType sqlType = BulkOperationsUtility.GetSqlTypeFromDotNetType(condition.ValueType);
 
                             string paramName = appendParam != null ? leftName + appendParam + sortOrder : leftName;
                             SqlParameter param = new SqlParameter($"@{paramName}", sqlType);
@@ -1129,7 +1129,7 @@ namespace SqlBulkTools
                                 SortOrder = sortOrder
                             };
 
-                            DbType sqlType = SqlTypeMap.GetSqlTypeFromNetType(condition.ValueType);
+                            DbType sqlType = BulkOperationsUtility.GetSqlTypeFromDotNetType(condition.ValueType);
                             string paramName = appendParam != null ? leftName + appendParam + sortOrder : leftName;
                             SqlParameter param = new SqlParameter($"@{paramName}", sqlType);
                             param.Value = condition.Value;
@@ -1251,7 +1251,7 @@ namespace SqlBulkTools
             predicateList.Add(condition);
 
 
-            DbType sqlType = SqlTypeMap.GetSqlTypeFromNetType(condition.ValueType);
+            DbType sqlType = BulkOperationsUtility.GetSqlTypeFromDotNetType(condition.ValueType);
             string paramName = appendParam != null ? leftName + appendParam + sortOrder : leftName;
             SqlParameter param = new SqlParameter($"@{paramName}", sqlType);
             param.Value = condition.Value;

@@ -58,7 +58,7 @@ namespace SqlBulkTools
         /// 
         /// </summary>
         /// <returns></returns>
-        public SimpleDeleteQuery<T> ForSimpleDeleteQuery()
+        public SimpleDeleteQuery<T> ForDeleteQuery()
         {
             return new SimpleDeleteQuery<T>();
         }

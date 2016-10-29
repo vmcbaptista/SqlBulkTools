@@ -49,6 +49,7 @@
   <ItemGroup>
     <Compile Include="BulkOperations\BulkCopy\AbstractColumnSelection.cs" />
     <Compile Include="BulkOperations\BulkCopy\AbstractOperation.cs" />
+    <Compile Include="BulkOperations\BulkOperationsUtility.cs" />
     <Compile Include="BulkOperations\SimpleQuery\Delete\SimpleDeleteQueryCondition.cs" />
     <Compile Include="BulkOperations\SimpleQuery\Delete\SimpleDeleteQueryReady.cs" />
     <Compile Include="BulkOperations\SimpleQuery\Delete\SimpleDeleteQueryTable.cs" />
@@ -62,7 +63,6 @@
     <Compile Include="BulkOperations\SimpleQuery\SimpleQueryAddColumn.cs" />
     <Compile Include="BulkOperations\SimpleQuery\SimpleUpsertQueryReady.cs" />
     <Compile Include="Helper\Condition.cs" />
-    <Compile Include="Helper\SqlTypeMap.cs" />
     <Compile Include="BulkOperations\BulkCopy\BulkTable.cs" />
     <Compile Include="DataTableOperations\DataTableAbstractColumnSelect.cs" />
     <Compile Include="DataTableOperations\DataTableOperations.cs" />

@@ -268,7 +268,7 @@ namespace SqlBulkTools.IntegrationTests
                         .CommitAsync(conn);
 
                     deletedRecords = await bulk.Setup<Book>()
-                        .ForSimpleDeleteQuery()
+                        .ForDeleteQuery()
                         .WithTable("Books")
                         .Delete()
                         .Where(x => x.ISBN == bookIsbn)
@@ -314,7 +314,7 @@ namespace SqlBulkTools.IntegrationTests
 
 
                     await bulk.Setup<SchemaTest2>()
-                        .ForSimpleDeleteQuery()
+                        .ForDeleteQuery()
                         .WithTable("SchemaTest")
                         .WithSchema("AnotherSchema")
                         .Delete()
@@ -359,7 +359,7 @@ namespace SqlBulkTools.IntegrationTests
                         .CommitAsync(conn);
 
                     await bulk.Setup<SchemaTest2>()
-                        .ForSimpleDeleteQuery()
+                        .ForDeleteQuery()
                         .WithTable("SchemaTest")
                         .WithSchema("AnotherSchema")
                         .Delete()
@@ -408,7 +408,7 @@ namespace SqlBulkTools.IntegrationTests
                         .CommitAsync(conn);
 
                     deletedRecords = await bulk.Setup<Book>()
-                        .ForSimpleDeleteQuery()
+                        .ForDeleteQuery()
                         .WithTable("Books")
                         .Delete()
                         .Where(x => x.WarehouseId == 1)
