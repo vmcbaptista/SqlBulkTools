@@ -15,7 +15,6 @@ namespace SqlBulkTools
         private HashSet<string> Columns { get; set; }
         private string _schema;
         private readonly string _tableName;
-        private readonly BulkOperations _ext;
         private Dictionary<string, string> CustomColumnMappings { get; set; }
         private int _sqlTimeout;
         /// <summary>
@@ -23,14 +22,13 @@ namespace SqlBulkTools
         /// </summary>
         /// <param name="tableName"></param>
         /// <param name="ext"></param>
-        public DeleteQueryTable(string tableName, BulkOperations ext)
+        public DeleteQueryTable(string tableName)
         {
             _sqlTimeout = 600;
             _schema = Constants.DefaultSchemaName;
             Columns = new HashSet<string>();
             CustomColumnMappings = new Dictionary<string, string>();
             _tableName = tableName;
-            _ext = ext;
             _schema = Constants.DefaultSchemaName;
             Columns = new HashSet<string>();
             CustomColumnMappings = new Dictionary<string, string>();
@@ -42,7 +40,7 @@ namespace SqlBulkTools
         /// <returns></returns>
         public DeleteQuery<T> Delete()
         {
-            return new DeleteQuery<T>(_tableName, _schema, _sqlTimeout, _ext);
+            return new DeleteQuery<T>(_tableName, _schema, _sqlTimeout);
         }
 
         /// <summary>

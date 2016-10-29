@@ -30,7 +30,7 @@ namespace SqlBulkTools
         /// <returns></returns>
         public BulkForCollection<T> ForCollection<T>(IEnumerable<T> list)
         {
-            return new BulkForCollection<T>(list, _ext);
+            return new BulkForCollection<T>(list);
         }
 
     }
@@ -78,7 +78,7 @@ namespace SqlBulkTools
         /// <returns></returns>
         public InsertQueryObject<T> ForSimpleInsertQuery(T entity)
         {
-            return new InsertQueryObject<T>(entity, _ext, _concatTrans, _databaseIdentifier, _sqlParams, _transactionCount);
+            return new InsertQueryObject<T>(entity, _concatTrans, _databaseIdentifier, _sqlParams, _transactionCount);
         }
 
         /// <summary>
@@ -88,7 +88,7 @@ namespace SqlBulkTools
         /// <returns></returns>
         public UpsertQueryObject<T> ForSimpleUpsertQuery(T entity)
         {
-            return new UpsertQueryObject<T>(entity, _ext, _sqlParams);
+            return new UpsertQueryObject<T>(entity, _sqlParams);
         }
 
         /// <summary>
@@ -97,7 +97,7 @@ namespace SqlBulkTools
         /// <returns></returns>
         public DeleteQueryObject<T> ForSimpleDeleteQuery()
         {
-            return new DeleteQueryObject<T>(_ext);
+            return new DeleteQueryObject<T>();
         }
 
         /// <summary>
@@ -107,9 +107,13 @@ namespace SqlBulkTools
         /// <returns></returns>
         public BulkForCollection<T> ForCollection(IEnumerable<T> list)
         {
-            return new BulkForCollection<T>(list, _ext);
+            return new BulkForCollection<T>(list);
         }
 
+        public SimpleForObject<T> ForObject(T entity)
+        {
+            return new SimpleForObject<T>(entity, _sqlParams);
+        }
        
     }
 }

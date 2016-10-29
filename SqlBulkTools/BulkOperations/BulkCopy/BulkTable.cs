@@ -22,7 +22,6 @@ namespace SqlBulkTools.BulkCopy
         private HashSet<string> Columns { get; set; }
         private string _schema;
         private readonly string _tableName;
-        private readonly BulkOperations _ext;
         private Dictionary<string, string> CustomColumnMappings { get; set; }
         private int _sqlTimeout;
 
@@ -31,8 +30,7 @@ namespace SqlBulkTools.BulkCopy
         /// </summary>
         /// <param name="list"></param>
         /// <param name="tableName"></param>
-        /// <param name="ext"></param>
-        public BulkTable(IEnumerable<T> list, string tableName, BulkOperations ext)
+        public BulkTable(IEnumerable<T> list, string tableName)
         {
             _bulkCopyBatchSize = null;
             _bulkCopyNotifyAfter = null;
@@ -45,7 +43,6 @@ namespace SqlBulkTools.BulkCopy
             CustomColumnMappings = new Dictionary<string, string>();
             _sqlBulkCopyOptions = SqlBulkCopyOptions.Default;
             _tableName = tableName;
-            _ext = ext;
             _schema = Constants.DefaultSchemaName;
             Columns = new HashSet<string>();
             CustomColumnMappings = new Dictionary<string, string>();
@@ -61,7 +58,7 @@ namespace SqlBulkTools.BulkCopy
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
             Columns.Add(propertyName);
             return new BulkAddColumn<T>(_list, _tableName, Columns, _schema, 
-                _sqlTimeout, _bulkCopyTimeout, _bulkCopyEnableStreaming, _bulkCopyNotifyAfter, _bulkCopyBatchSize, _sqlBulkCopyOptions, _ext, _bulkCopyDelegates);
+                _sqlTimeout, _bulkCopyTimeout, _bulkCopyEnableStreaming, _bulkCopyNotifyAfter, _bulkCopyBatchSize, _sqlBulkCopyOptions, _bulkCopyDelegates);
         }
 
         /// <summary>
@@ -72,7 +69,7 @@ namespace SqlBulkTools.BulkCopy
         {
             Columns = BulkOperationsHelper.GetAllValueTypeAndStringColumns(typeof(T));
             return new BulkAddColumnList<T>(_list, _tableName, Columns, _schema, 
-                _sqlTimeout, _bulkCopyTimeout, _bulkCopyEnableStreaming, _bulkCopyNotifyAfter, _bulkCopyBatchSize, _sqlBulkCopyOptions, _ext, _bulkCopyDelegates);
+                _sqlTimeout, _bulkCopyTimeout, _bulkCopyEnableStreaming, _bulkCopyNotifyAfter, _bulkCopyBatchSize, _sqlBulkCopyOptions, _bulkCopyDelegates);
         }
 
         /// <summary>

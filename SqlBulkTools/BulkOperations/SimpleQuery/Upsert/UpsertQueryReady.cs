@@ -22,7 +22,6 @@ namespace SqlBulkTools
         private readonly HashSet<string> _columns;
         private readonly Dictionary<string, string> _customColumnMappings;
         private readonly int _sqlTimeout;
-        private readonly BulkOperations _ext;
         private string _identityColumn;
         private List<SqlParameter> _sqlParams;
         private string _matchTargetOn;
@@ -37,9 +36,8 @@ namespace SqlBulkTools
         /// <param name="columns"></param>
         /// <param name="customColumnMappings"></param>
         /// <param name="sqlTimeout"></param>
-        /// <param name="ext"></param>
         public UpsertQueryReady(T singleEntity, string tableName, string schema, HashSet<string> columns, Dictionary<string, string> customColumnMappings, 
-            int sqlTimeout, BulkOperations ext, List<SqlParameter> sqlParams)
+            int sqlTimeout, List<SqlParameter> sqlParams)
         {
             _singleEntity = singleEntity;
             _tableName = tableName;
@@ -47,7 +45,6 @@ namespace SqlBulkTools
             _columns = columns;
             _customColumnMappings = customColumnMappings;
             _sqlTimeout = sqlTimeout;
-            _ext = ext;
             _sqlParams = sqlParams;
             _matchTargetOn = null;
             _outputIdentity = ColumnDirection.Input;

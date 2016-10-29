@@ -18,7 +18,6 @@ namespace SqlBulkTools
         private HashSet<string> _columns;
         private readonly string _schema;
         private readonly int _sqlTimeout;
-        private readonly BulkOperations _ext;
         private List<string> _concatTrans;
         private string _databaseIdentifier;
         private List<SqlParameter> _sqlParams;
@@ -32,16 +31,14 @@ namespace SqlBulkTools
         /// <param name="columns"></param>
         /// <param name="schema"></param>
         /// <param name="sqlTimeout"></param>
-        /// <param name="ext"></param>
         public UpsertQueryAddColumn(T singleEntity, string tableName, HashSet<string> columns, string schema,
-            int sqlTimeout, BulkOperations ext, List<string> concatTrans, string databaseIdentifier, List<SqlParameter> sqlParams, int transactionCount)
+            int sqlTimeout, List<string> concatTrans, string databaseIdentifier, List<SqlParameter> sqlParams, int transactionCount)
         {
             _singleEntity = singleEntity;
             _tableName = tableName;
             _columns = columns;
             _schema = schema;
             _sqlTimeout = sqlTimeout;
-            _ext = ext;
             _customColumnMappings = new Dictionary<string, string>();
             _concatTrans = concatTrans;
             _databaseIdentifier = databaseIdentifier;
@@ -69,7 +66,7 @@ namespace SqlBulkTools
         public UpsertQueryReady<T> Upsert()
         {
             return new UpsertQueryReady<T>(_singleEntity, _tableName, _schema, _columns, _customColumnMappings,
-                _sqlTimeout, _ext, _sqlParams);
+                _sqlTimeout, _sqlParams);
         }
 
         /// <summary>

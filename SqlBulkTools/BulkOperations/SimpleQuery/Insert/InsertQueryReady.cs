@@ -24,7 +24,6 @@ namespace SqlBulkTools
         private readonly HashSet<string> _columns;
         private readonly Dictionary<string, string> _customColumnMappings;
         private readonly int _sqlTimeout;
-        private readonly BulkOperations _ext;
         private int _conditionSortOrder;
         private string _identityColumn;
         private ColumnDirection _outputIdentity;
@@ -42,15 +41,13 @@ namespace SqlBulkTools
         /// <param name="sqlTimeout"></param>
         /// <param name="ext"></param>
         public InsertQueryReady(T singleEntity, string tableName, string schema, HashSet<string> columns, Dictionary<string, string> customColumnMappings,
-            int sqlTimeout, BulkOperations ext, List<SqlParameter> sqlParams)
+            int sqlTimeout, List<SqlParameter> sqlParams)
         {
             _singleEntity = singleEntity;
             _tableName = tableName;
             _schema = schema;
             _columns = columns;
             _customColumnMappings = customColumnMappings;
-            _sqlTimeout = sqlTimeout;
-            _ext = ext;
             _sqlParams = sqlParams;
             _outputIdentity = ColumnDirection.Input;
         }

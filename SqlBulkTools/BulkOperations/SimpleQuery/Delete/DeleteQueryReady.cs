@@ -18,7 +18,6 @@ namespace SqlBulkTools
         private readonly string _tableName;
         private readonly string _schema;
         private readonly int _sqlTimeout;
-        private readonly BulkOperations _ext;
         private readonly List<Condition> _whereConditions;
         private readonly List<Condition> _andConditions;
         private readonly List<Condition> _orConditions;
@@ -36,12 +35,11 @@ namespace SqlBulkTools
         /// <param name="whereConditions"></param>
         /// <param name="parameters"></param>
         public DeleteQueryReady(string tableName, string schema,
-            int sqlTimeout, BulkOperations ext, int conditionSortOrder, List<Condition> whereConditions, List<SqlParameter> parameters)
+            int sqlTimeout, int conditionSortOrder, List<Condition> whereConditions, List<SqlParameter> parameters)
         {
             _tableName = tableName;
             _schema = schema;
             _sqlTimeout = sqlTimeout;
-            _ext = ext;
             _whereConditions = whereConditions;
             _andConditions = new List<Condition>();
             _orConditions = new List<Condition>();

@@ -10,7 +10,6 @@ namespace SqlBulkTools
     public class InsertQueryObject<T>
     {
         private readonly T _singleEntity;
-        private readonly BulkOperations _ext;
         private List<string> _concatTrans;
         public string _databaseIdentifier;
         private List<SqlParameter> _sqlParams;
@@ -24,9 +23,8 @@ namespace SqlBulkTools
         /// <param name="smallCollection"></param>
         /// <param name="ext"></param>
         /// <param name="transactionCount"></param>
-        public InsertQueryObject(T singleEntity, BulkOperations ext, List<string> concatTrans, string databaseIdentifier, List<SqlParameter> sqlParams, int transactionCount)
+        public InsertQueryObject(T singleEntity, List<string> concatTrans, string databaseIdentifier, List<SqlParameter> sqlParams, int transactionCount)
         {
-            _ext = ext;
             _singleEntity = singleEntity;
             _concatTrans = concatTrans;
             _databaseIdentifier = databaseIdentifier;
@@ -41,7 +39,7 @@ namespace SqlBulkTools
         /// <returns></returns>
         public InsertQueryTable<T> WithTable(string tableName)
         {        
-            return new InsertQueryTable<T>(_singleEntity, tableName, _ext, _sqlParams);
+            return new InsertQueryTable<T>(_singleEntity, tableName, _sqlParams);
         }
     }
 }

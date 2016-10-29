@@ -30,19 +30,17 @@ namespace SqlBulkTools
         /// <param name="bulkCopyNotifyAfter"></param>
         /// <param name="bulkCopyBatchSize"></param>
         /// <param name="sqlBulkCopyOptions"></param>
-        /// <param name="ext"></param>
         /// <param name="disableIndexList"></param>
         /// <param name="bulkCopyDelegates"></param>
         public BulkDelete(IEnumerable<T> list, string tableName, string schema, HashSet<string> columns, HashSet<string> disableIndexList,
             bool disableAllIndexes,
             Dictionary<string, string> customColumnMappings, int sqlTimeout, int bulkCopyTimeout,
             bool bulkCopyEnableStreaming, int? bulkCopyNotifyAfter, int? bulkCopyBatchSize, SqlBulkCopyOptions sqlBulkCopyOptions,
-            BulkOperations ext, IEnumerable<SqlRowsCopiedEventHandler> bulkCopyDelegates)
+            IEnumerable<SqlRowsCopiedEventHandler> bulkCopyDelegates)
             :
             base(list, tableName, schema, columns, disableIndexList, disableAllIndexes, customColumnMappings, sqlTimeout,
-                bulkCopyTimeout, bulkCopyEnableStreaming, bulkCopyNotifyAfter, bulkCopyBatchSize, sqlBulkCopyOptions, ext, bulkCopyDelegates)
+                bulkCopyTimeout, bulkCopyEnableStreaming, bulkCopyNotifyAfter, bulkCopyBatchSize, sqlBulkCopyOptions, bulkCopyDelegates)
         {
-            _ext.SetBulkExt(this);
             _deletePredicates = new List<Condition>();
             _parameters = new List<SqlParameter>();
             _conditionSortOrder = 1;

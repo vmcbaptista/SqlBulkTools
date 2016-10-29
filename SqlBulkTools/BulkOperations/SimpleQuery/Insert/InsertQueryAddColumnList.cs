@@ -18,7 +18,6 @@ namespace SqlBulkTools
         private HashSet<string> _columns;
         private readonly string _schema;
         private readonly int _sqlTimeout;
-        private readonly BulkOperations _ext;
         private List<SqlParameter> _sqlParams;
 
         /// <summary>
@@ -35,14 +34,13 @@ namespace SqlBulkTools
         /// <param name="sqlParams"></param>
         /// <param name="insertMode"></param>
         public InsertQueryAddColumnList(T singleEntity, string tableName, HashSet<string> columns, string schema,
-            int sqlTimeout, BulkOperations ext, List<SqlParameter> sqlParams)
+            int sqlTimeout, List<SqlParameter> sqlParams)
         {
             _singleEntity = singleEntity;
             _tableName = tableName;
             _columns = columns;
             _schema = schema;
             _sqlTimeout = sqlTimeout;
-            _ext = ext;
             _customColumnMappings = new Dictionary<string, string>();
             _sqlParams = sqlParams;
         }
@@ -54,7 +52,7 @@ namespace SqlBulkTools
         public InsertQueryReady<T> Insert()
         {
             return new InsertQueryReady<T>(_singleEntity, _tableName, _schema, _columns, _customColumnMappings,
-                _sqlTimeout, _ext, _sqlParams);
+                _sqlTimeout, _sqlParams);
         }
 
         /// <summary>

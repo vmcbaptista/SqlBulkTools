@@ -18,7 +18,6 @@ namespace SqlBulkTools
         #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         // ReSharper disable InconsistentNaming
         protected ColumnDirection _outputIdentity;
-        protected BulkOperations _ext;
         protected string _identityColumn;
         protected Dictionary<int, T> _outputIdentityDic;
         protected bool _disableAllIndexes;
@@ -58,13 +57,12 @@ namespace SqlBulkTools
         /// <param name="bulkCopyNotifyAfter"></param>
         /// <param name="bulkCopyBatchSize"></param>
         /// <param name="sqlBulkCopyOptions"></param>
-        /// <param name="ext"></param>
         /// <param name="bulkCopyDelegates"></param>
         protected AbstractOperation(IEnumerable<T> list, string tableName, string schema, HashSet<string> columns,
             HashSet<string> disableIndexList, bool disableAllIndexes,
             Dictionary<string, string> customColumnMappings, int sqlTimeout, int bulkCopyTimeout,
             bool bulkCopyEnableStreaming,
-            int? bulkCopyNotifyAfter, int? bulkCopyBatchSize, SqlBulkCopyOptions sqlBulkCopyOptions, BulkOperations ext, 
+            int? bulkCopyNotifyAfter, int? bulkCopyBatchSize, SqlBulkCopyOptions sqlBulkCopyOptions, 
             IEnumerable<SqlRowsCopiedEventHandler> bulkCopyDelegates)
         {
             _list = list;
@@ -80,7 +78,6 @@ namespace SqlBulkTools
             _bulkCopyNotifyAfter = bulkCopyNotifyAfter;
             _bulkCopyBatchSize = bulkCopyBatchSize;
             _sqlBulkCopyOptions = sqlBulkCopyOptions;
-            _ext = ext;
             _identityColumn = null;
             _outputIdentityDic = new Dictionary<int, T>();
             _outputIdentity = ColumnDirection.Input;

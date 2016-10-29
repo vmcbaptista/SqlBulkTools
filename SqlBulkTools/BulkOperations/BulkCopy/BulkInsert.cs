@@ -31,17 +31,16 @@ namespace SqlBulkTools
         /// <param name="bulkCopyNotifyAfter"></param>
         /// <param name="bulkCopyBatchSize"></param>
         /// <param name="sqlBulkCopyOptions"></param>
-        /// <param name="ext"></param>
         /// <param name="bulkCopyDelegates"></param>
         public BulkInsert(IEnumerable<T> list, string tableName, string schema, HashSet<string> columns,
             HashSet<string> disableIndexList, bool disableAllIndexes,
             Dictionary<string, string> customColumnMappings, int sqlTimeout, int bulkCopyTimeout, bool bulkCopyEnableStreaming,
-            int? bulkCopyNotifyAfter, int? bulkCopyBatchSize, SqlBulkCopyOptions sqlBulkCopyOptions, BulkOperations ext, IEnumerable<SqlRowsCopiedEventHandler> bulkCopyDelegates) :
+            int? bulkCopyNotifyAfter, int? bulkCopyBatchSize, SqlBulkCopyOptions sqlBulkCopyOptions, IEnumerable<SqlRowsCopiedEventHandler> bulkCopyDelegates) :
 
             base(list, tableName, schema, columns, disableIndexList, disableAllIndexes, customColumnMappings, sqlTimeout,
-                bulkCopyTimeout, bulkCopyEnableStreaming, bulkCopyNotifyAfter, bulkCopyBatchSize, sqlBulkCopyOptions, ext, bulkCopyDelegates)
+                bulkCopyTimeout, bulkCopyEnableStreaming, bulkCopyNotifyAfter, bulkCopyBatchSize, sqlBulkCopyOptions, bulkCopyDelegates)
         {
-            _ext.SetBulkExt(this);
+            
         }
 
         /// <summary>
@@ -184,7 +183,7 @@ namespace SqlBulkTools
                 dtCols = BulkOperationsHelper.GetDatabaseSchema(connection, _schema, _tableName);
 
             //Bulk insert into temp table
-            using (SqlBulkCopy bulkcopy = new SqlBulkCopy(connection.ConnectionString, _sqlBulkCopyOptions))
+            using (SqlBulkCopy bulkcopy = new SqlBulkCopy(connection, _sqlBulkCopyOptions, null))
             {
                 bulkcopy.DestinationTableName = BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema, _tableName);
                 BulkOperationsHelper.MapColumns(bulkcopy, _columns, _customColumnMappings);

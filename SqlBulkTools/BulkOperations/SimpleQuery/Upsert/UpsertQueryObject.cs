@@ -10,7 +10,6 @@ namespace SqlBulkTools
     public class UpsertQueryObject<T>
     {
         private readonly T _singleEntity;
-        private readonly BulkOperations _ext;
         private List<string> _concatTrans;
         public string _databaseIdentifier;
         private List<SqlParameter> _sqlParams;
@@ -20,11 +19,9 @@ namespace SqlBulkTools
         /// 
         /// </summary>
         /// <param name="singleEntity"></param>
-        /// <param name="ext"></param>
         /// <param name="transactionCount"></param>
-        public UpsertQueryObject(T singleEntity, BulkOperations ext, List<SqlParameter> sqlParams)
+        public UpsertQueryObject(T singleEntity, List<SqlParameter> sqlParams)
         {
-            _ext = ext;
             _singleEntity = singleEntity;
             _sqlParams = sqlParams;
         }
@@ -36,7 +33,7 @@ namespace SqlBulkTools
         /// <returns></returns>
         public UpsertQueryTable<T> WithTable(string tableName)
         {        
-            return new UpsertQueryTable<T>(_singleEntity, tableName, _ext, _concatTrans, _databaseIdentifier, _sqlParams, _transactionCount);
+            return new UpsertQueryTable<T>(_singleEntity, tableName, _concatTrans, _databaseIdentifier, _sqlParams, _transactionCount);
         }
     }
 }

@@ -16,7 +16,6 @@ namespace SqlBulkTools
         private HashSet<string> Columns { get; set; }
         private string _schema;
         private readonly string _tableName;
-        private readonly BulkOperations _ext;
         private Dictionary<string, string> CustomColumnMappings { get; set; }
         private int _sqlTimeout;
         private List<string> _concatTrans;
@@ -29,9 +28,8 @@ namespace SqlBulkTools
         /// </summary>
         /// <param name="singleEntity"></param>
         /// <param name="tableName"></param>
-        /// <param name="ext"></param>
         /// <param name="transactionCount"></param>
-        public UpsertQueryTable(T singleEntity, string tableName, BulkOperations ext, List<string> concatTrans, string databaseIdentifier, List<SqlParameter> sqlParams, int transactionCount)
+        public UpsertQueryTable(T singleEntity, string tableName, List<string> concatTrans, string databaseIdentifier, List<SqlParameter> sqlParams, int transactionCount)
         {
             _singleEntity = singleEntity;
             _sqlTimeout = 600;
@@ -39,7 +37,6 @@ namespace SqlBulkTools
             Columns = new HashSet<string>();
             CustomColumnMappings = new Dictionary<string, string>();
             _tableName = tableName;
-            _ext = ext;
             _schema = Constants.DefaultSchemaName;
             Columns = new HashSet<string>();
             CustomColumnMappings = new Dictionary<string, string>();
@@ -59,7 +56,7 @@ namespace SqlBulkTools
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
             Columns.Add(propertyName);
             return new UpsertQueryAddColumn<T>(_singleEntity, _tableName, Columns, _schema, 
-                _sqlTimeout, _ext, _concatTrans, _databaseIdentifier, _sqlParams, _transactionCount);
+                _sqlTimeout, _concatTrans, _databaseIdentifier, _sqlParams, _transactionCount);
         }
 
         /// <summary>
@@ -72,7 +69,7 @@ namespace SqlBulkTools
             Columns = BulkOperationsHelper.GetAllValueTypeAndStringColumns(typeof(T));
 
             return new UpsertQueryAddColumnList<T>(_singleEntity, _tableName, Columns, _schema,
-                _sqlTimeout, _ext, _concatTrans, _databaseIdentifier, _sqlParams, _transactionCount);
+                _sqlTimeout, _concatTrans, _databaseIdentifier, _sqlParams, _transactionCount);
         }
 
         /// <summary>
