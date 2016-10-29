@@ -44,10 +44,11 @@ public class Book {
     public int WarehouseId { get; set; }
 }
 
-####Note
-You may need to update your references to include System.Transactions for TransactionScope. 
-System.transactions is not included by default.
 ```
+
+####Note
+You may need to update your references to include System.Transactions for TransactionScope as 
+System.transactions is not included by default.
 
 ###BulkInsert
 ---------------
