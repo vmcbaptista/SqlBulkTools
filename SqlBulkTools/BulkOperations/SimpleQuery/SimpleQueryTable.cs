@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Text;
+using System.Threading.Tasks;
 
-// ReSharper disable once CheckNamespace
 namespace SqlBulkTools
 {
     /// <summary>
     /// Configurable options for table. 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class UpsertQueryTable<T>
+    public class SimpleQueryTable<T>
     {
         private readonly T _singleEntity;
         private HashSet<string> Columns { get; set; }
@@ -18,18 +20,16 @@ namespace SqlBulkTools
         private readonly string _tableName;
         private Dictionary<string, string> CustomColumnMappings { get; set; }
         private int _sqlTimeout;
-        private List<string> _concatTrans;
-        private string _databaseIdentifier;
         private List<SqlParameter> _sqlParams;
-        private int _transactionCount;
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="singleEntity"></param>
         /// <param name="tableName"></param>
+        /// <param name="ext"></param>
         /// <param name="transactionCount"></param>
-        public UpsertQueryTable(T singleEntity, string tableName, List<string> concatTrans, string databaseIdentifier, List<SqlParameter> sqlParams, int transactionCount)
+        public SimpleQueryTable(T singleEntity, string tableName, List<SqlParameter> sqlParams)
         {
             _singleEntity = singleEntity;
             _sqlTimeout = 600;
@@ -40,10 +40,7 @@ namespace SqlBulkTools
             _schema = Constants.DefaultSchemaName;
             Columns = new HashSet<string>();
             CustomColumnMappings = new Dictionary<string, string>();
-            _concatTrans = concatTrans;
-            _databaseIdentifier = databaseIdentifier;
             _sqlParams = sqlParams;
-            _transactionCount = transactionCount;
         }
 
         /// <summary>
@@ -51,26 +48,36 @@ namespace SqlBulkTools
         /// </summary>
         /// <param name="columnName">Column name as represented in database</param>
         /// <returns></returns>
-        public UpsertQueryAddColumn<T> AddColumn(Expression<Func<T, object>> columnName)
+        public SimpleQueryAddColumn<T> AddColumn(Expression<Func<T, object>> columnName)
         {
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
             Columns.Add(propertyName);
-            return new UpsertQueryAddColumn<T>(_singleEntity, _tableName, Columns, _schema, 
-                _sqlTimeout, _concatTrans, _databaseIdentifier, _sqlParams, _transactionCount);
+            return new SimpleQueryAddColumn<T>(_singleEntity, _tableName, Columns, _schema,
+                _sqlTimeout, _sqlParams);
         }
 
         /// <summary>
         /// Add each column that you want to include in the query. Only include the columns that are relevant to the 
         /// procedure for best performance. 
         /// </summary>
+        /// <param name="columnName">Column name as represented in database</param>
         /// <returns></returns>
-        public UpsertQueryAddColumnList<T> AddAllColumns()
+        public SimpleQueryAddColumnList<T> AddAllColumns()
         {
             Columns = BulkOperationsHelper.GetAllValueTypeAndStringColumns(typeof(T));
 
-            return new UpsertQueryAddColumnList<T>(_singleEntity, _tableName, Columns, _schema,
-                _sqlTimeout, _concatTrans, _databaseIdentifier, _sqlParams, _transactionCount);
+            return new SimpleQueryAddColumnList<T>(_singleEntity, _tableName, Columns, _schema,
+                _sqlTimeout, _sqlParams);
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public DeleteQuery<T> Delete()
+        {
+            return new DeleteQuery<T>(_tableName, _schema, _sqlTimeout);
+        } 
 
         /// <summary>
         /// Explicitley set a schema if your table may have a naming conflict within your database. 
@@ -78,7 +85,7 @@ namespace SqlBulkTools
         /// </summary>
         /// <param name="schema"></param>
         /// <returns></returns>
-        public UpsertQueryTable<T> WithSchema(string schema)
+        public SimpleQueryTable<T> WithSchema(string schema)
         {
             _schema = schema;
             return this;
@@ -89,7 +96,7 @@ namespace SqlBulkTools
         /// </summary>
         /// <param name="seconds"></param>
         /// <returns></returns>
-        public UpsertQueryTable<T> WithSqlCommandTimeout(int seconds)
+        public SimpleQueryTable<T> WithSqlCommandTimeout(int seconds)
         {
             _sqlTimeout = seconds;
             return this;

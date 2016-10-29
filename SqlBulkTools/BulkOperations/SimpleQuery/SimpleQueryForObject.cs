@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SqlBulkTools
 {
-    public class SimpleForObject<T>
+    public class SimpleQueryForObject<T>
     {
         private readonly T _entity;
         private readonly List<SqlParameter> _sqlParams;
@@ -17,7 +17,7 @@ namespace SqlBulkTools
         /// </summary>
         /// <param name="entity"></param>
         /// <param name="sqlParams"></param>
-        public SimpleForObject(T entity, List<SqlParameter> sqlParams)
+        public SimpleQueryForObject(T entity, List<SqlParameter> sqlParams)
         {
             _entity = entity;
             _sqlParams = sqlParams;
@@ -28,9 +28,9 @@ namespace SqlBulkTools
         /// </summary>
         /// <param name="tableName">Name of the table.</param>
         /// <returns></returns>
-        public SimpleTable<T> WithTable(string tableName)
+        public SimpleQueryTable<T> WithTable(string tableName)
         {
-            return new SimpleTable<T>(_entity, tableName, _sqlParams);
+            return new SimpleQueryTable<T>(_entity, tableName, _sqlParams);
         }
     }
 }

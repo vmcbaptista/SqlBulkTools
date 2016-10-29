@@ -39,11 +39,10 @@ namespace SqlBulkTools
         /// <param name="columns"></param>
         /// <param name="customColumnMappings"></param>
         /// <param name="sqlTimeout"></param>
-        /// <param name="ext"></param>
         /// <param name="conditionSortOrder"></param>
         /// <param name="whereConditions"></param>
         public UpdateQueryReady(T singleEntity, string tableName, string schema, HashSet<string> columns, Dictionary<string, string> customColumnMappings,
-            int sqlTimeout, BulkOperations ext, int conditionSortOrder, List<Condition> whereConditions, List<SqlParameter> sqlParams)
+            int sqlTimeout, int conditionSortOrder, List<Condition> whereConditions, List<SqlParameter> sqlParams)
         {
             _singleEntity = singleEntity;
             _tableName = tableName;
@@ -51,7 +50,6 @@ namespace SqlBulkTools
             _columns = columns;
             _customColumnMappings = customColumnMappings;
             _sqlTimeout = sqlTimeout;
-            _ext = ext;
             _conditionSortOrder = conditionSortOrder;
             _whereConditions = whereConditions;
             _andConditions = new List<Condition>();
@@ -110,6 +108,11 @@ namespace SqlBulkTools
             return this;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <returns></returns>
         public int Commit(SqlConnection connection)
         {
             int affectedRows = 0;

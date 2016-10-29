@@ -16,7 +16,7 @@ namespace SqlBulkTools
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class InsertQueryReady<T> : ITransaction
+    public class SimpleInsertQueryReady<T> : ITransaction
     {
         private readonly T _singleEntity;
         private readonly string _tableName;
@@ -40,7 +40,7 @@ namespace SqlBulkTools
         /// <param name="customColumnMappings"></param>
         /// <param name="sqlTimeout"></param>
         /// <param name="ext"></param>
-        public InsertQueryReady(T singleEntity, string tableName, string schema, HashSet<string> columns, Dictionary<string, string> customColumnMappings,
+        public SimpleInsertQueryReady(T singleEntity, string tableName, string schema, HashSet<string> columns, Dictionary<string, string> customColumnMappings,
             int sqlTimeout, List<SqlParameter> sqlParams)
         {
             _singleEntity = singleEntity;
@@ -57,7 +57,7 @@ namespace SqlBulkTools
         /// </summary>
         /// <param name="columnName"></param>
         /// <returns></returns>
-        public InsertQueryReady<T> SetIdentityColumn(Expression<Func<T, object>> columnName)
+        public SimpleInsertQueryReady<T> SetIdentityColumn(Expression<Func<T, object>> columnName)
         {
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
 
@@ -83,7 +83,7 @@ namespace SqlBulkTools
         /// <param name="columnName"></param>
         /// <param name="direction"></param>
         /// <returns></returns>
-        public InsertQueryReady<T> SetIdentityColumn(Expression<Func<T, object>> columnName, ColumnDirection direction)
+        public SimpleInsertQueryReady<T> SetIdentityColumn(Expression<Func<T, object>> columnName, ColumnDirection direction)
         {
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
             _outputIdentity = direction;

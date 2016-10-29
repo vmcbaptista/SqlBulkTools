@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Text;
+using System.Threading.Tasks;
 
-// ReSharper disable once CheckNamespace
 namespace SqlBulkTools
 {
     /// <summary>
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class InsertQueryAddColumnList<T>
+    public class SimpleQueryAddColumnList<T>
     {
         private readonly T _singleEntity;
         private readonly string _tableName;
@@ -28,12 +30,8 @@ namespace SqlBulkTools
         /// <param name="columns"></param>
         /// <param name="schema"></param>
         /// <param name="sqlTimeout"></param>
-        /// <param name="ext"></param>
-        /// <param name="concatTrans"></param>
-        /// <param name="databaseIdentifier"></param>
         /// <param name="sqlParams"></param>
-        /// <param name="insertMode"></param>
-        public InsertQueryAddColumnList(T singleEntity, string tableName, HashSet<string> columns, string schema,
+        public SimpleQueryAddColumnList(T singleEntity, string tableName, HashSet<string> columns, string schema,
             int sqlTimeout, List<SqlParameter> sqlParams)
         {
             _singleEntity = singleEntity;
@@ -49,11 +47,32 @@ namespace SqlBulkTools
         /// 
         /// </summary>
         /// <returns></returns>
-        public InsertQueryReady<T> Insert()
+        public SimpleInsertQueryReady<T> Insert()
         {
-            return new InsertQueryReady<T>(_singleEntity, _tableName, _schema, _columns, _customColumnMappings,
+            return new SimpleInsertQueryReady<T>(_singleEntity, _tableName, _schema, _columns, _customColumnMappings,
                 _sqlTimeout, _sqlParams);
         }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public SimpleUpsertQueryReady<T> Upsert()
+        {
+            return new SimpleUpsertQueryReady<T>(_singleEntity, _tableName, _schema, _columns, _customColumnMappings,
+                _sqlTimeout, _sqlParams);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public UpdateQuery<T> Update()
+        {
+            return new UpdateQuery<T>(_singleEntity, _tableName, _schema, _columns, _customColumnMappings, 
+                _sqlTimeout, _sqlParams);
+        }  
 
         /// <summary>
         /// Removes a column that you want to be excluded. 
@@ -61,7 +80,7 @@ namespace SqlBulkTools
         /// <param name="columnName"></param>
         /// <returns></returns>
         /// <exception cref="SqlBulkToolsException"></exception>
-        public InsertQueryAddColumnList<T> RemoveColumn(Expression<Func<T, object>> columnName)
+        public SimpleQueryAddColumnList<T> RemoveColumn(Expression<Func<T, object>> columnName)
         {
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
             if (_columns.Contains(propertyName))
@@ -87,7 +106,7 @@ namespace SqlBulkTools
         /// The actual name of column as represented in SQL table. 
         /// </param>
         /// <returns></returns>
-        public InsertQueryAddColumnList<T> CustomColumnMapping(Expression<Func<T, object>> source, string destination)
+        public SimpleQueryAddColumnList<T> CustomColumnMapping(Expression<Func<T, object>> source, string destination)
         {
             var propertyName = BulkOperationsHelper.GetPropertyName(source);
             _customColumnMappings.Add(propertyName, destination);

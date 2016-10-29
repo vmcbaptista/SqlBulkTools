@@ -63,10 +63,11 @@ namespace SqlBulkTools.IntegrationTests
                         .BulkInsert()
                         .Commit(conn);
 
+                        
                     // Update price to 100
 
                     updatedRecords = bulk.Setup<Book>()
-                        .ForSimpleUpdateQuery(new Book() { Price = 100 })
+                        .ForObject(new Book() { Price = 100 })
                         .WithTable("Books")
                         .AddColumn(x => x.Price)
                         .Update()
@@ -112,7 +113,7 @@ namespace SqlBulkTools.IntegrationTests
                     // Update price to 100
 
                     updatedRecords = bulk.Setup<Book>()
-                        .ForSimpleUpdateQuery(new Book()
+                        .ForObject(new Book()
                         {
                             Price = 100,
                             Description = "Somebody will want me now! Yay"
@@ -172,7 +173,7 @@ namespace SqlBulkTools.IntegrationTests
                         .Commit(conn);
 
                     updatedRecords = bulk.Setup<Book>()
-                        .ForSimpleUpdateQuery(new Book() { Price = 100, WarehouseId = 5 })
+                        .ForObject(new Book() { Price = 100, WarehouseId = 5 })
                         .WithTable("Books")
                         .AddColumn(x => x.Price)
                         .AddColumn(x => x.WarehouseId)
@@ -227,7 +228,7 @@ namespace SqlBulkTools.IntegrationTests
                     // Update price to 100
 
                     updatedRecords = bulk.Setup<Book>()
-                        .ForSimpleUpdateQuery(new Book() { Price = 100, WarehouseId = 5 })
+                        .ForObject(new Book() { Price = 100, WarehouseId = 5 })
                         .WithTable("Books")
                         .AddColumn(x => x.Price)
                         .AddColumn(x => x.WarehouseId)
@@ -438,7 +439,7 @@ namespace SqlBulkTools.IntegrationTests
                     .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
                 {
                     insertedRecords = bulk.Setup<Book>()
-                        .ForSimpleInsertQuery(new Book() { BestSeller = true, Description = "Greatest dad in the world", Title = "Hello World", ISBN = "1234567", Price = 23.99M })
+                        .ForObject(new Book() { BestSeller = true, Description = "Greatest dad in the world", Title = "Hello World", ISBN = "1234567", Price = 23.99M })
                         .WithTable("Books")
                         .AddColumn(x => x.Title)
                         .AddColumn(x => x.ISBN)
@@ -470,7 +471,7 @@ namespace SqlBulkTools.IntegrationTests
                     .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
                 {
                     insertedRecords = bulk.Setup<Book>()
-                        .ForSimpleInsertQuery(new Book()
+                        .ForObject(new Book()
                         {
                             BestSeller = true,
                             Description = "Greatest dad in the world",
@@ -505,7 +506,7 @@ namespace SqlBulkTools.IntegrationTests
                 {                                     
                     var bulk = new BulkOperations();
                     bulk.Setup<Book>()
-                    .ForSimpleUpsertQuery(new Book()
+                    .ForObject(new Book()
                     {
                         BestSeller = true,
                         Description = "Greatest dad in the world",
@@ -551,7 +552,7 @@ namespace SqlBulkTools.IntegrationTests
                     };
 
                     bulk.Setup<Book>()
-                        .ForSimpleInsertQuery(book)
+                        .ForObject(book)
                         .WithTable("Books")
                         .AddAllColumns()
                         .Insert()
@@ -559,7 +560,7 @@ namespace SqlBulkTools.IntegrationTests
                         .Commit(con);
 
                     bulk.Setup<Book>()
-                    .ForSimpleUpsertQuery(new Book()
+                    .ForObject(new Book()
                     {
                         Id = book.Id,
                         BestSeller = true,
@@ -611,7 +612,7 @@ namespace SqlBulkTools.IntegrationTests
                     .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
                 {
                     bulk.Setup<CustomColumnMappingTest>()
-                        .ForSimpleInsertQuery(customColumn)
+                        .ForObject(customColumn)
                         .WithTable("CustomColumnMappingTests")
                         .AddAllColumns()
                         .CustomColumnMapping(x => x.ColumnXIsDifferent, "ColumnX")
@@ -648,7 +649,7 @@ namespace SqlBulkTools.IntegrationTests
                     .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
                 {
                     bulk.Setup<CustomColumnMappingTest>()
-                        .ForSimpleUpsertQuery(customColumn)
+                        .ForObject(customColumn)
                         .WithTable("CustomColumnMappingTests")
                         .AddAllColumns()                        
                         .CustomColumnMapping(x => x.ColumnXIsDifferent, "ColumnX")
@@ -693,7 +694,7 @@ namespace SqlBulkTools.IntegrationTests
                     .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
                 {
                     bulk.Setup<CustomColumnMappingTest>()
-                        .ForSimpleInsertQuery(customColumn)
+                        .ForObject(customColumn)
                         .WithTable("CustomColumnMappingTests")
                         .AddAllColumns()
                         .CustomColumnMapping(x => x.ColumnXIsDifferent, "ColumnX")
@@ -705,7 +706,7 @@ namespace SqlBulkTools.IntegrationTests
                     
 
                     bulk.Setup<CustomColumnMappingTest>()
-                        .ForSimpleUpdateQuery(customColumn)
+                        .ForObject(customColumn)
                         .WithTable("CustomColumnMappingTests")
                         .AddAllColumns()
                         .CustomColumnMapping(x => x.ColumnXIsDifferent, "ColumnX")
@@ -720,6 +721,73 @@ namespace SqlBulkTools.IntegrationTests
 
             // Assert
             Assert.IsTrue(_db.CustomColumnMappingTest.First().ColumnXIsDifferent == "updated");
+        }
+
+        [Test] // For proof of concept
+        public void EntityFrameworkAndSqlBulkToolsTogether_RollsbackGracefully()
+        {
+            BulkOperations bulk = new BulkOperations();
+
+            _db.Books.RemoveRange(_db.Books.ToList());
+            _db.SaveChanges();
+
+            string testIsbn = "1234567";
+
+            try
+            {
+                using (TransactionScope tx = new TransactionScope())
+                {
+                    using (SqlConnection conn = new SqlConnection(ConfigurationManager
+                        .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+                    {
+
+                        // Use the same connection for EntityFramework
+                        using (TestContext testContext = new TestContext(conn, contextOwnsConnection: false))
+                        {
+                            testContext.Books.Add(new Book()
+                            {
+                                BestSeller = true,
+                                Description = "I am a valid insert",
+                                Title = "Hello World",
+                                ISBN = testIsbn,
+                                Price = 23.99M
+                            });
+
+                            /* This is a valid insert. Nothing wrong with it but if any transaction within TransactionScope fails, 
+                             * we want to undo this transaction. */
+                            testContext.SaveChanges();
+                        }
+
+
+                        bulk.Setup<Book>()
+                            .ForObject(new Book()
+                            {
+                                BestSeller = true,
+                                Description = "I'm not a valid insert, therefore everything should rollback",
+                                Title = "Hello World",
+                                ISBN = testIsbn,
+                                Price = 23.99M
+                            })
+                            .WithTable("Books")
+                            .AddAllColumns()
+                            .Upsert()
+                            .SetIdentityColumn(x => x.Id, ColumnDirection.InputOutput)
+                            //.MatchTargetOn(x => x.Id) This will throw an exception (intentionally). MatchTargetOn can't be null. 
+                            .Commit(conn);
+                    }
+
+                    // We will never reach this statement.
+                    tx.Complete();
+                }
+
+            }
+
+            catch (NullReferenceException e)
+            {
+                Assert.AreEqual("MatchTargetOn column name can't be null.", e.Message);
+                Assert.IsNull(_db.Books.SingleOrDefault(x => x.ISBN == testIsbn));
+            }
+            
         }
     }
 }

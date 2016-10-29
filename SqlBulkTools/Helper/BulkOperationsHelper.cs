@@ -615,26 +615,6 @@ namespace SqlBulkTools
             }
         }
 
-        internal static SqlConnection GetSqlConnection(string connectionName, SqlCredential credentials, SqlConnection connection)
-        {
-            SqlConnection conn = null;
-
-            if (connection != null)
-            {
-                conn = connection;
-                return conn;
-            }
-
-            if (connectionName != null)
-            {
-                conn = new SqlConnection(ConfigurationManager
-                    .ConnectionStrings[connectionName].ConnectionString, credentials);
-                return conn;
-            }
-
-            throw new SqlBulkToolsException("Could not create SQL connection. Please check your arguments into CommitTransaction");
-        }
-
         internal static string GetFullQualifyingTableName(string databaseName, string schemaName, string tableName)
         {
             StringBuilder sb = new StringBuilder();

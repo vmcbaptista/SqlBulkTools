@@ -14,7 +14,7 @@ namespace SqlBulkTools
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class UpsertQueryReady<T> : ITransaction
+    public class SimpleUpsertQueryReady<T> : ITransaction
     {
         private readonly T _singleEntity;
         private readonly string _tableName;
@@ -36,7 +36,7 @@ namespace SqlBulkTools
         /// <param name="columns"></param>
         /// <param name="customColumnMappings"></param>
         /// <param name="sqlTimeout"></param>
-        public UpsertQueryReady(T singleEntity, string tableName, string schema, HashSet<string> columns, Dictionary<string, string> customColumnMappings, 
+        public SimpleUpsertQueryReady(T singleEntity, string tableName, string schema, HashSet<string> columns, Dictionary<string, string> customColumnMappings, 
             int sqlTimeout, List<SqlParameter> sqlParams)
         {
             _singleEntity = singleEntity;
@@ -55,7 +55,7 @@ namespace SqlBulkTools
         /// </summary>
         /// <param name="columnName"></param>
         /// <returns></returns>
-        public UpsertQueryReady<T> SetIdentityColumn(Expression<Func<T, object>> columnName, ColumnDirection outputIdentity)
+        public SimpleUpsertQueryReady<T> SetIdentityColumn(Expression<Func<T, object>> columnName, ColumnDirection outputIdentity)
         {
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
             _outputIdentity = outputIdentity;
@@ -79,7 +79,7 @@ namespace SqlBulkTools
         /// </summary>
         /// <param name="columnName"></param>
         /// <returns></returns>
-        public UpsertQueryReady<T> SetIdentityColumn(Expression<Func<T, object>> columnName)
+        public SimpleUpsertQueryReady<T> SetIdentityColumn(Expression<Func<T, object>> columnName)
         {
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
 
@@ -104,7 +104,7 @@ namespace SqlBulkTools
         /// </summary>
         /// <param name="columnName"></param>
         /// <returns></returns>
-        public UpsertQueryReady<T> MatchTargetOn(Expression<Func<T, object>> columnName)
+        public SimpleUpsertQueryReady<T> MatchTargetOn(Expression<Func<T, object>> columnName)
         {
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
 

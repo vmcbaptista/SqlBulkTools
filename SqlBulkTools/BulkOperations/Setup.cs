@@ -60,36 +60,12 @@ namespace SqlBulkTools
             _databaseIdentifier = Guid.NewGuid().ToString();
         }
 
-        /// <summary>
-        /// Use this option for simple updates or deletes where you are only dealing with a single table 
-        /// and conditions are not complex. For anything more advanced, use a stored procedure.  
-        /// </summary>
-        /// <param name="entity"></param>
-        /// <returns></returns>
-        public UpdateQueryObject<T> ForSimpleUpdateQuery(T entity)
-        {
-            return new UpdateQueryObject<T>(entity, _ext, _sqlParams);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="entity"></param>
-        /// <returns></returns>
-        public InsertQueryObject<T> ForSimpleInsertQuery(T entity)
-        {
-            return new InsertQueryObject<T>(entity, _concatTrans, _databaseIdentifier, _sqlParams, _transactionCount);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="entity"></param>
-        /// <returns></returns>
-        public UpsertQueryObject<T> ForSimpleUpsertQuery(T entity)
-        {
-            return new UpsertQueryObject<T>(entity, _sqlParams);
-        }
+        ///// <summary>
+        ///// Use this option for simple updates or deletes where you are only dealing with a single table 
+        ///// and conditions are not complex. For anything more advanced, use a stored procedure.  
+        ///// </summary>
+        ///// <param name="entity"></param>
+        ///// <returns></returns>
 
         /// <summary>
         /// 
@@ -110,9 +86,9 @@ namespace SqlBulkTools
             return new BulkForCollection<T>(list);
         }
 
-        public SimpleForObject<T> ForObject(T entity)
+        public SimpleQueryForObject<T> ForObject(T entity)
         {
-            return new SimpleForObject<T>(entity, _sqlParams);
+            return new SimpleQueryForObject<T>(entity, _sqlParams);
         }
        
     }
