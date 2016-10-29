@@ -48,7 +48,7 @@ namespace SqlBulkTools
 
 
         /// <summary>
-        /// 
+        /// Specify an additional condition to match on.
         /// </summary>
         /// <param name="expression"></param>
         /// <returns></returns>
@@ -62,7 +62,7 @@ namespace SqlBulkTools
         }
 
         /// <summary>
-        /// 
+        /// Specify an additional condition to match on.
         /// </summary>
         /// <param name="expression"></param>
         /// <returns></returns>

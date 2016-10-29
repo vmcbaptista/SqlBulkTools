@@ -36,6 +36,7 @@ namespace SqlBulkTools
         }
 
         /// <summary>
+        /// Specify a condition.
         /// </summary>
         /// <param name="expression"></param>
         /// <returns></returns>

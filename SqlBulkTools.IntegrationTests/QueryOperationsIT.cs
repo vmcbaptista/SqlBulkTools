@@ -13,6 +13,7 @@ using TestContext = SqlBulkTools.IntegrationTests.Data.TestContext;
 namespace SqlBulkTools.IntegrationTests
 {
     [TestFixture]
+    // ReSharper disable once InconsistentNaming
     class QueryOperationsIT
     {
 
@@ -297,12 +298,9 @@ namespace SqlBulkTools.IntegrationTests
                 col.Add(new SchemaTest2() { ColumnA = "ColumnA " + i });
             }
 
-            List<Book> books = _randomizer.GetRandomCollection(30);
-
             using (TransactionScope trans = new TransactionScope())
             {
-                using (SqlConnection conn = new SqlConnection(ConfigurationManager
-                    .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+                using (SqlConnection conn = BulkOperationsUtility.GetSqlConnection("SqlBulkToolsTest"))
                 {
                     bulk.Setup<SchemaTest2>()
                         .ForCollection(col)

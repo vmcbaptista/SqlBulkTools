@@ -297,8 +297,6 @@ namespace SqlBulkTools.IntegrationTests
                 col.Add(new SchemaTest2() { ColumnA = "ColumnA " + i });
             }
 
-            List<Book> books = _randomizer.GetRandomCollection(30);
-
             using (TransactionScope trans = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 using (SqlConnection conn = new SqlConnection(ConfigurationManager
