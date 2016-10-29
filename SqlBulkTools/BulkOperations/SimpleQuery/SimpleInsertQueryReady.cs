@@ -138,7 +138,7 @@ namespace SqlBulkTools
                 sb.Append($"{BulkOperationsHelper.BuildInsertIntoSet(_columns, _identityColumn, fullQualifiedTableName)} " +
                               $"VALUES{BulkOperationsHelper.BuildValueSet(_columns, _identityColumn)} ");
 
-                if (_outputIdentity == ColumnDirection.InputOutput)
+                if (_outputIdentity == ColumnDirection.Output)
                 {
                     sb.Append($"SET @{_identityColumn}=SCOPE_IDENTITY();");
                 }
@@ -154,7 +154,7 @@ namespace SqlBulkTools
 
                 affectedRows = command.ExecuteNonQuery();
 
-                if (_outputIdentity == ColumnDirection.InputOutput)
+                if (_outputIdentity == ColumnDirection.Output)
                 {
                     foreach (var x in _sqlParams)
                     {
@@ -222,7 +222,7 @@ namespace SqlBulkTools
                 sb.Append($"{BulkOperationsHelper.BuildInsertIntoSet(_columns, _identityColumn, fullQualifiedTableName)} " +
                               $"VALUES{BulkOperationsHelper.BuildValueSet(_columns, _identityColumn)} ");
 
-                if (_outputIdentity == ColumnDirection.InputOutput)
+                if (_outputIdentity == ColumnDirection.Output)
                 {
                     sb.Append($"SET @{_identityColumn}=SCOPE_IDENTITY();");
                 }
@@ -236,7 +236,7 @@ namespace SqlBulkTools
 
                 affectedRows = await command.ExecuteNonQueryAsync();
 
-                if (_outputIdentity == ColumnDirection.InputOutput)
+                if (_outputIdentity == ColumnDirection.Output)
                 {
                     foreach (var x in _sqlParams)
                     {

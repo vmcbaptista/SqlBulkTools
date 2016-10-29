@@ -1,6 +1,4 @@
-﻿using System.Data.SqlClient;
-
-// ReSharper disable once CheckNamespace
+﻿// ReSharper disable once CheckNamespace
 namespace SqlBulkTools
 {
     /// <summary>
@@ -8,19 +6,6 @@ namespace SqlBulkTools
     /// </summary>
     public class BulkOperations
     {
-        private ITransaction _sqlBulkToolsTransaction;
-        private SqlTransaction _sqlTransaction;
-
-        internal void SetBulkExt(ITransaction sqlBulkToolsTransaction)
-        {
-            _sqlBulkToolsTransaction = sqlBulkToolsTransaction;
-        }
-
-        internal void SetTransaction(SqlTransaction sqlTransaction)
-        {
-            _sqlTransaction = sqlTransaction;
-        }
-
         /// <summary>
         /// Each transaction requires a valid setup. Examples available at: https://github.com/gtaylor44/SqlBulkTools 
         /// </summary>
@@ -40,5 +25,4 @@ namespace SqlBulkTools
             return new Setup(this);
         }
     }
-
 }

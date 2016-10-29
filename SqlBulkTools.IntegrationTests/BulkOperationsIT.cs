@@ -230,7 +230,7 @@ namespace SqlBulkTools.IntegrationTests
                     .WithTable("Books")
                     .AddAllColumns()
                     .BulkInsert()
-                    .SetIdentityColumn(x => x.Id, ColumnDirection.InputOutput)
+                    .SetIdentityColumn(x => x.Id, ColumnDirection.Output)
                     .Commit(conn);
 
 
@@ -629,7 +629,7 @@ namespace SqlBulkTools.IntegrationTests
                         .BulkInsertOrUpdate()
                         .MatchTargetOn(x => x.ISBN)
                         .SetIdentityColumn(x => x.Id, ColumnDirection
-                        .InputOutput).Commit(conn);
+                        .Output).Commit(conn);
                 }
 
                 trans.Complete();
@@ -665,7 +665,7 @@ namespace SqlBulkTools.IntegrationTests
                         .AddColumn(x => x.Price)
                         .BulkInsertOrUpdate()
                         .MatchTargetOn(x => x.ISBN)
-                        .SetIdentityColumn(x => x.Id, ColumnDirection.InputOutput)
+                        .SetIdentityColumn(x => x.Id, ColumnDirection.Output)
                         .Commit(conn);
                 }
 
@@ -701,7 +701,7 @@ namespace SqlBulkTools.IntegrationTests
                         .WithTable("Books")
                         .AddAllColumns()
                         .BulkInsert()
-                        .SetIdentityColumn(x => x.Id, ColumnDirection.InputOutput)
+                        .SetIdentityColumn(x => x.Id, ColumnDirection.Output)
                         .Commit(conn);
 
                 }
@@ -743,7 +743,7 @@ namespace SqlBulkTools.IntegrationTests
                         .AddColumn(x => x.PublishDate)
                         .TmpDisableAllNonClusteredIndexes()
                         .BulkInsert()
-                        .SetIdentityColumn(x => x.Id, ColumnDirection.InputOutput)
+                        .SetIdentityColumn(x => x.Id, ColumnDirection.Output)
                         .Commit(conn);
 
                 }
@@ -793,7 +793,7 @@ namespace SqlBulkTools.IntegrationTests
                         .AddColumn(x => x.ISBN)
                         .BulkDelete()
                         .MatchTargetOn(x => x.ISBN)
-                        .SetIdentityColumn(x => x.Id, ColumnDirection.InputOutput)
+                        .SetIdentityColumn(x => x.Id, ColumnDirection.Output)
                         .Commit(conn);
                 }
 
@@ -830,7 +830,7 @@ namespace SqlBulkTools.IntegrationTests
                         .AddColumn(x => x.Price)
                         .BulkUpdate()
                         .MatchTargetOn(x => x.ISBN)
-                        .SetIdentityColumn(x => x.Id, ColumnDirection.InputOutput)
+                        .SetIdentityColumn(x => x.Id, ColumnDirection.Output)
                         .Commit(conn);
                 }
 
@@ -935,7 +935,7 @@ namespace SqlBulkTools.IntegrationTests
                             .AddColumn(x => x.ISBN)
                             .AddColumn(x => x.Price)
                             .BulkInsert()
-                            .SetIdentityColumn(x => x.Id, ColumnDirection.InputOutput)
+                            .SetIdentityColumn(x => x.Id, ColumnDirection.Output)
                             .Commit(conn),
                         "No setter method available on property 'Id'. Could not write output back to property.");
                 }
@@ -977,7 +977,7 @@ namespace SqlBulkTools.IntegrationTests
                             .AddColumn(x => x.Price)
                             .BulkInsertOrUpdate()
                             .MatchTargetOn(x => x.ISBN)
-                            .SetIdentityColumn(x => x.Id, ColumnDirection.InputOutput)
+                            .SetIdentityColumn(x => x.Id, ColumnDirection.Output)
                             .Commit(conn),
                         "No setter method available on property 'Id'. Could not write output back to property.");
                 }

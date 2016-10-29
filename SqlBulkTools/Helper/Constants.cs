@@ -24,7 +24,7 @@ namespace SqlBulkTools
 #pragma warning disable 1591
     public enum ColumnDirection
     {        
-        Input, InputOutput       
+        Input, Output       
     }
     
 

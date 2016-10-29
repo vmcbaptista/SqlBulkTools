@@ -446,7 +446,7 @@ namespace SqlBulkTools.IntegrationTests
                         .AddColumn(x => x.Description)
                         .AddColumn(x => x.Price)
                         .Insert()
-                        .SetIdentityColumn(x => x.Id, ColumnDirection.InputOutput)
+                        .SetIdentityColumn(x => x.Id, ColumnDirection.Output)
                         .CommitAsync(conn);
                 }
 
@@ -516,7 +516,7 @@ namespace SqlBulkTools.IntegrationTests
                     .WithTable("Books")
                     .AddAllColumns()
                     .Upsert()
-                    .SetIdentityColumn(x => x.Id, ColumnDirection.InputOutput)
+                    .SetIdentityColumn(x => x.Id, ColumnDirection.Output)
                     .MatchTargetOn(x => x.Id)
                     .CommitAsync(con);
                 }
@@ -555,7 +555,7 @@ namespace SqlBulkTools.IntegrationTests
                         .WithTable("Books")
                         .AddAllColumns()
                         .Insert()
-                        .SetIdentityColumn(x => x.Id, ColumnDirection.InputOutput)
+                        .SetIdentityColumn(x => x.Id, ColumnDirection.Output)
                         .CommitAsync(con);
 
                     await bulk.Setup<Book>()

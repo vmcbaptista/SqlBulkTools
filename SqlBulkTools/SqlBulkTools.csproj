@@ -78,7 +78,6 @@
     <Compile Include="Helper\Constants.cs" />
     <Compile Include="DataTableOperations\DataTableColumns.cs" />
     <Compile Include="DataTableOperations\IDataTableOperations.cs" />
-    <Compile Include="BulkOperations\IBulkOperations.cs" />
     <Compile Include="DataTableOperations\IDataTableTransaction.cs" />
     <Compile Include="Exception\IdentityException.cs" />
     <Compile Include="BulkOperations\ITransaction.cs" />

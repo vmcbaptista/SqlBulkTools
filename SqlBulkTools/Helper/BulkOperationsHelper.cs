@@ -90,7 +90,7 @@ namespace SqlBulkTools
 
             command.Append(paramListConcatenated);
 
-            if (outputIdentity == ColumnDirection.InputOutput)
+            if (outputIdentity == ColumnDirection.Output)
             {
                 command.Append(", [" + Constants.InternalId + "] int");
             }
@@ -458,7 +458,7 @@ namespace SqlBulkTools
                 columns = CheckForAdditionalColumns(columns, matchOnColumns);
             }
 
-            if (outputIdentity.HasValue && outputIdentity.Value == ColumnDirection.InputOutput)
+            if (outputIdentity.HasValue && outputIdentity.Value == ColumnDirection.Output)
             {
                 columns.Add(Constants.InternalId);
             }
@@ -555,7 +555,7 @@ namespace SqlBulkTools
                         else
                             param.Value = propValue;
                        
-                        if (column == identityColumn && direction == ColumnDirection.InputOutput)
+                        if (column == identityColumn && direction == ColumnDirection.Output)
                             param.Direction = ParameterDirection.Output;
 
                         sqlParameters.Add(param);
@@ -775,7 +775,7 @@ namespace SqlBulkTools
         {
 
             StringBuilder sb = new StringBuilder();
-            if (identityColumn == null || outputIdentity != ColumnDirection.InputOutput)
+            if (identityColumn == null || outputIdentity != ColumnDirection.Output)
             {
                 return null;
             }
@@ -797,10 +797,10 @@ namespace SqlBulkTools
         {
 
             if (operation == OperationType.Insert)
-                return (outputIdentity == ColumnDirection.InputOutput ? "CREATE TABLE " + tmpTablename + "(" + "[" + identityColumn + "] int); " : "");
+                return (outputIdentity == ColumnDirection.Output ? "CREATE TABLE " + tmpTablename + "(" + "[" + identityColumn + "] int); " : "");
 
             else if (operation == OperationType.InsertOrUpdate || operation == OperationType.Update || operation == OperationType.Delete)
-                return (outputIdentity == ColumnDirection.InputOutput ? "CREATE TABLE " + tmpTablename + "("
+                return (outputIdentity == ColumnDirection.Output ? "CREATE TABLE " + tmpTablename + "("
                     + "[" + Constants.InternalId + "]" + " int, [" + identityColumn + "] int); " : "");
 
             return string.Empty;

@@ -96,7 +96,7 @@ namespace SqlBulkTools
 
 
             DataTable dtCols = null;
-            if (_outputIdentity == ColumnDirection.InputOutput)
+            if (_outputIdentity == ColumnDirection.Output)
                 dtCols = BulkOperationsHelper.GetDatabaseSchema(connection, _schema, _tableName);
 
             //Bulk insert into temp table
@@ -119,7 +119,7 @@ namespace SqlBulkTools
                 }
 
                 // If InputOutput identity is selected, must use staging table.
-                if (_outputIdentity == ColumnDirection.InputOutput && dtCols != null)
+                if (_outputIdentity == ColumnDirection.Output && dtCols != null)
                 {
                     command.CommandText = BulkOperationsHelper.BuildCreateTempTable(_columns, dtCols, _outputIdentity);
                     command.ExecuteNonQuery();
@@ -181,7 +181,7 @@ namespace SqlBulkTools
 
 
             DataTable dtCols = null;
-            if (_outputIdentity == ColumnDirection.InputOutput)
+            if (_outputIdentity == ColumnDirection.Output)
                 dtCols = BulkOperationsHelper.GetDatabaseSchema(connection, _schema, _tableName);
 
             //Bulk insert into temp table
@@ -204,7 +204,7 @@ namespace SqlBulkTools
                 }
 
                 // If InputOutput identity is selected, must use staging table.
-                if (_outputIdentity == ColumnDirection.InputOutput && dtCols != null)
+                if (_outputIdentity == ColumnDirection.Output && dtCols != null)
                 {
                     command.CommandText = BulkOperationsHelper.BuildCreateTempTable(_columns, dtCols, _outputIdentity);
                     await command.ExecuteNonQueryAsync();
