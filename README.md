@@ -49,7 +49,7 @@ public class Book {
 ####Note
 ---------------
 You may need to update your references to include System.Transactions for TransactionScope as 
-System.transactions is not included by default.
+it's is not included by default.
 
 
 ###BulkInsert
