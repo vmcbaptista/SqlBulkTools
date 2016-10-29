@@ -28,10 +28,7 @@ namespace SqlBulkTools
         /// <param name="columns"></param>
         /// <param name="schema"></param>
         /// <param name="sqlTimeout"></param>
-        /// <param name="concatTrans"></param>
-        /// <param name="databaseIdentifier"></param>
         /// <param name="sqlParams"></param>
-        /// <param name="transactionCount"></param>
         public SimpleQueryAddColumn(T singleEntity, string tableName, HashSet<string> columns, string schema,
             int sqlTimeout, List<SqlParameter> sqlParams)
         {
@@ -81,9 +78,9 @@ namespace SqlBulkTools
         /// 
         /// </summary>
         /// <returns></returns>
-        public UpdateQuery<T> Update()
+        public SimpleUpdateQueryCondition<T> Update()
         {
-            return new UpdateQuery<T>(_singleEntity, _tableName, _schema, _columns, _customColumnMappings,
+            return new SimpleUpdateQueryCondition<T>(_singleEntity, _tableName, _schema, _columns, _customColumnMappings,
                 _sqlTimeout, _sqlParams);
         }
 

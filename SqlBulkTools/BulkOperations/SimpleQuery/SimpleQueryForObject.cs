@@ -7,6 +7,10 @@ using System.Threading.Tasks;
 
 namespace SqlBulkTools
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class SimpleQueryForObject<T>
     {
         private readonly T _entity;

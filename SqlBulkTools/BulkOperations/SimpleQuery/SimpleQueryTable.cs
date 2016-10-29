@@ -20,15 +20,14 @@ namespace SqlBulkTools
         private readonly string _tableName;
         private Dictionary<string, string> CustomColumnMappings { get; set; }
         private int _sqlTimeout;
-        private List<SqlParameter> _sqlParams;
+        private readonly List<SqlParameter> _sqlParams;
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="singleEntity"></param>
         /// <param name="tableName"></param>
-        /// <param name="ext"></param>
-        /// <param name="transactionCount"></param>
+        /// <param name="sqlParams"></param>
         public SimpleQueryTable(T singleEntity, string tableName, List<SqlParameter> sqlParams)
         {
             _singleEntity = singleEntity;
@@ -56,11 +55,10 @@ namespace SqlBulkTools
                 _sqlTimeout, _sqlParams);
         }
 
+
         /// <summary>
-        /// Add each column that you want to include in the query. Only include the columns that are relevant to the 
-        /// procedure for best performance. 
+        /// 
         /// </summary>
-        /// <param name="columnName">Column name as represented in database</param>
         /// <returns></returns>
         public SimpleQueryAddColumnList<T> AddAllColumns()
         {
@@ -74,9 +72,9 @@ namespace SqlBulkTools
         /// 
         /// </summary>
         /// <returns></returns>
-        public DeleteQuery<T> Delete()
+        public SimpleDeleteQueryCondition<T> Delete()
         {
-            return new DeleteQuery<T>(_tableName, _schema, _sqlTimeout);
+            return new SimpleDeleteQueryCondition<T>(_tableName, _schema, _sqlTimeout);
         } 
 
         /// <summary>

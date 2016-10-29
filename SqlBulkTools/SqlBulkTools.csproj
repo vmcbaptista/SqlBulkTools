@@ -49,16 +49,16 @@
   <ItemGroup>
     <Compile Include="BulkOperations\BulkCopy\AbstractColumnSelection.cs" />
     <Compile Include="BulkOperations\BulkCopy\AbstractOperation.cs" />
-    <Compile Include="BulkOperations\SimpleQuery\Delete\DeleteQuery.cs" />
-    <Compile Include="BulkOperations\SimpleQuery\Delete\DeleteQueryReady.cs" />
-    <Compile Include="BulkOperations\SimpleQuery\Delete\DeleteQueryTable.cs" />
-    <Compile Include="BulkOperations\SimpleQuery\Delete\DeleteQueryObject.cs" />
+    <Compile Include="BulkOperations\SimpleQuery\Delete\SimpleDeleteQueryCondition.cs" />
+    <Compile Include="BulkOperations\SimpleQuery\Delete\SimpleDeleteQueryReady.cs" />
+    <Compile Include="BulkOperations\SimpleQuery\Delete\SimpleDeleteQueryTable.cs" />
+    <Compile Include="BulkOperations\SimpleQuery\Delete\SimpleDeleteQuery.cs" />
     <Compile Include="BulkOperations\SimpleQuery\SimpleInsertQueryReady.cs" />
     <Compile Include="BulkOperations\SimpleQuery\SimpleQueryAddColumnList.cs" />
     <Compile Include="BulkOperations\SimpleQuery\SimpleQueryForObject.cs" />
     <Compile Include="BulkOperations\SimpleQuery\SimpleQueryTable.cs" />
-    <Compile Include="BulkOperations\SimpleQuery\Update\UpdateQueryReady.cs" />
-    <Compile Include="BulkOperations\SimpleQuery\Update\UpdateQuery.cs" />
+    <Compile Include="BulkOperations\SimpleQuery\SimpleUpdateQueryReady.cs" />
+    <Compile Include="BulkOperations\SimpleQuery\SimpleUpdateQueryCondition.cs" />
     <Compile Include="BulkOperations\SimpleQuery\SimpleQueryAddColumn.cs" />
     <Compile Include="BulkOperations\SimpleQuery\SimpleUpsertQueryReady.cs" />
     <Compile Include="Helper\Condition.cs" />

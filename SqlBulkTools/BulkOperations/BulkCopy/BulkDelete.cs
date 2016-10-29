@@ -99,6 +99,12 @@ namespace SqlBulkTools
             return this;
         }
 
+        /// <summary>
+        /// Commits a transaction to database. A valid setup must exist for the operation to be 
+        /// successful.
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <returns></returns>
         public int Commit(SqlConnection connection)
         {
             int affectedRecords = 0;
@@ -184,7 +190,12 @@ namespace SqlBulkTools
 
         }
 
-
+        /// <summary>
+        /// Commits a transaction to database asynchronously. A valid setup must exist for the operation to be 
+        /// successful.
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <returns></returns>
         public async Task<int> CommitAsync(SqlConnection connection)
         {
             int affectedRecords = 0;

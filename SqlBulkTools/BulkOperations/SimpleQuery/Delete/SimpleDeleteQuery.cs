@@ -4,7 +4,7 @@
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class DeleteQueryObject<T>
+    public class SimpleDeleteQuery<T>
     {
 
         /// <summary>
@@ -12,9 +12,9 @@
         /// </summary>
         /// <param name="tableName">Name of the table.</param>
         /// <returns></returns>
-        public DeleteQueryTable<T> WithTable(string tableName)
+        public SimpleDeleteQueryTable<T> WithTable(string tableName)
         {
-            return new DeleteQueryTable<T>(tableName);
+            return new SimpleDeleteQueryTable<T>(tableName);
         }
     }
 }

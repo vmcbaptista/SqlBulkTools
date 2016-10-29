@@ -41,23 +41,14 @@ namespace SqlBulkTools
     /// <typeparam name="T"></typeparam>
     public class Setup<T>
     {
-        private readonly BulkOperations _ext;
-        private List<string> _concatTrans;
-        private string _databaseIdentifier;
-        private List<SqlParameter> _sqlParams;
-        private int _transactionCount;
+        private readonly List<SqlParameter> _sqlParams;
         /// <summary>
         /// 
         /// </summary>
         /// <param name="ext"></param>
         public Setup(BulkOperations ext)
         {
-            _ext = ext;
-            _concatTrans = new List<string>();
             _sqlParams = new List<SqlParameter>();
-            _transactionCount = 1;
-            // When we commit transaction, this will be replaced with the actual database name. 
-            _databaseIdentifier = Guid.NewGuid().ToString();
         }
 
         ///// <summary>
@@ -71,9 +62,9 @@ namespace SqlBulkTools
         /// 
         /// </summary>
         /// <returns></returns>
-        public DeleteQueryObject<T> ForSimpleDeleteQuery()
+        public SimpleDeleteQuery<T> ForSimpleDeleteQuery()
         {
-            return new DeleteQueryObject<T>();
+            return new SimpleDeleteQuery<T>();
         }
 
         /// <summary>
@@ -86,6 +77,11 @@ namespace SqlBulkTools
             return new BulkForCollection<T>(list);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <returns></returns>
         public SimpleQueryForObject<T> ForObject(T entity)
         {
             return new SimpleQueryForObject<T>(entity, _sqlParams);

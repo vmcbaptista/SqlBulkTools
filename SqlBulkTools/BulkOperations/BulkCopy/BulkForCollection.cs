@@ -16,7 +16,6 @@ namespace SqlBulkTools
         /// 
         /// </summary>
         /// <param name="list"></param>
-        /// <param name="ext"></param>
         public BulkForCollection(IEnumerable<T> list)
         {
             _list = list;

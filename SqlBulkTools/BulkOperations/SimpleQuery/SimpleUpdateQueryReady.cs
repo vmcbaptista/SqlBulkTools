@@ -14,7 +14,7 @@ namespace SqlBulkTools
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class UpdateQueryReady<T> : ITransaction
+    public class SimpleUpdateQueryReady<T> : ITransaction
     {
         private readonly T _singleEntity;
         private readonly string _tableName;
@@ -22,7 +22,6 @@ namespace SqlBulkTools
         private readonly HashSet<string> _columns;
         private readonly Dictionary<string, string> _customColumnMappings;
         private readonly int _sqlTimeout;
-        private readonly BulkOperations _ext;
         private readonly List<Condition> _whereConditions;
         private readonly List<Condition> _andConditions;
         private readonly List<Condition> _orConditions;
@@ -41,7 +40,8 @@ namespace SqlBulkTools
         /// <param name="sqlTimeout"></param>
         /// <param name="conditionSortOrder"></param>
         /// <param name="whereConditions"></param>
-        public UpdateQueryReady(T singleEntity, string tableName, string schema, HashSet<string> columns, Dictionary<string, string> customColumnMappings,
+        /// <param name="sqlParams"></param>
+        public SimpleUpdateQueryReady(T singleEntity, string tableName, string schema, HashSet<string> columns, Dictionary<string, string> customColumnMappings,
             int sqlTimeout, int conditionSortOrder, List<Condition> whereConditions, List<SqlParameter> sqlParams)
         {
             _singleEntity = singleEntity;
@@ -63,7 +63,7 @@ namespace SqlBulkTools
         /// </summary>
         /// <param name="columnName"></param>
         /// <returns></returns>
-        public UpdateQueryReady<T> SetIdentityColumn(Expression<Func<T, object>> columnName)
+        public SimpleUpdateQueryReady<T> SetIdentityColumn(Expression<Func<T, object>> columnName)
         {
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
 
@@ -88,7 +88,7 @@ namespace SqlBulkTools
         /// <param name="expression"></param>
         /// <returns></returns>
         /// <exception cref="SqlBulkToolsException"></exception>
-        public UpdateQueryReady<T> And(Expression<Func<T, bool>> expression)
+        public SimpleUpdateQueryReady<T> And(Expression<Func<T, bool>> expression)
         {
             BulkOperationsHelper.AddPredicate(expression, PredicateType.And, _andConditions, _sqlParams, _conditionSortOrder, appendParam: Constants.UniqueParamIdentifier);
             _conditionSortOrder++;
@@ -101,7 +101,7 @@ namespace SqlBulkTools
         /// <param name="expression"></param>
         /// <returns></returns>
         /// <exception cref="SqlBulkToolsException"></exception>
-        public UpdateQueryReady<T> Or(Expression<Func<T, bool>> expression)
+        public SimpleUpdateQueryReady<T> Or(Expression<Func<T, bool>> expression)
         {
             BulkOperationsHelper.AddPredicate(expression, PredicateType.Or, _orConditions, _sqlParams, _conditionSortOrder, appendParam: Constants.UniqueParamIdentifier);
             _conditionSortOrder++;
@@ -109,7 +109,8 @@ namespace SqlBulkTools
         }
 
         /// <summary>
-        /// 
+        /// Commits a transaction to database. A valid setup must exist for the operation to be 
+        /// successful.
         /// </summary>
         /// <param name="connection"></param>
         /// <returns></returns>
@@ -153,6 +154,12 @@ namespace SqlBulkTools
             return affectedRows;
         }
 
+        /// <summary>
+        /// Commits a transaction to database asynchronously. A valid setup must exist for the operation to be 
+        /// successful.
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <returns></returns>
         public async Task<int> CommitAsync(SqlConnection connection)
         {
             int affectedRows = 0;

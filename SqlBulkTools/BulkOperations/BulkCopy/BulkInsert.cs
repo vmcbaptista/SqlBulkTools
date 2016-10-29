@@ -69,7 +69,8 @@ namespace SqlBulkTools
         }
 
         /// <summary>
-        /// 
+        /// Commits a transaction to database. A valid setup must exist for the operation to be 
+        /// successful.
         /// </summary>
         /// <param name="connection"></param>
         /// <returns></returns>
@@ -152,7 +153,8 @@ namespace SqlBulkTools
         }
 
         /// <summary>
-        /// 
+        /// Commits a transaction to database asynchronously. A valid setup must exist for the operation to be 
+        /// successful.
         /// </summary>
         /// <param name="connection"></param>
         /// <returns></returns>

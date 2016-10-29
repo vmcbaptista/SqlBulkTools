@@ -312,7 +312,6 @@ namespace SqlBulkTools
         /// Specificially for UpdateQuery and DeleteQuery
         /// </summary>
         /// <param name="columns"></param>
-        /// <param name="transactionCount"></param>
         /// <param name="identityColumn"></param>
         /// <returns></returns>
         internal static string BuildUpdateSet(HashSet<string> columns, string identityColumn)

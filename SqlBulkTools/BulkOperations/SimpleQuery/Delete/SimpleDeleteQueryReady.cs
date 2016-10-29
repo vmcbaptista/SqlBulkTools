@@ -13,7 +13,7 @@ namespace SqlBulkTools
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class DeleteQueryReady<T> : ITransaction
+    public class SimpleDeleteQueryReady<T> : ITransaction
     {
         private readonly string _tableName;
         private readonly string _schema;
@@ -30,11 +30,10 @@ namespace SqlBulkTools
         /// <param name="tableName"></param>
         /// <param name="schema"></param>
         /// <param name="sqlTimeout"></param>
-        /// <param name="ext"></param>
         /// <param name="conditionSortOrder"></param>
         /// <param name="whereConditions"></param>
         /// <param name="parameters"></param>
-        public DeleteQueryReady(string tableName, string schema,
+        public SimpleDeleteQueryReady(string tableName, string schema,
             int sqlTimeout, int conditionSortOrder, List<Condition> whereConditions, List<SqlParameter> parameters)
         {
             _tableName = tableName;
@@ -54,7 +53,7 @@ namespace SqlBulkTools
         /// <param name="expression"></param>
         /// <returns></returns>
         /// <exception cref="SqlBulkToolsException"></exception>
-        public DeleteQueryReady<T> And(Expression<Func<T, bool>> expression)
+        public SimpleDeleteQueryReady<T> And(Expression<Func<T, bool>> expression)
         {
             BulkOperationsHelper.AddPredicate(expression, PredicateType.And, _andConditions, _parameters,
                 _conditionSortOrder, appendParam: Constants.UniqueParamIdentifier);
@@ -68,7 +67,7 @@ namespace SqlBulkTools
         /// <param name="expression"></param>
         /// <returns></returns>
         /// <exception cref="SqlBulkToolsException"></exception>
-        public DeleteQueryReady<T> Or(Expression<Func<T, bool>> expression)
+        public SimpleDeleteQueryReady<T> Or(Expression<Func<T, bool>> expression)
         {
             BulkOperationsHelper.AddPredicate(expression, PredicateType.Or, _orConditions, _parameters,
                 _conditionSortOrder, appendParam: Constants.UniqueParamIdentifier);
@@ -77,7 +76,8 @@ namespace SqlBulkTools
         }
 
         /// <summary>
-        /// 
+        /// Commits a transaction to database. A valid setup must exist for the operation to be 
+        /// successful.
         /// </summary>
         /// <param name="connection"></param>
         /// <returns></returns>
@@ -111,7 +111,8 @@ namespace SqlBulkTools
         }
 
         /// <summary>
-        /// 
+        /// Commits a transaction to database asynchronously. A valid setup must exist for the operation to be 
+        /// successful.
         /// </summary>
         /// <param name="connection"></param>
         /// <returns></returns>

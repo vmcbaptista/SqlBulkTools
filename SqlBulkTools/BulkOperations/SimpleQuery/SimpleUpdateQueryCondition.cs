@@ -13,7 +13,7 @@ namespace SqlBulkTools
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class UpdateQuery<T>
+    public class SimpleUpdateQueryCondition<T>
     {
         private readonly T _singleEntity;
         private readonly string _tableName;
@@ -34,8 +34,8 @@ namespace SqlBulkTools
         /// <param name="columns"></param>
         /// <param name="customColumnMappings"></param>
         /// <param name="sqlTimeout"></param>
-        /// <param name="ext"></param>
-        public UpdateQuery(T singleEntity, string tableName, string schema, HashSet<string> columns, 
+        /// <param name="sqlParams"></param>
+        public SimpleUpdateQueryCondition(T singleEntity, string tableName, string schema, HashSet<string> columns, 
             Dictionary<string, string> customColumnMappings, int sqlTimeout, List<SqlParameter> sqlParams)
         {
             _singleEntity = singleEntity;
@@ -53,7 +53,7 @@ namespace SqlBulkTools
         /// </summary>
         /// <param name="expression"></param>
         /// <returns></returns>
-        public UpdateQueryReady<T> Where(Expression<Func<T, bool>> expression)
+        public SimpleUpdateQueryReady<T> Where(Expression<Func<T, bool>> expression)
         {
             // _whereConditions list will only ever contain one element.
             BulkOperationsHelper.AddPredicate(expression, PredicateType.Where, _whereConditions, _sqlParams, 
@@ -61,7 +61,7 @@ namespace SqlBulkTools
 
             _conditionSortOrder++;
 
-            return new UpdateQueryReady<T>(_singleEntity, _tableName, _schema, _columns, _customColumnMappings, 
+            return new SimpleUpdateQueryReady<T>(_singleEntity, _tableName, _schema, _columns, _customColumnMappings, 
                 _sqlTimeout, _conditionSortOrder, _whereConditions, _sqlParams);
         }
 

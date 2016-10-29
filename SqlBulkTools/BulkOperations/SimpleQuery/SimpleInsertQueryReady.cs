@@ -24,10 +24,9 @@ namespace SqlBulkTools
         private readonly HashSet<string> _columns;
         private readonly Dictionary<string, string> _customColumnMappings;
         private readonly int _sqlTimeout;
-        private int _conditionSortOrder;
         private string _identityColumn;
         private ColumnDirection _outputIdentity;
-        private List<SqlParameter> _sqlParams;
+        private readonly List<SqlParameter> _sqlParams;
 
 
         /// <summary>
@@ -39,7 +38,7 @@ namespace SqlBulkTools
         /// <param name="columns"></param>
         /// <param name="customColumnMappings"></param>
         /// <param name="sqlTimeout"></param>
-        /// <param name="ext"></param>
+        /// <param name="sqlParams"></param>
         public SimpleInsertQueryReady(T singleEntity, string tableName, string schema, HashSet<string> columns, Dictionary<string, string> customColumnMappings,
             int sqlTimeout, List<SqlParameter> sqlParams)
         {
@@ -50,6 +49,7 @@ namespace SqlBulkTools
             _customColumnMappings = customColumnMappings;
             _sqlParams = sqlParams;
             _outputIdentity = ColumnDirection.Input;
+            _sqlTimeout = sqlTimeout;
         }
 
         /// <summary>
@@ -106,7 +106,8 @@ namespace SqlBulkTools
         }
 
         /// <summary>
-        /// 
+        /// Commits a transaction to database. A valid setup must exist for the operation to be 
+        /// successful.
         /// </summary>
         /// <param name="connection"></param>
         /// <returns></returns>
@@ -189,7 +190,8 @@ namespace SqlBulkTools
         }
 
         /// <summary>
-        /// 
+        /// Commits a transaction to database asynchronously. A valid setup must exist for the operation to be 
+        /// successful.
         /// </summary>
         /// <param name="connection"></param>
         /// <returns></returns>

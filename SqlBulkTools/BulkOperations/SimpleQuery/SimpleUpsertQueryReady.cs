@@ -23,7 +23,7 @@ namespace SqlBulkTools
         private readonly Dictionary<string, string> _customColumnMappings;
         private readonly int _sqlTimeout;
         private string _identityColumn;
-        private List<SqlParameter> _sqlParams;
+        private readonly List<SqlParameter> _sqlParams;
         private string _matchTargetOn;
         private ColumnDirection _outputIdentity;
 
@@ -36,6 +36,7 @@ namespace SqlBulkTools
         /// <param name="columns"></param>
         /// <param name="customColumnMappings"></param>
         /// <param name="sqlTimeout"></param>
+        /// <param name="sqlParams"></param>
         public SimpleUpsertQueryReady(T singleEntity, string tableName, string schema, HashSet<string> columns, Dictionary<string, string> customColumnMappings, 
             int sqlTimeout, List<SqlParameter> sqlParams)
         {
@@ -54,6 +55,7 @@ namespace SqlBulkTools
         /// Sets the identity column for the table. 
         /// </summary>
         /// <param name="columnName"></param>
+        /// <param name="outputIdentity"></param>
         /// <returns></returns>
         public SimpleUpsertQueryReady<T> SetIdentityColumn(Expression<Func<T, object>> columnName, ColumnDirection outputIdentity)
         {
@@ -117,7 +119,8 @@ namespace SqlBulkTools
         }
 
         /// <summary>
-        /// 
+        /// Commits a transaction to database. A valid setup must exist for the operation to be 
+        /// successful.
         /// </summary>
         /// <param name="conn"></param>
         /// <returns></returns>
@@ -204,7 +207,8 @@ namespace SqlBulkTools
         }
 
         /// <summary>
-        /// 
+        /// Commits a transaction to database asynchronously. A valid setup must exist for the operation to be 
+        /// successful.
         /// </summary>
         /// <param name="conn"></param>
         /// <returns></returns>
