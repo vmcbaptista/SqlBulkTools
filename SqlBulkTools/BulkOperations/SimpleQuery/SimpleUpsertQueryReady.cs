@@ -24,7 +24,7 @@ namespace SqlBulkTools
         private readonly int _sqlTimeout;
         private string _identityColumn;
         private readonly List<SqlParameter> _sqlParams;
-        private string _matchTargetOn;
+        private HashSet<string> _matchTargetOnSet;
         private ColumnDirection _outputIdentity;
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace SqlBulkTools
             _customColumnMappings = customColumnMappings;
             _sqlTimeout = sqlTimeout;
             _sqlParams = sqlParams;
-            _matchTargetOn = null;
+            _matchTargetOnSet = new HashSet<string>();
             _outputIdentity = ColumnDirection.Input;
         }
 
@@ -113,7 +113,7 @@ namespace SqlBulkTools
             if (propertyName == null)
                 throw new NullReferenceException("MatchTargetOn column name can't be null.");
 
-            _matchTargetOn = propertyName;
+            _matchTargetOnSet.Add(propertyName);
 
             return this;
         }
@@ -134,8 +134,8 @@ namespace SqlBulkTools
                 return affectedRows;
             }
 
-            if (string.IsNullOrWhiteSpace(_matchTargetOn))
-                throw new NullReferenceException("MatchTargetOn column name can't be null.");
+            if (_matchTargetOnSet.Count == 0)
+                throw new NullReferenceException("MatchTargetOn is a mandatory for upsert operation");
 
                       
             try
@@ -153,7 +153,7 @@ namespace SqlBulkTools
                 string fullQualifiedTableName = BulkOperationsHelper.GetFullQualifyingTableName(conn.Database, _schema, _tableName);
                 StringBuilder sb = new StringBuilder();
 
-                sb.Append($"UPDATE {fullQualifiedTableName} {BulkOperationsHelper.BuildUpdateSet(_columns, _identityColumn)} WHERE [{_matchTargetOn}] = @{_matchTargetOn} " +
+                sb.Append($"UPDATE {fullQualifiedTableName} {BulkOperationsHelper.BuildUpdateSet(_columns, _identityColumn)} {BulkOperationsHelper.BuildMatchTargetOnList(_matchTargetOnSet)} " +
                   $"IF (@@ROWCOUNT = 0) BEGIN " +
                   $"{ BulkOperationsHelper.BuildInsertIntoSet(_columns, _identityColumn, fullQualifiedTableName)} " +
                   $"VALUES{BulkOperationsHelper.BuildValueSet(_columns, _identityColumn)} " +
@@ -222,8 +222,8 @@ namespace SqlBulkTools
                 return affectedRows;
             }
 
-            if (string.IsNullOrWhiteSpace(_matchTargetOn))
-                throw new NullReferenceException("MatchTargetOn column name can't be null.");
+            if (_matchTargetOnSet.Count == 0)
+                throw new NullReferenceException("MatchTargetOn is a mandatory for upsert operation");
 
             try
             {
@@ -240,7 +240,7 @@ namespace SqlBulkTools
                 string fullQualifiedTableName = BulkOperationsHelper.GetFullQualifyingTableName(conn.Database, _schema, _tableName);
                 StringBuilder sb = new StringBuilder();
 
-                sb.Append($"UPDATE {fullQualifiedTableName} {BulkOperationsHelper.BuildUpdateSet(_columns, _identityColumn)} WHERE [{_matchTargetOn}] = @{_matchTargetOn} " +
+                sb.Append($"UPDATE {fullQualifiedTableName} {BulkOperationsHelper.BuildUpdateSet(_columns, _identityColumn)} {BulkOperationsHelper.BuildMatchTargetOnList(_matchTargetOnSet)} " +
                   $"IF (@@ROWCOUNT = 0) BEGIN " +
                   $"{ BulkOperationsHelper.BuildInsertIntoSet(_columns, _identityColumn, fullQualifiedTableName)} " +
                   $"VALUES{BulkOperationsHelper.BuildValueSet(_columns, _identityColumn)} " +

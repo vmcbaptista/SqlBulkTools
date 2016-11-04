@@ -595,6 +595,32 @@ namespace SqlBulkTools.UnitTests
             Assert.AreEqual(3, sqlParams.Count);
         }
 
+        [Test]
+        public void BulkOperationsHelper_BuildMatchTargetOnListWithMultipleValues_ReturnsCorrectString()
+        {
+            // Arrange
+            var columns = GetTestColumns();
+
+            // ACt
+            var result = BulkOperationsHelper.BuildMatchTargetOnList(columns);
+
+            // Assert
+            Assert.AreEqual(result, "WHERE [id] = @id AND [Name] = @Name AND [Town] = @Town AND [Email] = @Email AND [IsCool] = @IsCool");
+        }
+
+        [Test]
+        public void BulkOperationsHelper_BuildMatchTargetOnListWithSingleValue_ReturnsCorrectString()
+        {
+            // Arrange
+            var columns = new HashSet<string>() {"id"};
+
+            // ACt
+            var result = BulkOperationsHelper.BuildMatchTargetOnList(columns);
+
+            // Assert
+            Assert.AreEqual(result, "WHERE [id] = @id");
+        }
+
         private HashSet<string> GetTestColumns()
         {
             HashSet<string> parameters = new HashSet<string>();

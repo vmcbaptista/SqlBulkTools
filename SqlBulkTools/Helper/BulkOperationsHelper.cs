@@ -168,6 +168,35 @@ namespace SqlBulkTools
             return command.ToString();
         }
 
+        internal static string BuildMatchTargetOnList(HashSet<string> matchTargetOnColumns)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append("WHERE ");
+
+            sb.Append("[");
+            sb.Append(matchTargetOnColumns.ElementAt(0));
+            sb.Append($"] = @{matchTargetOnColumns.ElementAt(0)}");
+
+            if (matchTargetOnColumns.Count() > 1)
+            {
+                foreach (var column in matchTargetOnColumns)
+                {
+                    if (column.Equals(matchTargetOnColumns.ElementAt(0)))
+                        continue;
+
+                    sb.Append(" AND ");
+                    sb.Append("[");
+                    sb.Append(column);
+                    sb.Append($"] = @{column}");
+                }
+            }
+
+
+
+            return sb.ToString();
+        }
+
         internal static string BuildPredicateQuery(string[] updateOn, IEnumerable<Condition> conditions, string targetAlias)
         {
             if (conditions == null)
