@@ -301,7 +301,7 @@ using (TransactionScope trans = new TransactionScope())
         .AddAllColumns()
         .Upsert()
         .SetIdentityColumn(x => x.Id, ColumnDirection.Output)
-        .MatchTargetOn(x => x.Id)
+        .MatchTargetOn(x => x.Id) // you can call MatchTargetOn for multiple columns if needed
         .Commit(con);
 	}
 

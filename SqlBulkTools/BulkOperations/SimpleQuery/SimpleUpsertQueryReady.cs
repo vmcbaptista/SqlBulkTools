@@ -115,6 +115,9 @@ namespace SqlBulkTools
 
             _matchTargetOnSet.Add(propertyName);
 
+            if (!_columns.Contains(propertyName))
+                _columns.Add(propertyName);
+
             return this;
         }
 
