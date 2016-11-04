@@ -68,7 +68,7 @@ using (TransactionScope trans = new TransactionScope())
             .WithTable("Books")
             .AddAllColumns()
             .BulkInsert()
-            .SetIdentityColumn(x => x.Id, ColumnDirection.Output)
+            .SetIdentityColumn(x => x.Id, ColumnDirection.InputOutput)
             .Commit(conn); 
     }
 
@@ -300,7 +300,7 @@ using (TransactionScope trans = new TransactionScope())
         .WithTable("Books")
         .AddAllColumns()
         .Upsert()
-        .SetIdentityColumn(x => x.Id, ColumnDirection.Output)
+        .SetIdentityColumn(x => x.Id, ColumnDirection.InputOutput)
         .MatchTargetOn(x => x.Id) // you can call MatchTargetOn for multiple columns if needed
         .Commit(con);
 	}
