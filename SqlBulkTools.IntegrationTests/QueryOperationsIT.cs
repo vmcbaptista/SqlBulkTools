@@ -571,6 +571,7 @@ namespace SqlBulkTools.IntegrationTests
                     .Upsert()
                     .SetIdentityColumn(x => x.Id)
                     .MatchTargetOn(x => x.Id)
+                    .ExcludeColumnFromUpdate(x => x.Price)
                     .Commit(con);
                 }
 

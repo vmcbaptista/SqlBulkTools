@@ -340,18 +340,25 @@ namespace SqlBulkTools
         /// Specificially for UpdateQuery and DeleteQuery
         /// </summary>
         /// <param name="columns"></param>
+        /// <param name="excludeFromUpdate"></param>
         /// <param name="identityColumn"></param>
         /// <returns></returns>
-        internal static string BuildUpdateSet(HashSet<string> columns, string identityColumn)
+        internal static string BuildUpdateSet(HashSet<string> columns, HashSet<string> excludeFromUpdate, string identityColumn)
         {
             StringBuilder command = new StringBuilder();
             List<string> paramsSeparated = new List<string>();
+
+            // To prevent null reference exception
+            if (excludeFromUpdate == null)
+            {
+                excludeFromUpdate = new HashSet<string>();
+            }
 
             command.Append("SET ");
 
             foreach (var column in columns.ToList())
             {
-                if (column != identityColumn)
+                if (column != identityColumn && !excludeFromUpdate.Contains(column))
                     paramsSeparated.Add($"[{column}] = @{column}");
             }
 

@@ -138,7 +138,7 @@ namespace SqlBulkTools
             BulkOperationsHelper.DoColumnMappings(_customColumnMappings, _columns);
 
             string comm = $"UPDATE {fullQualifiedTableName} " +
-            $"{BulkOperationsHelper.BuildUpdateSet(_columns, _identityColumn)}" +
+            $"{BulkOperationsHelper.BuildUpdateSet(_columns, null, _identityColumn)}" +
             $"{BulkOperationsHelper.BuildPredicateQuery(concatenatedQuery)}";
 
             command.CommandText = comm;
@@ -184,7 +184,7 @@ namespace SqlBulkTools
             BulkOperationsHelper.DoColumnMappings(_customColumnMappings, _columns);
 
             string comm = $"UPDATE {fullQualifiedTableName} " +
-            $"{BulkOperationsHelper.BuildUpdateSet(_columns, _identityColumn)}" +
+            $"{BulkOperationsHelper.BuildUpdateSet(_columns, null, _identityColumn)}" +
             $"{BulkOperationsHelper.BuildPredicateQuery(concatenatedQuery)}";
 
             command.CommandText = comm;

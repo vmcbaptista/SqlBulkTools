@@ -25,6 +25,7 @@ namespace SqlBulkTools
         private string _identityColumn;
         private readonly List<SqlParameter> _sqlParams;
         private HashSet<string> _matchTargetOnSet;
+        private HashSet<string> _excludeFromUpdate; 
         private ColumnDirection _outputIdentity;
 
         /// <summary>
@@ -49,6 +50,7 @@ namespace SqlBulkTools
             _sqlParams = sqlParams;
             _matchTargetOnSet = new HashSet<string>();
             _outputIdentity = ColumnDirection.Input;
+            _excludeFromUpdate = new HashSet<string>();
         }
 
         /// <summary>
@@ -72,6 +74,29 @@ namespace SqlBulkTools
             {
                 throw new SqlBulkToolsException("Can't have more than one identity column");
             }
+
+            return this;
+        }
+
+        /// <summary>
+        /// Exclude a property from the update statement. Useful for when you want to include CreatedDate or Guid for inserts only. 
+        /// </summary>
+        /// <param name="columnName"></param>
+        /// <returns></returns>
+        public SimpleUpsertQueryReady<T> ExcludeColumnFromUpdate(Expression<Func<T, object>> columnName)
+        {
+            var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
+
+            if (propertyName == null)
+                throw new SqlBulkToolsException("ExcludeColumnFromUpdate column name can't be null");
+
+
+            if (!_columns.Contains(propertyName))
+            {
+               throw new SqlBulkToolsException("ExcludeColumnFromUpdate could not exclude column from update because column could not " +
+                                               "be recognised. Call AddAllColumns() or AddColumn() for this column first."); 
+            }
+            _excludeFromUpdate.Add(propertyName);
 
             return this;
         }
@@ -156,7 +181,7 @@ namespace SqlBulkTools
                 string fullQualifiedTableName = BulkOperationsHelper.GetFullQualifyingTableName(conn.Database, _schema, _tableName);
                 StringBuilder sb = new StringBuilder();
 
-                sb.Append($"UPDATE {fullQualifiedTableName} {BulkOperationsHelper.BuildUpdateSet(_columns, _identityColumn)} {BulkOperationsHelper.BuildMatchTargetOnList(_matchTargetOnSet)} " +
+                sb.Append($"UPDATE {fullQualifiedTableName} {BulkOperationsHelper.BuildUpdateSet(_columns, _excludeFromUpdate, _identityColumn)} {BulkOperationsHelper.BuildMatchTargetOnList(_matchTargetOnSet)} " +
                   $"IF (@@ROWCOUNT = 0) BEGIN " +
                   $"{ BulkOperationsHelper.BuildInsertIntoSet(_columns, _identityColumn, fullQualifiedTableName)} " +
                   $"VALUES{BulkOperationsHelper.BuildValueSet(_columns, _identityColumn)} " +
@@ -243,7 +268,7 @@ namespace SqlBulkTools
                 string fullQualifiedTableName = BulkOperationsHelper.GetFullQualifyingTableName(conn.Database, _schema, _tableName);
                 StringBuilder sb = new StringBuilder();
 
-                sb.Append($"UPDATE {fullQualifiedTableName} {BulkOperationsHelper.BuildUpdateSet(_columns, _identityColumn)} {BulkOperationsHelper.BuildMatchTargetOnList(_matchTargetOnSet)} " +
+                sb.Append($"UPDATE {fullQualifiedTableName} {BulkOperationsHelper.BuildUpdateSet(_columns, _excludeFromUpdate, _identityColumn)} {BulkOperationsHelper.BuildMatchTargetOnList(_matchTargetOnSet)} " +
                   $"IF (@@ROWCOUNT = 0) BEGIN " +
                   $"{ BulkOperationsHelper.BuildInsertIntoSet(_columns, _identityColumn, fullQualifiedTableName)} " +
                   $"VALUES{BulkOperationsHelper.BuildValueSet(_columns, _identityColumn)} " +
