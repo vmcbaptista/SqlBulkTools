@@ -444,7 +444,7 @@ namespace SqlBulkTools.IntegrationTests
                         .AddColumn(x => x.Description)
                         .AddColumn(x => x.Price)
                         .Insert()
-                        .SetIdentityColumn(x => x.Id, ColumnDirection.Output)
+                        .SetIdentityColumn(x => x.Id, ColumnDirection.InputOutput)
                         .Commit(conn);
                 }
 
@@ -514,7 +514,7 @@ namespace SqlBulkTools.IntegrationTests
                     .WithTable("Books")
                     .AddAllColumns()
                     .Upsert()
-                    .SetIdentityColumn(x => x.Id, ColumnDirection.Output)
+                    .SetIdentityColumn(x => x.Id, ColumnDirection.InputOutput)
                     .MatchTargetOn(x => x.Id)
                     .Commit(con);
                 }
@@ -553,7 +553,7 @@ namespace SqlBulkTools.IntegrationTests
                         .WithTable("Books")
                         .AddAllColumns()
                         .Insert()
-                        .SetIdentityColumn(x => x.Id, ColumnDirection.Output)
+                        .SetIdentityColumn(x => x.Id, ColumnDirection.InputOutput)
                         .Commit(con);
 
                     bulk.Setup<Book>()
@@ -569,7 +569,7 @@ namespace SqlBulkTools.IntegrationTests
                     .WithTable("Books")
                     .AddAllColumns()
                     .Upsert()
-                    .SetIdentityColumn(x => x.Id)
+                    .SetIdentityColumn(x => x.Id, ColumnDirection.InputOutput)
                     .MatchTargetOn(x => x.Id)
                     .ExcludeColumnFromUpdate(x => x.Price)
                     .Commit(con);
@@ -769,7 +769,7 @@ namespace SqlBulkTools.IntegrationTests
                             .WithTable("Books")
                             .AddAllColumns()
                             .Upsert()
-                            .SetIdentityColumn(x => x.Id, ColumnDirection.Output)
+                            .SetIdentityColumn(x => x.Id, ColumnDirection.InputOutput)
                             //.MatchTargetOn(x => x.Id) This will throw an exception (intentionally). MatchTargetOn can't be null. 
                             .Commit(conn);
                     }

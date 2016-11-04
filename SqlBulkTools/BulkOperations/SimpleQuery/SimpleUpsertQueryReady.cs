@@ -181,16 +181,18 @@ namespace SqlBulkTools
                 string fullQualifiedTableName = BulkOperationsHelper.GetFullQualifyingTableName(conn.Database, _schema, _tableName);
                 StringBuilder sb = new StringBuilder();
 
-                sb.Append($"UPDATE {fullQualifiedTableName} {BulkOperationsHelper.BuildUpdateSet(_columns, _excludeFromUpdate, _identityColumn)} {BulkOperationsHelper.BuildMatchTargetOnList(_matchTargetOnSet)} " +
-                  $"IF (@@ROWCOUNT = 0) BEGIN " +
-                  $"{ BulkOperationsHelper.BuildInsertIntoSet(_columns, _identityColumn, fullQualifiedTableName)} " +
-                  $"VALUES{BulkOperationsHelper.BuildValueSet(_columns, _identityColumn)} " +
-                  $"END ");
+                sb.Append(
+                    $"UPDATE {fullQualifiedTableName} {BulkOperationsHelper.BuildUpdateSet(_columns, _excludeFromUpdate, _identityColumn)} {BulkOperationsHelper.BuildMatchTargetOnList(_matchTargetOnSet)}; " +
+                    $"IF (@@ROWCOUNT = 0) BEGIN " +
+                    $"{BulkOperationsHelper.BuildInsertIntoSet(_columns, _identityColumn, fullQualifiedTableName)} " +
+                    $"VALUES{BulkOperationsHelper.BuildValueSet(_columns, _identityColumn)} ");
+                    sb.Append($"END ");
 
-                if (_outputIdentity == ColumnDirection.Output)
+                if (_outputIdentity == ColumnDirection.InputOutput)
                 {
-                    sb.Append($"SET @{_identityColumn}=SCOPE_IDENTITY()");
-                }          
+                    sb.Append($"SET @{_identityColumn} = SCOPE_IDENTITY() ");
+                }
+
 
                 command.CommandText = sb.ToString();
 
@@ -201,13 +203,17 @@ namespace SqlBulkTools
 
                 affectedRows = command.ExecuteNonQuery();
 
-                if (_outputIdentity == ColumnDirection.Output)
+                if (_outputIdentity == ColumnDirection.InputOutput)
                 {
                     foreach (var x in _sqlParams)
                     {
-                        if (x.Direction == ParameterDirection.Output
+                        if (x.Direction == ParameterDirection.InputOutput
                             && x.ParameterName == $"@{_identityColumn}")
                         {
+                            if (x.Value is DBNull)
+                            {
+                                break;
+                            }
                             PropertyInfo propertyInfo = _singleEntity.GetType().GetProperty(_identityColumn);
                             propertyInfo.SetValue(_singleEntity, x.Value);
                             break;
@@ -274,9 +280,9 @@ namespace SqlBulkTools
                   $"VALUES{BulkOperationsHelper.BuildValueSet(_columns, _identityColumn)} " +
                   $"END ");
 
-                if (_outputIdentity == ColumnDirection.Output)
+                if (_outputIdentity == ColumnDirection.InputOutput)
                 {
-                    sb.Append($"SET @{_identityColumn}=SCOPE_IDENTITY()");
+                    sb.Append($"SET @{_identityColumn} = SCOPE_IDENTITY()");
                 }
 
                 command.CommandText = sb.ToString();
@@ -288,13 +294,17 @@ namespace SqlBulkTools
 
                 affectedRows = await command.ExecuteNonQueryAsync();
 
-                if (_outputIdentity == ColumnDirection.Output)
+                if (_outputIdentity == ColumnDirection.InputOutput)
                 {
                     foreach (var x in _sqlParams)
                     {
-                        if (x.Direction == ParameterDirection.Output
+                        if (x.Direction == ParameterDirection.InputOutput
                             && x.ParameterName == $"@{_identityColumn}")
                         {
+                            if (x.Value is DBNull)
+                            {
+                                break;
+                            }
                             PropertyInfo propertyInfo = _singleEntity.GetType().GetProperty(_identityColumn);
                             propertyInfo.SetValue(_singleEntity, x.Value);
                             break;

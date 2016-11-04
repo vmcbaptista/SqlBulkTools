@@ -138,7 +138,7 @@ namespace SqlBulkTools
                 sb.Append($"{BulkOperationsHelper.BuildInsertIntoSet(_columns, _identityColumn, fullQualifiedTableName)} " +
                               $"VALUES{BulkOperationsHelper.BuildValueSet(_columns, _identityColumn)} ");
 
-                if (_outputIdentity == ColumnDirection.Output)
+                if (_outputIdentity == ColumnDirection.InputOutput)
                 {
                     sb.Append($"SET @{_identityColumn}=SCOPE_IDENTITY();");
                 }
@@ -154,11 +154,11 @@ namespace SqlBulkTools
 
                 affectedRows = command.ExecuteNonQuery();
 
-                if (_outputIdentity == ColumnDirection.Output)
+                if (_outputIdentity == ColumnDirection.InputOutput)
                 {
                     foreach (var x in _sqlParams)
                     {
-                        if (x.Direction == ParameterDirection.Output
+                        if (x.Direction == ParameterDirection.InputOutput
                             && x.ParameterName == $"@{_identityColumn}")
                         {
                             PropertyInfo propertyInfo = _singleEntity.GetType().GetProperty(_identityColumn);
@@ -222,7 +222,7 @@ namespace SqlBulkTools
                 sb.Append($"{BulkOperationsHelper.BuildInsertIntoSet(_columns, _identityColumn, fullQualifiedTableName)} " +
                               $"VALUES{BulkOperationsHelper.BuildValueSet(_columns, _identityColumn)} ");
 
-                if (_outputIdentity == ColumnDirection.Output)
+                if (_outputIdentity == ColumnDirection.InputOutput)
                 {
                     sb.Append($"SET @{_identityColumn}=SCOPE_IDENTITY();");
                 }
@@ -236,11 +236,11 @@ namespace SqlBulkTools
 
                 affectedRows = await command.ExecuteNonQueryAsync();
 
-                if (_outputIdentity == ColumnDirection.Output)
+                if (_outputIdentity == ColumnDirection.InputOutput)
                 {
                     foreach (var x in _sqlParams)
                     {
-                        if (x.Direction == ParameterDirection.Output
+                        if (x.Direction == ParameterDirection.InputOutput
                             && x.ParameterName == $"@{_identityColumn}")
                         {
                             PropertyInfo propertyInfo = _singleEntity.GetType().GetProperty(_identityColumn);

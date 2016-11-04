@@ -191,7 +191,7 @@ namespace SqlBulkTools
                     command.ExecuteNonQuery();
                 }
 
-                if (_outputIdentity == ColumnDirection.Output)
+                if (_outputIdentity == ColumnDirection.InputOutput)
                 {
                     BulkOperationsHelper.LoadFromTmpOutputTable(command, _identityColumn, _outputIdentityDic, OperationType.InsertOrUpdate, _list);
                 }
@@ -303,7 +303,7 @@ namespace SqlBulkTools
                     await command.ExecuteNonQueryAsync();
                 }
 
-                if (_outputIdentity == ColumnDirection.Output)
+                if (_outputIdentity == ColumnDirection.InputOutput)
                 {
                     BulkOperationsHelper.LoadFromTmpOutputTable(command, _identityColumn, _outputIdentityDic, OperationType.InsertOrUpdate, _list);
                 }
