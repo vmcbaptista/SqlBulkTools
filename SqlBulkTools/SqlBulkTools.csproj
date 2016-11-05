@@ -50,7 +50,7 @@
     <Compile Include="BulkOperations\BulkCopy\AbstractColumnSelection.cs" />
     <Compile Include="BulkOperations\BulkCopy\AbstractOperation.cs" />
     <Compile Include="BulkOperations\BulkOperationsUtility.cs" />
-    <Compile Include="BulkOperations\Interface\IBulkOperations.cs" />
+    <Compile Include="Interface\IBulkOperations.cs" />
     <Compile Include="BulkOperations\SimpleQuery\Delete\SimpleDeleteQueryCondition.cs" />
     <Compile Include="BulkOperations\SimpleQuery\Delete\SimpleDeleteQueryReady.cs" />
     <Compile Include="BulkOperations\SimpleQuery\Delete\SimpleDeleteQueryTable.cs" />
@@ -79,10 +79,10 @@
     <Compile Include="BulkOperations\BulkCopy\BulkAddColumn.cs" />
     <Compile Include="Helper\Constants.cs" />
     <Compile Include="DataTableOperations\DataTableColumns.cs" />
-    <Compile Include="DataTableOperations\IDataTableOperations.cs" />
-    <Compile Include="DataTableOperations\IDataTableTransaction.cs" />
+    <Compile Include="Interface\IDataTableOperations.cs" />
+    <Compile Include="Interface\IDataTableTransaction.cs" />
     <Compile Include="Exception\IdentityException.cs" />
-    <Compile Include="BulkOperations\Interface\ITransaction.cs" />
+    <Compile Include="Interface\ITransaction.cs" />
     <Compile Include="Enumeration\OperationType.cs" />
     <Compile Include="Enumeration\PredicateType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
