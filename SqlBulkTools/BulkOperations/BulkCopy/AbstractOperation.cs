@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
+using SqlBulkTools.Enumeration;
 
 // ReSharper disable once CheckNamespace
 namespace SqlBulkTools
@@ -14,7 +15,7 @@ namespace SqlBulkTools
     {
         #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         // ReSharper disable InconsistentNaming
-        protected ColumnDirection _outputIdentity;
+        protected ColumnDirectionType _outputIdentity;
         protected string _identityColumn;
         protected Dictionary<int, T> _outputIdentityDic;
         protected bool _disableAllIndexes;
@@ -32,8 +33,8 @@ namespace SqlBulkTools
         protected List<string> _matchTargetOn;
         protected SqlBulkCopyOptions _sqlBulkCopyOptions;
         protected IEnumerable<SqlRowsCopiedEventHandler> _bulkCopyDelegates;
-        protected List<Condition> _updatePredicates;
-        protected List<Condition> _deletePredicates;
+        protected List<PredicateCondition> _updatePredicates;
+        protected List<PredicateCondition> _deletePredicates;
         protected List<SqlParameter> _parameters;
         protected int _conditionSortOrder;
         #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
@@ -77,7 +78,7 @@ namespace SqlBulkTools
             _sqlBulkCopyOptions = sqlBulkCopyOptions;
             _identityColumn = null;
             _outputIdentityDic = new Dictionary<int, T>();
-            _outputIdentity = ColumnDirection.Input;
+            _outputIdentity = ColumnDirectionType.Input;
             _matchTargetOn = new List<string>();
             _bulkCopyDelegates = bulkCopyDelegates;
         }
@@ -122,7 +123,7 @@ namespace SqlBulkTools
         /// </summary>
         /// <param name="columnName"></param>
         /// <param name="outputIdentity"></param>
-        protected void SetIdentity(Expression<Func<T, object>> columnName, ColumnDirection outputIdentity)
+        protected void SetIdentity(Expression<Func<T, object>> columnName, ColumnDirectionType outputIdentity)
         {
             _outputIdentity = outputIdentity;
             SetIdentity(columnName);

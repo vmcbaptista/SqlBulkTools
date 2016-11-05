@@ -63,7 +63,8 @@
     <Compile Include="BulkOperations\SimpleQuery\SimpleUpdateQueryCondition.cs" />
     <Compile Include="BulkOperations\SimpleQuery\SimpleQueryAddColumn.cs" />
     <Compile Include="BulkOperations\SimpleQuery\SimpleUpsertQueryReady.cs" />
-    <Compile Include="Helper\Condition.cs" />
+    <Compile Include="Enumeration\ColumnDirectionType.cs" />
+    <Compile Include="Helper\PredicateCondition.cs" />
     <Compile Include="BulkOperations\BulkCopy\BulkTable.cs" />
     <Compile Include="DataTableOperations\DataTableAbstractColumnSelect.cs" />
     <Compile Include="DataTableOperations\DataTableOperations.cs" />
@@ -82,6 +83,8 @@
     <Compile Include="DataTableOperations\IDataTableTransaction.cs" />
     <Compile Include="Exception\IdentityException.cs" />
     <Compile Include="BulkOperations\Interface\ITransaction.cs" />
+    <Compile Include="Enumeration\OperationType.cs" />
+    <Compile Include="Enumeration\PredicateType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DataTableOperations\SetupDataTable.cs" />
     <Compile Include="BulkOperations\Setup.cs" />

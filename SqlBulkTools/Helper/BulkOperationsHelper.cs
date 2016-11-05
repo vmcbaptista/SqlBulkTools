@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using SqlBulkTools.Enumeration;
 
 [assembly: InternalsVisibleTo("SqlBulkTools.UnitTests")]
 [assembly: InternalsVisibleTo("SqlBulkTools.IntegrationTests")]
@@ -24,7 +25,7 @@ namespace SqlBulkTools
             public string NumericScale { get; set; }
         }
 
-        internal static string BuildCreateTempTable(HashSet<string> columns, DataTable schema, ColumnDirection outputIdentity)
+        internal static string BuildCreateTempTable(HashSet<string> columns, DataTable schema, ColumnDirectionType outputIdentity)
         {
             Dictionary<string, string> actualColumns = new Dictionary<string, string>();
             Dictionary<string, string> actualColumnsMaxCharLength = new Dictionary<string, string>();
@@ -90,7 +91,7 @@ namespace SqlBulkTools
 
             command.Append(paramListConcatenated);
 
-            if (outputIdentity == ColumnDirection.InputOutput)
+            if (outputIdentity == ColumnDirectionType.InputOutput)
             {
                 command.Append(", [" + Constants.InternalId + "] int");
             }
@@ -197,7 +198,7 @@ namespace SqlBulkTools
             return sb.ToString();
         }
 
-        internal static string BuildPredicateQuery(string[] updateOn, IEnumerable<Condition> conditions, string targetAlias)
+        internal static string BuildPredicateQuery(string[] updateOn, IEnumerable<PredicateCondition> conditions, string targetAlias)
         {
             if (conditions == null)
                 return null;
@@ -221,7 +222,7 @@ namespace SqlBulkTools
         }
 
         // Used for UpdateQuery and DeleteQuery where, and, or conditions. 
-        internal static string BuildPredicateQuery(IEnumerable<Condition> conditions)
+        internal static string BuildPredicateQuery(IEnumerable<PredicateCondition> conditions)
         {
             if (conditions == null)
                 return null;
@@ -268,7 +269,7 @@ namespace SqlBulkTools
 
         }
 
-        internal static string GetOperator(Condition condition)
+        internal static string GetOperator(PredicateCondition condition)
         {
             switch (condition.Expression)
             {
@@ -482,7 +483,7 @@ namespace SqlBulkTools
         }
 
         internal static DataTable CreateDataTable<T>(HashSet<string> columns, Dictionary<string, string> columnMappings,
-            List<string> matchOnColumns = null, ColumnDirection? outputIdentity = null)
+            List<string> matchOnColumns = null, ColumnDirectionType? outputIdentity = null)
         {
             if (columns == null)
                 return null;
@@ -494,7 +495,7 @@ namespace SqlBulkTools
                 columns = CheckForAdditionalColumns(columns, matchOnColumns);
             }
 
-            if (outputIdentity.HasValue && outputIdentity.Value == ColumnDirection.InputOutput)
+            if (outputIdentity.HasValue && outputIdentity.Value == ColumnDirectionType.InputOutput)
             {
                 columns.Add(Constants.InternalId);
             }
@@ -559,7 +560,7 @@ namespace SqlBulkTools
 
         // Loops through object properties, checks if column has been added, adds as sql parameter. Used for the UpdateQuery method. 
         public static void AddSqlParamsForQuery<T>(List<SqlParameter> sqlParameters, HashSet<string> columns, T item, 
-            string identityColumn = null, ColumnDirection direction = ColumnDirection.Input, Dictionary<string, string> customColumns = null)
+            string identityColumn = null, ColumnDirectionType direction = ColumnDirectionType.Input, Dictionary<string, string> customColumns = null)
         {
             PropertyInfo[] props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
@@ -591,7 +592,7 @@ namespace SqlBulkTools
                         else
                             param.Value = propValue;
                        
-                        if (column == identityColumn && direction == ColumnDirection.InputOutput)
+                        if (column == identityColumn && direction == ColumnDirectionType.InputOutput)
                             param.Direction = ParameterDirection.InputOutput;
 
                         sqlParameters.Add(param);
@@ -722,7 +723,7 @@ namespace SqlBulkTools
             }
         }
 
-        internal static void DoColumnMappings(Dictionary<string, string> columnMappings, List<Condition> predicateConditions)
+        internal static void DoColumnMappings(Dictionary<string, string> columnMappings, List<PredicateCondition> predicateConditions)
         {
             foreach (var condition in predicateConditions)
             {
@@ -807,11 +808,11 @@ namespace SqlBulkTools
 
         }
 
-        internal static string GetOutputIdentityCmd(string identityColumn, ColumnDirection outputIdentity, string tmpTableName, OperationType operation)
+        internal static string GetOutputIdentityCmd(string identityColumn, ColumnDirectionType outputIdentity, string tmpTableName, OperationType operation)
         {
 
             StringBuilder sb = new StringBuilder();
-            if (identityColumn == null || outputIdentity != ColumnDirection.InputOutput)
+            if (identityColumn == null || outputIdentity != ColumnDirectionType.InputOutput)
             {
                 return null;
             }
@@ -829,14 +830,14 @@ namespace SqlBulkTools
             return sb.ToString();
         }
 
-        internal static string GetOutputCreateTableCmd(ColumnDirection outputIdentity, string tmpTablename, OperationType operation, string identityColumn)
+        internal static string GetOutputCreateTableCmd(ColumnDirectionType outputIdentity, string tmpTablename, OperationType operation, string identityColumn)
         {
 
             if (operation == OperationType.Insert)
-                return (outputIdentity == ColumnDirection.InputOutput ? "CREATE TABLE " + tmpTablename + "(" + "[" + identityColumn + "] int); " : "");
+                return (outputIdentity == ColumnDirectionType.InputOutput ? "CREATE TABLE " + tmpTablename + "(" + "[" + identityColumn + "] int); " : "");
 
             else if (operation == OperationType.InsertOrUpdate || operation == OperationType.Update || operation == OperationType.Delete)
-                return (outputIdentity == ColumnDirection.InputOutput ? "CREATE TABLE " + tmpTablename + "("
+                return (outputIdentity == ColumnDirectionType.InputOutput ? "CREATE TABLE " + tmpTablename + "("
                     + "[" + Constants.InternalId + "]" + " int, [" + identityColumn + "] int); " : "");
 
             return string.Empty;
@@ -1059,7 +1060,7 @@ namespace SqlBulkTools
         }
 
         internal static string GetInsertIntoStagingTableCmd(SqlCommand command, SqlConnection conn, string schema, string tableName,
-            HashSet<string> columns, string identityColumn, ColumnDirection outputIdentity)
+            HashSet<string> columns, string identityColumn, ColumnDirectionType outputIdentity)
         {
 
             string fullTableName = GetFullQualifyingTableName(conn.Database, schema,
@@ -1087,12 +1088,12 @@ namespace SqlBulkTools
         /// <param name="sqlParamsList"></param>
         /// <param name="sortOrder"></param>
         /// <param name="appendParam"></param>
-        internal static void AddPredicate<T>(Expression<Func<T, bool>> predicate, PredicateType predicateType, List<Condition> predicateList, 
+        internal static void AddPredicate<T>(Expression<Func<T, bool>> predicate, PredicateType predicateType, List<PredicateCondition> predicateList, 
             List<SqlParameter> sqlParamsList, int sortOrder, string appendParam)
         {
             string leftName;
             string value;
-            Condition condition;
+            PredicateCondition condition;
 
             BinaryExpression binaryBody = predicate.Body as BinaryExpression;
 
@@ -1111,7 +1112,7 @@ namespace SqlBulkTools
 
                         if (value != null)
                         {
-                            condition = new Condition()
+                            condition = new PredicateCondition()
                             {
                                 Expression = ExpressionType.NotEqual,
                                 LeftName = leftName,
@@ -1130,7 +1131,7 @@ namespace SqlBulkTools
                         }
                         else
                         {
-                            condition = new Condition()
+                            condition = new PredicateCondition()
                             {
                                 Expression = ExpressionType.NotEqual,
                                 LeftName = leftName,
@@ -1155,7 +1156,7 @@ namespace SqlBulkTools
 
                         if (value != null)
                         {
-                            condition = new Condition()
+                            condition = new PredicateCondition()
                             {
                                 Expression = ExpressionType.Equal,
                                 LeftName = leftName,
@@ -1173,7 +1174,7 @@ namespace SqlBulkTools
                         }
                         else
                         {
-                            condition = new Condition()
+                            condition = new PredicateCondition()
                             {
                                 Expression = ExpressionType.Equal,
                                 LeftName = leftName,
@@ -1271,10 +1272,10 @@ namespace SqlBulkTools
         /// <param name="appendParam"></param>
         /// <param name="predicateType"></param>
         internal static void BuildCondition(string leftName, string value, Type valueType, ExpressionType expressionType, 
-            List<Condition> predicateList, List<SqlParameter> sqlParamsList, PredicateType predicateType, int sortOrder, string appendParam)
+            List<PredicateCondition> predicateList, List<SqlParameter> sqlParamsList, PredicateType predicateType, int sortOrder, string appendParam)
         {
 
-            Condition condition = new Condition()
+            PredicateCondition condition = new PredicateCondition()
             {
                 Expression = expressionType,
                 LeftName = leftName,

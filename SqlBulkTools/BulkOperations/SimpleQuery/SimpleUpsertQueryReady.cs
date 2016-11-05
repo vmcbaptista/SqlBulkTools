@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using SqlBulkTools.Enumeration;
 
 // ReSharper disable once CheckNamespace
 namespace SqlBulkTools
@@ -26,7 +27,7 @@ namespace SqlBulkTools
         private readonly List<SqlParameter> _sqlParams;
         private HashSet<string> _matchTargetOnSet;
         private HashSet<string> _excludeFromUpdate; 
-        private ColumnDirection _outputIdentity;
+        private ColumnDirectionType _outputIdentity;
 
         /// <summary>
         /// 
@@ -49,7 +50,7 @@ namespace SqlBulkTools
             _sqlTimeout = sqlTimeout;
             _sqlParams = sqlParams;
             _matchTargetOnSet = new HashSet<string>();
-            _outputIdentity = ColumnDirection.Input;
+            _outputIdentity = ColumnDirectionType.Input;
             _excludeFromUpdate = new HashSet<string>();
         }
 
@@ -59,7 +60,7 @@ namespace SqlBulkTools
         /// <param name="columnName"></param>
         /// <param name="outputIdentity"></param>
         /// <returns></returns>
-        public SimpleUpsertQueryReady<T> SetIdentityColumn(Expression<Func<T, object>> columnName, ColumnDirection outputIdentity)
+        public SimpleUpsertQueryReady<T> SetIdentityColumn(Expression<Func<T, object>> columnName, ColumnDirectionType outputIdentity)
         {
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
             _outputIdentity = outputIdentity;
@@ -188,7 +189,7 @@ namespace SqlBulkTools
                     $"VALUES{BulkOperationsHelper.BuildValueSet(_columns, _identityColumn)} ");
                     sb.Append($"END ");
 
-                if (_outputIdentity == ColumnDirection.InputOutput)
+                if (_outputIdentity == ColumnDirectionType.InputOutput)
                 {
                     sb.Append($"SET @{_identityColumn} = SCOPE_IDENTITY() ");
                 }
@@ -203,7 +204,7 @@ namespace SqlBulkTools
 
                 affectedRows = command.ExecuteNonQuery();
 
-                if (_outputIdentity == ColumnDirection.InputOutput)
+                if (_outputIdentity == ColumnDirectionType.InputOutput)
                 {
                     foreach (var x in _sqlParams)
                     {
@@ -280,7 +281,7 @@ namespace SqlBulkTools
                   $"VALUES{BulkOperationsHelper.BuildValueSet(_columns, _identityColumn)} " +
                   $"END ");
 
-                if (_outputIdentity == ColumnDirection.InputOutput)
+                if (_outputIdentity == ColumnDirectionType.InputOutput)
                 {
                     sb.Append($"SET @{_identityColumn} = SCOPE_IDENTITY()");
                 }
@@ -294,7 +295,7 @@ namespace SqlBulkTools
 
                 affectedRows = await command.ExecuteNonQueryAsync();
 
-                if (_outputIdentity == ColumnDirection.InputOutput)
+                if (_outputIdentity == ColumnDirectionType.InputOutput)
                 {
                     foreach (var x in _sqlParams)
                     {

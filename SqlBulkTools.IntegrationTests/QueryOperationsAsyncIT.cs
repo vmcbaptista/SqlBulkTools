@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Transactions;
 using NUnit.Framework;
+using SqlBulkTools.Enumeration;
 using SqlBulkTools.IntegrationTests.Data;
 using SqlBulkTools.IntegrationTests.Model;
 using TestContext = SqlBulkTools.IntegrationTests.Data.TestContext;
@@ -444,7 +445,7 @@ namespace SqlBulkTools.IntegrationTests
                         .AddColumn(x => x.Description)
                         .AddColumn(x => x.Price)
                         .Insert()
-                        .SetIdentityColumn(x => x.Id, ColumnDirection.InputOutput)
+                        .SetIdentityColumn(x => x.Id, ColumnDirectionType.InputOutput)
                         .CommitAsync(conn);
                 }
 
@@ -514,7 +515,7 @@ namespace SqlBulkTools.IntegrationTests
                     .WithTable("Books")
                     .AddAllColumns()
                     .Upsert()
-                    .SetIdentityColumn(x => x.Id, ColumnDirection.InputOutput)
+                    .SetIdentityColumn(x => x.Id, ColumnDirectionType.InputOutput)
                     .MatchTargetOn(x => x.Id)
                     .CommitAsync(con);
                 }
@@ -553,7 +554,7 @@ namespace SqlBulkTools.IntegrationTests
                         .WithTable("Books")
                         .AddAllColumns()
                         .Insert()
-                        .SetIdentityColumn(x => x.Id, ColumnDirection.InputOutput)
+                        .SetIdentityColumn(x => x.Id, ColumnDirectionType.InputOutput)
                         .CommitAsync(con);
 
                     await bulk.Setup<Book>()
@@ -569,7 +570,7 @@ namespace SqlBulkTools.IntegrationTests
                     .WithTable("Books")
                     .AddAllColumns()
                     .Upsert()
-                    .SetIdentityColumn(x => x.Id, ColumnDirection.Input)
+                    .SetIdentityColumn(x => x.Id, ColumnDirectionType.Input)
                     .MatchTargetOn(x => x.Id)
                     .CommitAsync(con);
                 }

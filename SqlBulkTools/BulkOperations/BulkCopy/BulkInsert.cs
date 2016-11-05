@@ -5,6 +5,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using SqlBulkTools.Enumeration;
 
 // ReSharper disable once CheckNamespace
 namespace SqlBulkTools
@@ -62,7 +63,7 @@ namespace SqlBulkTools
         /// <param name="columnName"></param>
         /// <param name="outputIdentity"></param>
         /// <returns></returns>
-        public BulkInsert<T> SetIdentityColumn(Expression<Func<T, object>> columnName, ColumnDirection outputIdentity)
+        public BulkInsert<T> SetIdentityColumn(Expression<Func<T, object>> columnName, ColumnDirectionType outputIdentity)
         {
             base.SetIdentity(columnName, outputIdentity);
             return this;
@@ -96,7 +97,7 @@ namespace SqlBulkTools
 
 
             DataTable dtCols = null;
-            if (_outputIdentity == ColumnDirection.InputOutput)
+            if (_outputIdentity == ColumnDirectionType.InputOutput)
                 dtCols = BulkOperationsHelper.GetDatabaseSchema(connection, _schema, _tableName);
 
             //Bulk insert into temp table
@@ -113,13 +114,13 @@ namespace SqlBulkTools
 
                 if (_disableAllIndexes || (_disableIndexList != null && _disableIndexList.Any()))
                 {
-                    command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(IndexOperation.Disable, _tableName,
+                    command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(Constants.Disable, _tableName,
                         _schema, connection, _disableIndexList, _disableAllIndexes);
                     command.ExecuteNonQuery();
                 }
 
                 // If InputOutput identity is selected, must use staging table.
-                if (_outputIdentity == ColumnDirection.InputOutput && dtCols != null)
+                if (_outputIdentity == ColumnDirectionType.InputOutput && dtCols != null)
                 {
                     command.CommandText = BulkOperationsHelper.BuildCreateTempTable(_columns, dtCols, _outputIdentity);
                     command.ExecuteNonQuery();
@@ -140,7 +141,7 @@ namespace SqlBulkTools
 
                 if (_disableAllIndexes || (_disableIndexList != null && _disableIndexList.Any()))
                 {
-                    command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(IndexOperation.Rebuild, _tableName,
+                    command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(Constants.Rebuild, _tableName,
                         _schema, connection, _disableIndexList, _disableAllIndexes);
                     command.ExecuteNonQuery();
                 }
@@ -181,7 +182,7 @@ namespace SqlBulkTools
 
 
             DataTable dtCols = null;
-            if (_outputIdentity == ColumnDirection.InputOutput)
+            if (_outputIdentity == ColumnDirectionType.InputOutput)
                 dtCols = BulkOperationsHelper.GetDatabaseSchema(connection, _schema, _tableName);
 
             //Bulk insert into temp table
@@ -198,13 +199,13 @@ namespace SqlBulkTools
 
                 if (_disableAllIndexes || (_disableIndexList != null && _disableIndexList.Any()))
                 {
-                    command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(IndexOperation.Disable, _tableName,
+                    command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(Constants.Disable, _tableName,
                         _schema, connection, _disableIndexList, _disableAllIndexes);
                     await command.ExecuteNonQueryAsync();
                 }
 
                 // If InputOutput identity is selected, must use staging table.
-                if (_outputIdentity == ColumnDirection.InputOutput && dtCols != null)
+                if (_outputIdentity == ColumnDirectionType.InputOutput && dtCols != null)
                 {
                     command.CommandText = BulkOperationsHelper.BuildCreateTempTable(_columns, dtCols, _outputIdentity);
                     await command.ExecuteNonQueryAsync();
@@ -225,7 +226,7 @@ namespace SqlBulkTools
 
                 if (_disableAllIndexes || (_disableIndexList != null && _disableIndexList.Any()))
                 {
-                    command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(IndexOperation.Rebuild, _tableName,
+                    command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(Constants.Rebuild, _tableName,
                         _schema, connection, _disableIndexList, _disableAllIndexes);
                     await command.ExecuteNonQueryAsync();
                 }

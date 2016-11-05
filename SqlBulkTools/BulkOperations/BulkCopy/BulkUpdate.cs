@@ -5,6 +5,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using SqlBulkTools.Enumeration;
 
 // ReSharper disable once CheckNamespace
 namespace SqlBulkTools
@@ -40,7 +41,7 @@ namespace SqlBulkTools
             base(list, tableName, schema, columns, disableIndexList, disableAllIndexes, customColumnMappings, sqlTimeout,
                 bulkCopyTimeout, bulkCopyEnableStreaming, bulkCopyNotifyAfter, bulkCopyBatchSize, sqlBulkCopyOptions, bulkCopyDelegates)
         {
-            _updatePredicates = new List<Condition>();
+            _updatePredicates = new List<PredicateCondition>();
             _parameters = new List<SqlParameter>();
             _conditionSortOrder = 1;
         }
@@ -98,7 +99,7 @@ namespace SqlBulkTools
         /// <param name="columnName"></param>
         /// <param name="outputIdentity"></param>
         /// <returns></returns>
-        public BulkUpdate<T> SetIdentityColumn(Expression<Func<T, object>> columnName, ColumnDirection outputIdentity)
+        public BulkUpdate<T> SetIdentityColumn(Expression<Func<T, object>> columnName, ColumnDirectionType outputIdentity)
         {
             base.SetIdentity(columnName, outputIdentity);
             return this;
@@ -151,7 +152,7 @@ namespace SqlBulkTools
                 // Updating destination table, and dropping temp table
                 if (_disableIndexList != null && _disableIndexList.Any())
                 {
-                    command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(IndexOperation.Disable, _tableName,
+                    command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(Constants.Disable, _tableName,
                         _schema, connection, _disableIndexList, _disableAllIndexes);
                     command.ExecuteNonQuery();
                 }
@@ -186,12 +187,12 @@ namespace SqlBulkTools
 
                 if (_disableIndexList != null && _disableIndexList.Any())
                 {
-                    command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(IndexOperation.Rebuild, _tableName, _schema,
+                    command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(Constants.Rebuild, _tableName, _schema,
                         connection, _disableIndexList);
                     command.ExecuteNonQuery();
                 }
 
-                if (_outputIdentity == ColumnDirection.InputOutput)
+                if (_outputIdentity == ColumnDirectionType.InputOutput)
                 {
                     BulkOperationsHelper.LoadFromTmpOutputTable(command, _identityColumn, _outputIdentityDic, OperationType.InsertOrUpdate, _list);
                 }
@@ -263,7 +264,7 @@ namespace SqlBulkTools
                 // Updating destination table, and dropping temp table
                 if (_disableIndexList != null && _disableIndexList.Any())
                 {
-                    command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(IndexOperation.Disable, _tableName,
+                    command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(Constants.Disable, _tableName,
                         _schema, connection, _disableIndexList, _disableAllIndexes);
                     await command.ExecuteNonQueryAsync();
                 }
@@ -298,12 +299,12 @@ namespace SqlBulkTools
 
                 if (_disableIndexList != null && _disableIndexList.Any())
                 {
-                    command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(IndexOperation.Rebuild, _tableName, _schema,
+                    command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(Constants.Rebuild, _tableName, _schema,
                         connection, _disableIndexList);
                     await command.ExecuteNonQueryAsync();
                 }
 
-                if (_outputIdentity == ColumnDirection.InputOutput)
+                if (_outputIdentity == ColumnDirectionType.InputOutput)
                 {
                     BulkOperationsHelper.LoadFromTmpOutputTable(command, _identityColumn, _outputIdentityDic, OperationType.InsertOrUpdate, _list);
                 }

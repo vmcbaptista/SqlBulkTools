@@ -8,6 +8,7 @@ using System.Linq;
 using System.Transactions;
 using NUnit.Framework;
 using Ploeh.AutoFixture;
+using SqlBulkTools.Enumeration;
 using SqlBulkTools.IntegrationTests.Data;
 using SqlBulkTools.IntegrationTests.Model;
 using TestContext = SqlBulkTools.IntegrationTests.Data.TestContext;
@@ -230,7 +231,7 @@ namespace SqlBulkTools.IntegrationTests
                     .WithTable("Books")
                     .AddAllColumns()
                     .BulkInsert()
-                    .SetIdentityColumn(x => x.Id, ColumnDirection.InputOutput)
+                    .SetIdentityColumn(x => x.Id, ColumnDirectionType.InputOutput)
                     .Commit(conn);
 
 
@@ -628,7 +629,7 @@ namespace SqlBulkTools.IntegrationTests
                         .AddAllColumns()
                         .BulkInsertOrUpdate()
                         .MatchTargetOn(x => x.ISBN)
-                        .SetIdentityColumn(x => x.Id, ColumnDirection
+                        .SetIdentityColumn(x => x.Id, ColumnDirectionType
                         .InputOutput).Commit(conn);
                 }
 
@@ -665,7 +666,7 @@ namespace SqlBulkTools.IntegrationTests
                         .AddColumn(x => x.Price)
                         .BulkInsertOrUpdate()
                         .MatchTargetOn(x => x.ISBN)
-                        .SetIdentityColumn(x => x.Id, ColumnDirection.InputOutput)
+                        .SetIdentityColumn(x => x.Id, ColumnDirectionType.InputOutput)
                         .Commit(conn);
                 }
 
@@ -701,7 +702,7 @@ namespace SqlBulkTools.IntegrationTests
                         .WithTable("Books")
                         .AddAllColumns()
                         .BulkInsert()
-                        .SetIdentityColumn(x => x.Id, ColumnDirection.InputOutput)
+                        .SetIdentityColumn(x => x.Id, ColumnDirectionType.InputOutput)
                         .Commit(conn);
 
                 }
@@ -743,7 +744,7 @@ namespace SqlBulkTools.IntegrationTests
                         .AddColumn(x => x.PublishDate)
                         .TmpDisableAllNonClusteredIndexes()
                         .BulkInsert()
-                        .SetIdentityColumn(x => x.Id, ColumnDirection.InputOutput)
+                        .SetIdentityColumn(x => x.Id, ColumnDirectionType.InputOutput)
                         .Commit(conn);
 
                 }
@@ -793,7 +794,7 @@ namespace SqlBulkTools.IntegrationTests
                         .AddColumn(x => x.ISBN)
                         .BulkDelete()
                         .MatchTargetOn(x => x.ISBN)
-                        .SetIdentityColumn(x => x.Id, ColumnDirection.InputOutput)
+                        .SetIdentityColumn(x => x.Id, ColumnDirectionType.InputOutput)
                         .Commit(conn);
                 }
 
@@ -830,7 +831,7 @@ namespace SqlBulkTools.IntegrationTests
                         .AddColumn(x => x.Price)
                         .BulkUpdate()
                         .MatchTargetOn(x => x.ISBN)
-                        .SetIdentityColumn(x => x.Id, ColumnDirection.InputOutput)
+                        .SetIdentityColumn(x => x.Id, ColumnDirectionType.InputOutput)
                         .Commit(conn);
                 }
 
@@ -935,7 +936,7 @@ namespace SqlBulkTools.IntegrationTests
                             .AddColumn(x => x.ISBN)
                             .AddColumn(x => x.Price)
                             .BulkInsert()
-                            .SetIdentityColumn(x => x.Id, ColumnDirection.InputOutput)
+                            .SetIdentityColumn(x => x.Id, ColumnDirectionType.InputOutput)
                             .Commit(conn),
                         "No setter method available on property 'Id'. Could not write output back to property.");
                 }
@@ -977,7 +978,7 @@ namespace SqlBulkTools.IntegrationTests
                             .AddColumn(x => x.Price)
                             .BulkInsertOrUpdate()
                             .MatchTargetOn(x => x.ISBN)
-                            .SetIdentityColumn(x => x.Id, ColumnDirection.InputOutput)
+                            .SetIdentityColumn(x => x.Id, ColumnDirectionType.InputOutput)
                             .Commit(conn),
                         "No setter method available on property 'Id'. Could not write output back to property.");
                 }

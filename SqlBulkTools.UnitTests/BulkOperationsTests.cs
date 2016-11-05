@@ -178,7 +178,7 @@ namespace SqlBulkTools.UnitTests
             sqlConnMock.Setup(x => x.Database).Returns(databaseName);
 
             // Act
-            string result = BulkOperationsHelper.GetIndexManagementCmd(IndexOperation.Disable, "Books", "dbo", sqlConnMock.Object, null, true);
+            string result = BulkOperationsHelper.GetIndexManagementCmd(Constants.Disable, "Books", "dbo", sqlConnMock.Object, null, true);
 
             // Assert
             Assert.AreEqual(expected, result);
@@ -199,7 +199,7 @@ namespace SqlBulkTools.UnitTests
             sqlConnMock.Setup(x => x.Database).Returns(databaseName);
 
             // Act
-            string result = BulkOperationsHelper.GetIndexManagementCmd(IndexOperation.Disable, "Books", "dbo", sqlConnMock.Object, indexes);
+            string result = BulkOperationsHelper.GetIndexManagementCmd(Constants.Disable, "Books", "dbo", sqlConnMock.Object, indexes);
 
             // Assert
             Assert.AreEqual(expected, result);
@@ -235,7 +235,7 @@ namespace SqlBulkTools.UnitTests
             sqlConnMock.Setup(x => x.Database).Returns(databaseName);
 
             // Act
-            string result = BulkOperationsHelper.GetIndexManagementCmd(IndexOperation.Disable, "Books", "dbo", sqlConnMock.Object, indexes);
+            string result = BulkOperationsHelper.GetIndexManagementCmd(Constants.Disable, "Books", "dbo", sqlConnMock.Object, indexes);
 
             // Assert
             Assert.AreEqual(expected, result);
@@ -262,9 +262,9 @@ namespace SqlBulkTools.UnitTests
             // Arrange
             var targetAlias = "Target";
             var updateOn = new[] {"stub"};
-            var conditions = new List<Condition>()
+            var conditions = new List<PredicateCondition>()
             {
-                new Condition()
+                new PredicateCondition()
                 {
                     Expression = ExpressionType.LessThan,
                     LeftName = "Price",
@@ -289,9 +289,9 @@ namespace SqlBulkTools.UnitTests
             // Arrange
             var targetAlias = "Target";
             var updateOn = new[] { "stub" };
-            var conditions = new List<Condition>()
+            var conditions = new List<PredicateCondition>()
             {
-                new Condition()
+                new PredicateCondition()
                 {
                     Expression = ExpressionType.Equal,
                     LeftName = "Description",
@@ -314,9 +314,9 @@ namespace SqlBulkTools.UnitTests
             // Arrange
             var targetAlias = "Target";
             var updateOn = new[] { "stub" };
-            var conditions = new List<Condition>()
+            var conditions = new List<PredicateCondition>()
             {
-                new Condition()
+                new PredicateCondition()
                 {
                     Expression = ExpressionType.NotEqual,
                     LeftName = "Description",
@@ -339,9 +339,9 @@ namespace SqlBulkTools.UnitTests
             // Arrange
             var targetAlias = "Target";
             var updateOn = new[] { "stub" };
-            var conditions = new List<Condition>()
+            var conditions = new List<PredicateCondition>()
             {
-                new Condition()
+                new PredicateCondition()
                 {
                     Expression = ExpressionType.LessThan,
                     LeftName = "Description",
@@ -365,9 +365,9 @@ namespace SqlBulkTools.UnitTests
             // Arrange
             var targetAlias = "Target";
             var updateOn = new[] { "stub" };
-            var conditions = new List<Condition>()
+            var conditions = new List<PredicateCondition>()
             {
-                new Condition()
+                new PredicateCondition()
                 {
                     Expression = ExpressionType.LessThanOrEqual,
                     LeftName = "Description",
@@ -391,9 +391,9 @@ namespace SqlBulkTools.UnitTests
             // Arrange
             var targetAlias = "Target";
             var updateOn = new[] { "stub" };
-            var conditions = new List<Condition>()
+            var conditions = new List<PredicateCondition>()
             {
-                new Condition()
+                new PredicateCondition()
                 {
                     Expression = ExpressionType.GreaterThan,
                     LeftName = "Description",
@@ -417,9 +417,9 @@ namespace SqlBulkTools.UnitTests
             // Arrange
             var targetAlias = "Target";
             var updateOn = new[] { "stub" };
-            var conditions = new List<Condition>()
+            var conditions = new List<PredicateCondition>()
             {
-                new Condition()
+                new PredicateCondition()
                 {
                     Expression = ExpressionType.GreaterThanOrEqual,
                     LeftName = "Description",
@@ -443,9 +443,9 @@ namespace SqlBulkTools.UnitTests
             // Arrange
             var targetAlias = "Target";
             var updateOn = new[] { "stub" };
-            var conditions = new List<Condition>()
+            var conditions = new List<PredicateCondition>()
             {
-                new Condition()
+                new PredicateCondition()
                 {
                     Expression = ExpressionType.GreaterThanOrEqual,
                     LeftName = "Description",
@@ -470,16 +470,16 @@ namespace SqlBulkTools.UnitTests
             // Arrange
             var targetAlias = "Target";
             var updateOn = new[] { "stub" };
-            var conditions = new List<Condition>()
+            var conditions = new List<PredicateCondition>()
             {
-                new Condition()
+                new PredicateCondition()
                 {
                     Expression = ExpressionType.NotEqual,
                     LeftName = "Description",
                     Value = "null",
                     SortOrder = 1
                 },
-                new Condition()
+                new PredicateCondition()
                 {
                     Expression = ExpressionType.GreaterThanOrEqual,
                     LeftName = "Price",
@@ -505,16 +505,16 @@ namespace SqlBulkTools.UnitTests
             var targetAlias = "Target";
             var updateOn1 = new string[0];
 
-            var conditions = new List<Condition>()
+            var conditions = new List<PredicateCondition>()
             {
-                new Condition()
+                new PredicateCondition()
                 {
                     Expression = ExpressionType.NotEqual,
                     LeftName = "Description",
                     Value = "null",
                     SortOrder = 1
                 },
-                new Condition()
+                new PredicateCondition()
                 {
                     Expression = ExpressionType.GreaterThanOrEqual,
                     LeftName = "Price",

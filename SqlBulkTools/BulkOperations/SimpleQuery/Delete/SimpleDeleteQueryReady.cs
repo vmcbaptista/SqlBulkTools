@@ -5,6 +5,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using SqlBulkTools.Enumeration;
 
 // ReSharper disable once CheckNamespace
 namespace SqlBulkTools
@@ -18,9 +19,9 @@ namespace SqlBulkTools
         private readonly string _tableName;
         private readonly string _schema;
         private readonly int _sqlTimeout;
-        private readonly List<Condition> _whereConditions;
-        private readonly List<Condition> _andConditions;
-        private readonly List<Condition> _orConditions;
+        private readonly List<PredicateCondition> _whereConditions;
+        private readonly List<PredicateCondition> _andConditions;
+        private readonly List<PredicateCondition> _orConditions;
         private readonly List<SqlParameter> _parameters;
         private int _conditionSortOrder;
 
@@ -34,14 +35,14 @@ namespace SqlBulkTools
         /// <param name="whereConditions"></param>
         /// <param name="parameters"></param>
         public SimpleDeleteQueryReady(string tableName, string schema,
-            int sqlTimeout, int conditionSortOrder, List<Condition> whereConditions, List<SqlParameter> parameters)
+            int sqlTimeout, int conditionSortOrder, List<PredicateCondition> whereConditions, List<SqlParameter> parameters)
         {
             _tableName = tableName;
             _schema = schema;
             _sqlTimeout = sqlTimeout;
             _whereConditions = whereConditions;
-            _andConditions = new List<Condition>();
-            _orConditions = new List<Condition>();
+            _andConditions = new List<PredicateCondition>();
+            _orConditions = new List<PredicateCondition>();
             _conditionSortOrder = conditionSortOrder;
             _parameters = parameters;
         }

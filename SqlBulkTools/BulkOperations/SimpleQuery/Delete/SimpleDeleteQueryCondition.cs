@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq.Expressions;
+using SqlBulkTools.Enumeration;
 
 // ReSharper disable once CheckNamespace
 namespace SqlBulkTools
@@ -15,7 +16,7 @@ namespace SqlBulkTools
         private readonly string _tableName;
         private readonly string _schema;
         private readonly int _sqlTimeout;
-        private readonly List<Condition> _whereConditions;
+        private readonly List<PredicateCondition> _whereConditions;
         private readonly List<SqlParameter> _parameters;
         private int _conditionSortOrder;
 
@@ -30,7 +31,7 @@ namespace SqlBulkTools
             _tableName = tableName;
             _schema = schema;
             _sqlTimeout = sqlTimeout;
-            _whereConditions = new List<Condition>();
+            _whereConditions = new List<PredicateCondition>();
             _parameters = new List<SqlParameter>();
             _conditionSortOrder = 1;
         }

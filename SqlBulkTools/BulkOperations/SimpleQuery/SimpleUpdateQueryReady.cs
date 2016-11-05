@@ -5,6 +5,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using SqlBulkTools.Enumeration;
 
 // ReSharper disable once CheckNamespace
 namespace SqlBulkTools
@@ -21,9 +22,9 @@ namespace SqlBulkTools
         private readonly HashSet<string> _columns;
         private readonly Dictionary<string, string> _customColumnMappings;
         private readonly int _sqlTimeout;
-        private readonly List<Condition> _whereConditions;
-        private readonly List<Condition> _andConditions;
-        private readonly List<Condition> _orConditions;
+        private readonly List<PredicateCondition> _whereConditions;
+        private readonly List<PredicateCondition> _andConditions;
+        private readonly List<PredicateCondition> _orConditions;
         private readonly List<SqlParameter> _sqlParams;
         private int _conditionSortOrder;
         private string _identityColumn;
@@ -41,7 +42,7 @@ namespace SqlBulkTools
         /// <param name="whereConditions"></param>
         /// <param name="sqlParams"></param>
         public SimpleUpdateQueryReady(T singleEntity, string tableName, string schema, HashSet<string> columns, Dictionary<string, string> customColumnMappings,
-            int sqlTimeout, int conditionSortOrder, List<Condition> whereConditions, List<SqlParameter> sqlParams)
+            int sqlTimeout, int conditionSortOrder, List<PredicateCondition> whereConditions, List<SqlParameter> sqlParams)
         {
             _singleEntity = singleEntity;
             _tableName = tableName;
@@ -51,8 +52,8 @@ namespace SqlBulkTools
             _sqlTimeout = sqlTimeout;
             _conditionSortOrder = conditionSortOrder;
             _whereConditions = whereConditions;
-            _andConditions = new List<Condition>();
-            _orConditions = new List<Condition>();
+            _andConditions = new List<PredicateCondition>();
+            _orConditions = new List<PredicateCondition>();
             _sqlParams = sqlParams;
             _identityColumn = string.Empty;
         }
