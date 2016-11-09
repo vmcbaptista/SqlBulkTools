@@ -5,6 +5,7 @@ using System.Data;
 using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Threading;
 using System.Transactions;
 using NUnit.Framework;
 using Ploeh.AutoFixture;
@@ -641,6 +642,76 @@ namespace SqlBulkTools.IntegrationTests
 
             Assert.AreEqual(expected.Id, test.Id);
 
+        }
+
+        [Test]
+        public void SqlBulkTools_BulkInsertOrUpdate_ExcludeColumnTest()
+        {
+            // Remove existing records for a fresh test
+            BulkDelete(_db.Books.ToList());
+            BulkOperations bulk = new BulkOperations();
+            // Get a list with random data
+            List<Book> books = _randomizer.GetRandomCollection(30);
+            DateTime originalDate, updatedDate;
+
+            // Set the original date as the date Donald Trump somehow won the US election. 
+            originalDate = new DateTime(2016, 11, 9);
+            // Set the new date as the date Trump's presidency will end
+            updatedDate = new DateTime(2020, 11, 9);
+            
+            // Add dates to initial list
+            books.ForEach(x =>
+            {
+                x.CreatedAt = originalDate;
+                x.ModifiedAt = originalDate;
+            });
+
+            using (TransactionScope trans = new TransactionScope())
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager
+                    .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+                {
+
+                    // Insert initial list
+                    bulk.Setup<Book>()
+                        .ForCollection(books)
+                        .WithTable("Books")
+                        .AddAllColumns()
+                        .BulkInsert()
+                        .SetIdentityColumn(x => x.Id)
+                        .Commit(conn);
+
+                    // Update list with new dates
+                    books.ForEach(x =>
+                    {
+                        x.CreatedAt = updatedDate;
+                        x.ModifiedAt = updatedDate;
+                    });
+
+                    // Insert a random record
+                    books.Add(new Book(){CreatedAt   = updatedDate, ModifiedAt = updatedDate, Price = 29.99M, Title="Trump likes woman", ISBN = "1234567891011"});
+                    
+                    bulk.Setup<Book>()
+                        .ForCollection(books)
+                        .WithTable("Books")
+                        .AddAllColumns() // Both ModifiedAt and CreatedAt are added implicitly here
+                        .BulkInsertOrUpdate()
+                        .MatchTargetOn(x => x.ISBN)
+                        .SetIdentityColumn(x => x.Id)
+                        .ExcludeColumnFromUpdate(x => x.CreatedAt) // Insert or update with new dates but ignore created date. 
+                        .Commit(conn);
+                }
+
+                trans.Complete();
+            }
+            string updatedIsbn = books[10].ISBN;
+            string addedIsbn = books.Last().ISBN;
+            var updatedBookUnderTest = _db.Books.Single(x => x.ISBN.Equals(updatedIsbn));
+            var createdBookUnderTest = _db.Books.Single(x => x.ISBN.Equals(addedIsbn));
+
+            Assert.AreEqual(updatedDate, updatedBookUnderTest.ModifiedAt); // The ModifiedAt should be updated
+            Assert.AreEqual(originalDate, updatedBookUnderTest.CreatedAt); // The CreatedAt should be unchanged       
+            Assert.AreEqual(updatedDate, createdBookUnderTest.CreatedAt); // CreatedAt should be new date because it was an insert
         }
 
         [Test]

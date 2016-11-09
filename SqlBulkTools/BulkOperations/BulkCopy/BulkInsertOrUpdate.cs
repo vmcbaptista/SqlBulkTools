@@ -17,6 +17,7 @@ namespace SqlBulkTools
     public class BulkInsertOrUpdate<T> : AbstractOperation<T>, ITransaction
     {
         private bool _deleteWhenNotMatchedFlag;
+        private HashSet<string> _excludeFromUpdate;
 
         /// <summary>
         /// 
@@ -47,6 +48,7 @@ namespace SqlBulkTools
             _deletePredicates = new List<PredicateCondition>();
             _parameters = new List<SqlParameter>();
             _conditionSortOrder = 1;
+            _excludeFromUpdate = new HashSet<string>();
         }
 
         /// <summary>
@@ -90,6 +92,29 @@ namespace SqlBulkTools
         public BulkInsertOrUpdate<T> SetIdentityColumn(Expression<Func<T, object>> columnName, ColumnDirectionType outputIdentity)
         {
             base.SetIdentity(columnName, outputIdentity);
+            return this;
+        }
+
+        /// <summary>
+        /// Exclude a property from the update statement. Useful for when you want to include CreatedDate or Guid for inserts only. 
+        /// </summary>
+        /// <param name="columnName"></param>
+        /// <returns></returns>
+        public BulkInsertOrUpdate<T> ExcludeColumnFromUpdate(Expression<Func<T, object>> columnName)
+        {
+            var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
+
+            if (propertyName == null)
+                throw new SqlBulkToolsException("ExcludeColumnFromUpdate column name can't be null");
+
+
+            if (!_columns.Contains(propertyName))
+            {
+                throw new SqlBulkToolsException("ExcludeColumnFromUpdate could not exclude column from update because column could not " +
+                                                "be recognised. Call AddAllColumns() or AddColumn() for this column first.");
+            }
+            _excludeFromUpdate.Add(propertyName);
+
             return this;
         }
 
@@ -208,7 +233,7 @@ namespace SqlBulkTools
                         Constants.SourceAlias, Constants.TargetAlias) +
                     "WHEN MATCHED " + BulkOperationsHelper.BuildPredicateQuery(_matchTargetOn.ToArray(), _updatePredicates, Constants.TargetAlias) +
                     "THEN UPDATE " +
-                    BulkOperationsHelper.BuildUpdateSet(_columns, Constants.SourceAlias, Constants.TargetAlias, _identityColumn) +
+                    BulkOperationsHelper.BuildUpdateSet(_columns, Constants.SourceAlias, Constants.TargetAlias, _identityColumn, _excludeFromUpdate) +
                     "WHEN NOT MATCHED BY TARGET THEN " +
                     BulkOperationsHelper.BuildInsertSet(_columns, Constants.SourceAlias, _identityColumn) +
                     (_deleteWhenNotMatchedFlag ? " WHEN NOT MATCHED BY SOURCE " + BulkOperationsHelper.BuildPredicateQuery(_matchTargetOn.ToArray(),
@@ -334,7 +359,7 @@ namespace SqlBulkTools
                         Constants.SourceAlias, Constants.TargetAlias) +
                     "WHEN MATCHED " + BulkOperationsHelper.BuildPredicateQuery(_matchTargetOn.ToArray(), _updatePredicates, Constants.TargetAlias) +
                     "THEN UPDATE " +
-                    BulkOperationsHelper.BuildUpdateSet(_columns, Constants.SourceAlias, Constants.TargetAlias, _identityColumn) +
+                    BulkOperationsHelper.BuildUpdateSet(_columns, Constants.SourceAlias, Constants.TargetAlias, _identityColumn, _excludeFromUpdate) +
                     "WHEN NOT MATCHED BY TARGET THEN " +
                     BulkOperationsHelper.BuildInsertSet(_columns, Constants.SourceAlias, _identityColumn) +
                     (_deleteWhenNotMatchedFlag ? " WHEN NOT MATCHED BY SOURCE " + BulkOperationsHelper.BuildPredicateQuery(_matchTargetOn.ToArray(),

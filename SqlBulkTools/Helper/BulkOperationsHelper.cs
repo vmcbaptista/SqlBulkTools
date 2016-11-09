@@ -315,16 +315,19 @@ namespace SqlBulkTools
 
         }
 
-        internal static string BuildUpdateSet(HashSet<string> columns, string sourceAlias, string targetAlias, string identityColumn)
+        internal static string BuildUpdateSet(HashSet<string> columns, string sourceAlias, string targetAlias, string identityColumn, HashSet<string> excludeFromUpdate = null)
         {
             StringBuilder command = new StringBuilder();
             List<string> paramsSeparated = new List<string>();
+
+            if (excludeFromUpdate == null)
+                excludeFromUpdate = new HashSet<string>();
 
             command.Append("SET ");
 
             foreach (var column in columns.ToList())
             {
-                if (identityColumn != null && column != identityColumn || identityColumn == null)
+                if ((column != identityColumn || identityColumn == null) && !excludeFromUpdate.Contains(column))
                 {
                     if (column != Constants.InternalId)
                         paramsSeparated.Add("[" + targetAlias + "]" + "." + "[" + column + "]" + " = " + "[" + sourceAlias + "]" + "."

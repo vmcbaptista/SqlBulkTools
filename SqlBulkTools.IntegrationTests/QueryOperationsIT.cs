@@ -516,7 +516,7 @@ namespace SqlBulkTools.IntegrationTests
                     .AddAllColumns()
                     .Upsert()
                     .SetIdentityColumn(x => x.Id, ColumnDirectionType.InputOutput)
-                    .MatchTargetOn(x => x.Id)
+                    .MatchTargetOn(x => x.Id)                    
                     .Commit(con);
                 }
 

@@ -6,6 +6,7 @@ namespace SqlBulkTools.IntegrationTests.Model
 {
     public class Book
     {
+
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
         public int Id { get; set; }
@@ -34,6 +35,10 @@ namespace SqlBulkTools.IntegrationTests.Model
         public object InvalidType { get; set; }
 
         public bool? BestSeller { get; set; }
+
+        public DateTime? CreatedAt { get; set; } // nullable because it only references a few tests.
+
+        public DateTime? ModifiedAt { get; set; } // nullable because it only references a few tests.
     }
 
 }
