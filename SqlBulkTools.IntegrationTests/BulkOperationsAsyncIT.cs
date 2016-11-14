@@ -532,6 +532,7 @@ namespace SqlBulkTools.IntegrationTests
                         .AddColumn(x => x.PublishDate)
                         .BulkInsertOrUpdate()
                         .MatchTargetOn(x => x.ISBN)
+                        .MatchTargetOn(x => x.Description)
                         .CommitAsync(conn);
                 }
 

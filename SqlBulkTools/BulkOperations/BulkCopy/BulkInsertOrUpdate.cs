@@ -229,7 +229,7 @@ namespace SqlBulkTools
                     "MERGE INTO " + BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema, _tableName) +
                     " WITH (HOLDLOCK) AS Target " +
                     "USING " + Constants.TempTableName + " AS Source " +
-                    BulkOperationsHelper.BuildJoinConditionsForUpdateOrInsert(_matchTargetOn.ToArray(),
+                    BulkOperationsHelper.BuildJoinConditionsForInsertOrUpdate(_matchTargetOn.ToArray(),
                         Constants.SourceAlias, Constants.TargetAlias) +
                     "WHEN MATCHED " + BulkOperationsHelper.BuildPredicateQuery(_matchTargetOn.ToArray(), _updatePredicates, Constants.TargetAlias) +
                     "THEN UPDATE " +
@@ -355,7 +355,7 @@ namespace SqlBulkTools
                     "MERGE INTO " + BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema, _tableName) +
                     " WITH (HOLDLOCK) AS Target " +
                     "USING " + Constants.TempTableName + " AS Source " +
-                    BulkOperationsHelper.BuildJoinConditionsForUpdateOrInsert(_matchTargetOn.ToArray(),
+                    BulkOperationsHelper.BuildJoinConditionsForInsertOrUpdate(_matchTargetOn.ToArray(),
                         Constants.SourceAlias, Constants.TargetAlias) +
                     "WHEN MATCHED " + BulkOperationsHelper.BuildPredicateQuery(_matchTargetOn.ToArray(), _updatePredicates, Constants.TargetAlias) +
                     "THEN UPDATE " +
