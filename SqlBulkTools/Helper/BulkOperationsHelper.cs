@@ -153,16 +153,16 @@ namespace SqlBulkTools
         {
             StringBuilder command = new StringBuilder();
 
-            command.Append("ON " + "[" + targetAlias + "]" + "." + "[" + updateOn[0] + "]" + " COLLATE DATABASE_DEFAULT" + " = " + "[" + sourceAlias + "]" + "."
-                + "[" + updateOn[0] + "]" + " COLLATE DATABASE_DEFAULT " + " ");
+            command.Append("ON " + "[" + targetAlias + "]" + "." + "[" + updateOn[0] + "]" + " = " + "[" + sourceAlias + "]" + "."
+                + "[" + updateOn[0] + "]" + /*" COLLATE DATABASE_DEFAULT " +*/ " ");
 
             if (updateOn.Length > 1)
             {
                 // Start from index 1 to just append "AND" conditions
                 for (int i = 1; i < updateOn.Length; i++)
                 {
-                    command.Append("AND " + "[" + targetAlias + "]" + "." + "[" + updateOn[i] + "]" + " COLLATE DATABASE_DEFAULT" + " = " + "[" +
-                        sourceAlias + "]" + "." + "[" + updateOn[i] + "]" + " COLLATE DATABASE_DEFAULT" + " ");
+                    command.Append("AND " + "[" + targetAlias + "]" + "." + "[" + updateOn[i] + "]" + " = " + "[" +
+                        sourceAlias + "]" + "." + "[" + updateOn[i] + "]" + /*" COLLATE DATABASE_DEFAULT" +*/ " ");
                 }
             }
 
