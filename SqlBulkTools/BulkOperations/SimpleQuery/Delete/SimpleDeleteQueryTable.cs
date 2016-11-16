@@ -15,7 +15,6 @@ namespace SqlBulkTools
         private readonly string _tableName;
         private Dictionary<string, string> CustomColumnMappings { get; set; }
         private int _sqlTimeout;
-        private string _collation;
         /// <summary>
         /// 
         /// </summary>
