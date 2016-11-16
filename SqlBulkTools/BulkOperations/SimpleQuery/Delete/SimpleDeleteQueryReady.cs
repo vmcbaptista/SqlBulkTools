@@ -24,6 +24,7 @@ namespace SqlBulkTools
         private readonly List<PredicateCondition> _orConditions;
         private readonly List<SqlParameter> _parameters;
         private int _conditionSortOrder;
+        private readonly Dictionary<string, string> _collationColumnDic; 
 
         /// <summary>
         /// 
@@ -45,6 +46,7 @@ namespace SqlBulkTools
             _orConditions = new List<PredicateCondition>();
             _conditionSortOrder = conditionSortOrder;
             _parameters = parameters;
+            _collationColumnDic = new Dictionary<string, string>();
         }
 
 
@@ -77,6 +79,24 @@ namespace SqlBulkTools
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="columnName"></param>
+        /// <param name="collation"></param>
+        /// <returns></returns>
+        public SimpleDeleteQueryReady<T> SetCollationOnColumn(Expression<Func<T, object>> columnName, string collation)
+        {
+            var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
+
+            if (propertyName == null)
+                throw new SqlBulkToolsException("SetCollationOnColumn column name can't be null");
+
+            _collationColumnDic.Add(propertyName, collation);
+
+            return this;
+        }
+
+        /// <summary>
         /// Commits a transaction to database. A valid setup must exist for the operation to be 
         /// successful.
         /// </summary>
@@ -97,7 +117,7 @@ namespace SqlBulkTools
                 _tableName);
 
             string comm = $"DELETE FROM {fullQualifiedTableName} " +
-                          $"{BulkOperationsHelper.BuildPredicateQuery(concatenatedQuery)}";
+                          $"{BulkOperationsHelper.BuildPredicateQuery(concatenatedQuery, _collationColumnDic)}";
 
             command.CommandText = comm;
 
@@ -132,7 +152,7 @@ namespace SqlBulkTools
                 _tableName);
 
             string comm = $"DELETE FROM {fullQualifiedTableName} " +
-                          $"{BulkOperationsHelper.BuildPredicateQuery(concatenatedQuery)}";
+                          $"{BulkOperationsHelper.BuildPredicateQuery(concatenatedQuery, _collationColumnDic)}";
 
             command.CommandText = comm;
 

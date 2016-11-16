@@ -55,6 +55,16 @@ namespace SqlBulkTools
         }
 
         /// <summary>
+        /// Inserts a single entity. This method uses a parameterized query. 
+        /// </summary>
+        /// <returns></returns>
+        public SimpleInsertQueryReady<T> Insert()
+        {
+            return new SimpleInsertQueryReady<T>(_singleEntity, _tableName, _schema, _columns, CustomColumnMappings,
+                _sqlTimeout, _sqlParams);
+        }
+
+        /// <summary>
         /// Attempts to update the target entity (using the mandatory MatchTargetOn property). 
         /// If the target entity doesn't exist, insert a new record. This method uses a parameterized query.
         /// </summary>
@@ -65,15 +75,7 @@ namespace SqlBulkTools
                 _sqlTimeout, _sqlParams);
         }
 
-        /// <summary>
-        /// Inserts a single entity. This method uses a parameterized query. 
-        /// </summary>
-        /// <returns></returns>
-        public SimpleInsertQueryReady<T> Insert()
-        {
-            return new SimpleInsertQueryReady<T>(_singleEntity, _tableName, _schema, _columns, CustomColumnMappings,
-                _sqlTimeout, _sqlParams);
-        }
+
 
         /// <summary>
         /// All rows matching the condition(s) selected will be updated. If you need to update a collection of objects that can't be

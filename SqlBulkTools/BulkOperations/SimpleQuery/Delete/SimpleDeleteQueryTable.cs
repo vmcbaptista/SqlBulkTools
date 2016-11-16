@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using SqlBulkTools.BulkCopy;
 
 // ReSharper disable once CheckNamespace
 namespace SqlBulkTools
@@ -14,6 +15,7 @@ namespace SqlBulkTools
         private readonly string _tableName;
         private Dictionary<string, string> CustomColumnMappings { get; set; }
         private int _sqlTimeout;
+        private string _collation;
         /// <summary>
         /// 
         /// </summary>

@@ -25,9 +25,10 @@ namespace SqlBulkTools
         private readonly int _sqlTimeout;
         private string _identityColumn;
         private readonly List<SqlParameter> _sqlParams;
-        private HashSet<string> _matchTargetOnSet;
-        private HashSet<string> _excludeFromUpdate; 
+        private readonly HashSet<string> _matchTargetOnSet;
+        private readonly HashSet<string> _excludeFromUpdate; 
         private ColumnDirectionType _outputIdentity;
+        private readonly Dictionary<string, string> _collationColumnDic; 
 
         /// <summary>
         /// 
@@ -52,6 +53,7 @@ namespace SqlBulkTools
             _matchTargetOnSet = new HashSet<string>();
             _outputIdentity = ColumnDirectionType.Input;
             _excludeFromUpdate = new HashSet<string>();
+            _collationColumnDic = new Dictionary<string, string>();
         }
 
         /// <summary>
@@ -126,6 +128,24 @@ namespace SqlBulkTools
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="columnName"></param>
+        /// <param name="collation"></param>
+        /// <returns></returns>
+        public SimpleUpsertQueryReady<T> SetCollationOnColumn(Expression<Func<T, object>> columnName, string collation)
+        {
+            var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
+
+            if (propertyName == null)
+                throw new SqlBulkToolsException("SetCollationOnColumn column name can't be null");
+
+            _collationColumnDic.Add(propertyName, collation);
+
+            return this;
+        }
+
+        /// <summary>
         /// At least one MatchTargetOn is required for correct configuration. MatchTargetOn is the matching clause for evaluating 
         /// each row in table. This is usally set to the unique identifier in the table (e.g. Id). Multiple MatchTargetOn members are allowed 
         /// for matching composite relationships. 
@@ -183,7 +203,7 @@ namespace SqlBulkTools
                 StringBuilder sb = new StringBuilder();
 
                 sb.Append(
-                    $"UPDATE {fullQualifiedTableName} {BulkOperationsHelper.BuildUpdateSet(_columns, _excludeFromUpdate, _identityColumn)} {BulkOperationsHelper.BuildMatchTargetOnList(_matchTargetOnSet)}; " +
+                    $"UPDATE {fullQualifiedTableName} {BulkOperationsHelper.BuildUpdateSet(_columns, _excludeFromUpdate, _identityColumn)} {BulkOperationsHelper.BuildMatchTargetOnList(_matchTargetOnSet, _collationColumnDic)}; " +
                     $"IF (@@ROWCOUNT = 0) BEGIN " +
                     $"{BulkOperationsHelper.BuildInsertIntoSet(_columns, _identityColumn, fullQualifiedTableName)} " +
                     $"VALUES{BulkOperationsHelper.BuildValueSet(_columns, _identityColumn)} ");
@@ -275,7 +295,7 @@ namespace SqlBulkTools
                 string fullQualifiedTableName = BulkOperationsHelper.GetFullQualifyingTableName(conn.Database, _schema, _tableName);
                 StringBuilder sb = new StringBuilder();
 
-                sb.Append($"UPDATE {fullQualifiedTableName} {BulkOperationsHelper.BuildUpdateSet(_columns, _excludeFromUpdate, _identityColumn)} {BulkOperationsHelper.BuildMatchTargetOnList(_matchTargetOnSet)} " +
+                sb.Append($"UPDATE {fullQualifiedTableName} {BulkOperationsHelper.BuildUpdateSet(_columns, _excludeFromUpdate, _identityColumn)} {BulkOperationsHelper.BuildMatchTargetOnList(_matchTargetOnSet, _collationColumnDic)} " +
                   $"IF (@@ROWCOUNT = 0) BEGIN " +
                   $"{ BulkOperationsHelper.BuildInsertIntoSet(_columns, _identityColumn, fullQualifiedTableName)} " +
                   $"VALUES{BulkOperationsHelper.BuildValueSet(_columns, _identityColumn)} " +

@@ -39,7 +39,8 @@ namespace SqlBulkTools
             IEnumerable<SqlRowsCopiedEventHandler> bulkCopyDelegates)
             :
             base(list, tableName, schema, columns, disableIndexList, disableAllIndexes, customColumnMappings, sqlTimeout,
-                bulkCopyTimeout, bulkCopyEnableStreaming, bulkCopyNotifyAfter, bulkCopyBatchSize, sqlBulkCopyOptions, bulkCopyDelegates)
+                bulkCopyTimeout, bulkCopyEnableStreaming, bulkCopyNotifyAfter, bulkCopyBatchSize, sqlBulkCopyOptions, 
+                bulkCopyDelegates)
         {
             _updatePredicates = new List<PredicateCondition>();
             _parameters = new List<SqlParameter>();
@@ -102,6 +103,18 @@ namespace SqlBulkTools
         public BulkUpdate<T> SetIdentityColumn(Expression<Func<T, object>> columnName, ColumnDirectionType outputIdentity)
         {
             base.SetIdentity(columnName, outputIdentity);
+            return this;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="columnName"></param>
+        /// <param name="collation"></param>
+        /// <returns></returns>
+        public BulkUpdate<T> SetCollationOnColumn(Expression<Func<T, object>> columnName, string collation)
+        {
+            base.SetCollation(columnName, collation);
             return this;
         }
 
@@ -169,8 +182,8 @@ namespace SqlBulkTools
                 comm = "MERGE INTO " + BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema, _tableName) + " WITH (HOLDLOCK) AS Target " +
                               "USING " + Constants.TempTableName + " AS Source " +
                               BulkOperationsHelper.BuildJoinConditionsForInsertOrUpdate(_matchTargetOn.ToArray(),
-                                  Constants.SourceAlias, Constants.TargetAlias) +
-                              "WHEN MATCHED " + BulkOperationsHelper.BuildPredicateQuery(_matchTargetOn.ToArray(), _updatePredicates, Constants.TargetAlias) +
+                                  Constants.SourceAlias, Constants.TargetAlias, base._collationColumnDic) +
+                              "WHEN MATCHED " + BulkOperationsHelper.BuildPredicateQuery(_matchTargetOn.ToArray(), _updatePredicates, Constants.TargetAlias, base._collationColumnDic) +
                               "THEN UPDATE " +
                               BulkOperationsHelper.BuildUpdateSet(_columns, Constants.SourceAlias, Constants.TargetAlias, _identityColumn) +
                               BulkOperationsHelper.GetOutputIdentityCmd(_identityColumn, _outputIdentity, Constants.TempOutputTableName,
@@ -281,8 +294,8 @@ namespace SqlBulkTools
                 comm = "MERGE INTO " + BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema, _tableName) + " WITH (HOLDLOCK) AS Target " +
                               "USING " + Constants.TempTableName + " AS Source " +
                               BulkOperationsHelper.BuildJoinConditionsForInsertOrUpdate(_matchTargetOn.ToArray(),
-                                  Constants.SourceAlias, Constants.TargetAlias) +
-                              "WHEN MATCHED " + BulkOperationsHelper.BuildPredicateQuery(_matchTargetOn.ToArray(), _updatePredicates, Constants.TargetAlias) +
+                                  Constants.SourceAlias, Constants.TargetAlias, base._collationColumnDic) +
+                              "WHEN MATCHED " + BulkOperationsHelper.BuildPredicateQuery(_matchTargetOn.ToArray(), _updatePredicates, Constants.TargetAlias, base._collationColumnDic) +
                               "THEN UPDATE " +
                               BulkOperationsHelper.BuildUpdateSet(_columns, Constants.SourceAlias, Constants.TargetAlias, _identityColumn) +
                               BulkOperationsHelper.GetOutputIdentityCmd(_identityColumn, _outputIdentity, Constants.TempOutputTableName,

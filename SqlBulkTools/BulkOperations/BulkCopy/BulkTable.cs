@@ -24,7 +24,6 @@ namespace SqlBulkTools.BulkCopy
         private readonly string _tableName;
         private Dictionary<string, string> CustomColumnMappings { get; set; }
         private int _sqlTimeout;
-        private string _collation;
 
         /// <summary>
         /// 
@@ -47,7 +46,6 @@ namespace SqlBulkTools.BulkCopy
             _schema = Constants.DefaultSchemaName;
             Columns = new HashSet<string>();
             CustomColumnMappings = new Dictionary<string, string>();
-            _collation = null;
         }
 
         /// <summary>
@@ -82,17 +80,6 @@ namespace SqlBulkTools.BulkCopy
         public BulkTable<T> WithSchema(string schema)
         {
             _schema = schema;
-            return this;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="collation"></param>
-        /// <returns></returns>
-        public BulkTable<T> WithCollation(string collation)
-        {
-            _collation = collation;
             return this;
         }
 

@@ -27,7 +27,6 @@ namespace SqlBulkTools
         private ColumnDirectionType _outputIdentity;
         private readonly List<SqlParameter> _sqlParams;
 
-
         /// <summary>
         /// 
         /// </summary>

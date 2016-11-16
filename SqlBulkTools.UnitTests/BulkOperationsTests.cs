@@ -21,7 +21,7 @@ namespace SqlBulkTools.UnitTests
             List<string> joinOnList = new List<string>() { "MarketPlaceId", "FK_BusinessId", "AddressId" };
 
             // Act
-            var result = BulkOperationsHelper.BuildJoinConditionsForInsertOrUpdate(joinOnList.ToArray(), "Source", "Target");
+            var result = BulkOperationsHelper.BuildJoinConditionsForInsertOrUpdate(joinOnList.ToArray(), "Source", "Target", new Dictionary<string, string>());
 
             // Assert
             Assert.AreEqual("ON [Target].[MarketPlaceId] = [Source].[MarketPlaceId] AND [Target].[FK_BusinessId] = [Source].[FK_BusinessId] AND [Target].[AddressId] = [Source].[AddressId] ", result);
@@ -34,10 +34,10 @@ namespace SqlBulkTools.UnitTests
             List<string> joinOnList = new List<string>() { "MarketPlaceId", "FK_BusinessId" };
 
             // Act
-            var result = BulkOperationsHelper.BuildJoinConditionsForInsertOrUpdate(joinOnList.ToArray(), "Source", "Target");
+            var result = BulkOperationsHelper.BuildJoinConditionsForInsertOrUpdate(joinOnList.ToArray(), "Source", "Target", new Dictionary<string, string>() { { "FK_BusinessId", "DEFAULT_COLLATION" } });
 
             // Assert
-            Assert.AreEqual("ON [Target].[MarketPlaceId] = [Source].[MarketPlaceId] AND [Target].[FK_BusinessId] = [Source].[FK_BusinessId] ", result);
+            Assert.AreEqual("ON [Target].[MarketPlaceId] = [Source].[MarketPlaceId] AND [Target].[FK_BusinessId] = [Source].[FK_BusinessId] COLLATE DEFAULT_COLLATION ", result);
         }
 
         [Test]
@@ -47,7 +47,7 @@ namespace SqlBulkTools.UnitTests
             List<string> joinOnList = new List<string>() { "MarketPlaceId" };
 
             // Act
-            var result = BulkOperationsHelper.BuildJoinConditionsForInsertOrUpdate(joinOnList.ToArray(), "Source", "Target");
+            var result = BulkOperationsHelper.BuildJoinConditionsForInsertOrUpdate(joinOnList.ToArray(), "Source", "Target", new Dictionary<string, string>());
 
             // Assert
             Assert.AreEqual("ON [Target].[MarketPlaceId] = [Source].[MarketPlaceId] ", result);
@@ -277,7 +277,7 @@ namespace SqlBulkTools.UnitTests
             var expected = "AND [Target].[Price] < @PriceCondition1 ";
 
             // Act
-            var result = BulkOperationsHelper.BuildPredicateQuery(updateOn, conditions, targetAlias);
+            var result = BulkOperationsHelper.BuildPredicateQuery(updateOn, conditions, targetAlias, new Dictionary<string, string>());
 
             // Assert
             Assert.AreEqual(expected, result);
@@ -302,7 +302,7 @@ namespace SqlBulkTools.UnitTests
             var expected = "AND [Target].[Description] IS NULL ";
 
             // Act
-            var result = BulkOperationsHelper.BuildPredicateQuery(updateOn, conditions, targetAlias);
+            var result = BulkOperationsHelper.BuildPredicateQuery(updateOn, conditions, targetAlias, null);
 
             // Assert
             Assert.AreEqual(expected, result);
@@ -327,7 +327,7 @@ namespace SqlBulkTools.UnitTests
             var expected = "AND [Target].[Description] IS NOT NULL ";
 
             // Act
-            var result = BulkOperationsHelper.BuildPredicateQuery(updateOn, conditions, targetAlias);
+            var result = BulkOperationsHelper.BuildPredicateQuery(updateOn, conditions, targetAlias, null);
 
             // Assert
             Assert.AreEqual(expected, result);
@@ -350,10 +350,12 @@ namespace SqlBulkTools.UnitTests
                 }
             };
 
-            var expected = "AND [Target].[Description] < @DescriptionCondition1 ";
+            var expected = "AND [Target].[Description] < @DescriptionCondition1 COLLATE DEFAULT_COLLATION ";
+
+            var hashSet = new HashSet<string>() {"DEFAULT_COLLATION"};
 
             // Act
-            var result = BulkOperationsHelper.BuildPredicateQuery(updateOn, conditions, targetAlias);
+            var result = BulkOperationsHelper.BuildPredicateQuery(updateOn, conditions, targetAlias, new Dictionary<string, string>() { { "Description", "DEFAULT_COLLATION" } });
 
             // Assert
             Assert.AreEqual(expected, result);
@@ -379,7 +381,7 @@ namespace SqlBulkTools.UnitTests
             var expected = "AND [Target].[Description] <= @DescriptionCondition1 ";
 
             // Act
-            var result = BulkOperationsHelper.BuildPredicateQuery(updateOn, conditions, targetAlias);
+            var result = BulkOperationsHelper.BuildPredicateQuery(updateOn, conditions, targetAlias, null);
 
             // Assert
             Assert.AreEqual(expected, result);
@@ -405,7 +407,7 @@ namespace SqlBulkTools.UnitTests
             var expected = "AND [Target].[Description] > @DescriptionCondition1 ";
 
             // Act
-            var result = BulkOperationsHelper.BuildPredicateQuery(updateOn, conditions, targetAlias);
+            var result = BulkOperationsHelper.BuildPredicateQuery(updateOn, conditions, targetAlias, null);
 
             // Assert
             Assert.AreEqual(expected, result);
@@ -431,7 +433,7 @@ namespace SqlBulkTools.UnitTests
             var expected = "AND [Target].[Description] >= @DescriptionCondition1 ";
 
             // Act
-            var result = BulkOperationsHelper.BuildPredicateQuery(updateOn, conditions, targetAlias);
+            var result = BulkOperationsHelper.BuildPredicateQuery(updateOn, conditions, targetAlias, null);
 
             // Assert
             Assert.AreEqual(expected, result);
@@ -458,7 +460,7 @@ namespace SqlBulkTools.UnitTests
             var expected = "AND [Target].[ShortDescription] >= @DescriptionCondition1 ";
 
             // Act
-            var result = BulkOperationsHelper.BuildPredicateQuery(updateOn, conditions, targetAlias);
+            var result = BulkOperationsHelper.BuildPredicateQuery(updateOn, conditions, targetAlias, null);
 
             // Assert
             Assert.AreEqual(expected, result);
@@ -492,7 +494,7 @@ namespace SqlBulkTools.UnitTests
             var expected = "AND [Target].[Description] IS NOT NULL AND [Target].[Price] >= @PriceCondition2 ";
 
             // Act
-            var result = BulkOperationsHelper.BuildPredicateQuery(updateOn, conditions, targetAlias);
+            var result = BulkOperationsHelper.BuildPredicateQuery(updateOn, conditions, targetAlias, null);
 
             // Assert
             Assert.AreEqual(expected, result);
@@ -524,8 +526,8 @@ namespace SqlBulkTools.UnitTests
                 },
             };
 
-            Assert.Throws<SqlBulkToolsException>(() => BulkOperationsHelper.BuildPredicateQuery(updateOn1, conditions, targetAlias));
-            Assert.Throws<SqlBulkToolsException>(() => BulkOperationsHelper.BuildPredicateQuery(null, conditions, targetAlias));
+            Assert.Throws<SqlBulkToolsException>(() => BulkOperationsHelper.BuildPredicateQuery(updateOn1, conditions, targetAlias, null));
+            Assert.Throws<SqlBulkToolsException>(() => BulkOperationsHelper.BuildPredicateQuery(null, conditions, targetAlias, null));
         }
 
         [Test]
@@ -602,7 +604,7 @@ namespace SqlBulkTools.UnitTests
             var columns = GetTestColumns();
 
             // ACt
-            var result = BulkOperationsHelper.BuildMatchTargetOnList(columns);
+            var result = BulkOperationsHelper.BuildMatchTargetOnList(columns, null);
 
             // Assert
             Assert.AreEqual(result, "WHERE [id] = @id AND [Name] = @Name AND [Town] = @Town AND [Email] = @Email AND [IsCool] = @IsCool");
@@ -615,10 +617,10 @@ namespace SqlBulkTools.UnitTests
             var columns = new HashSet<string>() {"id"};
 
             // ACt
-            var result = BulkOperationsHelper.BuildMatchTargetOnList(columns);
+            var result = BulkOperationsHelper.BuildMatchTargetOnList(columns, new Dictionary<string, string>() { { "id", "DEFAULT_COLLATION" } });
 
             // Assert
-            Assert.AreEqual(result, "WHERE [id] = @id");
+            Assert.AreEqual(result, "WHERE [id] = @id COLLATE DEFAULT_COLLATION");
         }
 
         private HashSet<string> GetTestColumns()

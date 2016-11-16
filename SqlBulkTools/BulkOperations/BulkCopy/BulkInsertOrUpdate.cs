@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using SqlBulkTools.Enumeration;
 
@@ -92,6 +93,18 @@ namespace SqlBulkTools
         public BulkInsertOrUpdate<T> SetIdentityColumn(Expression<Func<T, object>> columnName, ColumnDirectionType outputIdentity)
         {
             base.SetIdentity(columnName, outputIdentity);
+            return this;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="columnName"></param>
+        /// <param name="collation"></param>
+        /// <returns></returns>
+        public BulkInsertOrUpdate<T> SetCollationOnColumn(Expression<Func<T, object>> columnName, string collation)
+        {
+            base.SetCollation(columnName, collation);
             return this;
         }
 
@@ -230,14 +243,14 @@ namespace SqlBulkTools
                     " WITH (HOLDLOCK) AS Target " +
                     "USING " + Constants.TempTableName + " AS Source " +
                     BulkOperationsHelper.BuildJoinConditionsForInsertOrUpdate(_matchTargetOn.ToArray(),
-                        Constants.SourceAlias, Constants.TargetAlias) +
-                    "WHEN MATCHED " + BulkOperationsHelper.BuildPredicateQuery(_matchTargetOn.ToArray(), _updatePredicates, Constants.TargetAlias) +
+                        Constants.SourceAlias, Constants.TargetAlias, base._collationColumnDic) +
+                    "WHEN MATCHED " + BulkOperationsHelper.BuildPredicateQuery(_matchTargetOn.ToArray(), _updatePredicates, Constants.TargetAlias, base._collationColumnDic) +
                     "THEN UPDATE " +
                     BulkOperationsHelper.BuildUpdateSet(_columns, Constants.SourceAlias, Constants.TargetAlias, _identityColumn, _excludeFromUpdate) +
                     "WHEN NOT MATCHED BY TARGET THEN " +
                     BulkOperationsHelper.BuildInsertSet(_columns, Constants.SourceAlias, _identityColumn) +
                     (_deleteWhenNotMatchedFlag ? " WHEN NOT MATCHED BY SOURCE " + BulkOperationsHelper.BuildPredicateQuery(_matchTargetOn.ToArray(),
-                    _deletePredicates, Constants.TargetAlias) +
+                    _deletePredicates, Constants.TargetAlias, base._collationColumnDic) +
                     "THEN DELETE " : " ") +
                     BulkOperationsHelper.GetOutputIdentityCmd(_identityColumn, _outputIdentity, Constants.TempOutputTableName,
                         OperationType.InsertOrUpdate) + "; " +
@@ -356,14 +369,14 @@ namespace SqlBulkTools
                     " WITH (HOLDLOCK) AS Target " +
                     "USING " + Constants.TempTableName + " AS Source " +
                     BulkOperationsHelper.BuildJoinConditionsForInsertOrUpdate(_matchTargetOn.ToArray(),
-                        Constants.SourceAlias, Constants.TargetAlias) +
-                    "WHEN MATCHED " + BulkOperationsHelper.BuildPredicateQuery(_matchTargetOn.ToArray(), _updatePredicates, Constants.TargetAlias) +
+                        Constants.SourceAlias, Constants.TargetAlias, base._collationColumnDic) +
+                    "WHEN MATCHED " + BulkOperationsHelper.BuildPredicateQuery(_matchTargetOn.ToArray(), _updatePredicates, Constants.TargetAlias, base._collationColumnDic) +
                     "THEN UPDATE " +
                     BulkOperationsHelper.BuildUpdateSet(_columns, Constants.SourceAlias, Constants.TargetAlias, _identityColumn, _excludeFromUpdate) +
                     "WHEN NOT MATCHED BY TARGET THEN " +
                     BulkOperationsHelper.BuildInsertSet(_columns, Constants.SourceAlias, _identityColumn) +
                     (_deleteWhenNotMatchedFlag ? " WHEN NOT MATCHED BY SOURCE " + BulkOperationsHelper.BuildPredicateQuery(_matchTargetOn.ToArray(),
-                    _deletePredicates, Constants.TargetAlias) +
+                    _deletePredicates, Constants.TargetAlias, base._collationColumnDic) +
                     "THEN DELETE " : " ") +
                     BulkOperationsHelper.GetOutputIdentityCmd(_identityColumn, _outputIdentity, Constants.TempOutputTableName,
                         OperationType.InsertOrUpdate) + "; " +

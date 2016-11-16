@@ -36,6 +36,7 @@ namespace SqlBulkTools
         protected List<PredicateCondition> _updatePredicates;
         protected List<PredicateCondition> _deletePredicates;
         protected List<SqlParameter> _parameters;
+        protected Dictionary<string, string> _collationColumnDic;
         protected int _conditionSortOrder;
         #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
@@ -77,6 +78,7 @@ namespace SqlBulkTools
             _bulkCopyBatchSize = bulkCopyBatchSize;
             _sqlBulkCopyOptions = sqlBulkCopyOptions;
             _identityColumn = null;
+            _collationColumnDic = new Dictionary<string, string>();
             _outputIdentityDic = new Dictionary<int, T>();
             _outputIdentity = ColumnDirectionType.Input;
             _matchTargetOn = new List<string>();
@@ -127,6 +129,22 @@ namespace SqlBulkTools
         {
             _outputIdentity = outputIdentity;
             SetIdentity(columnName);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="columnName"></param>
+        /// <param name="collation"></param>
+        /// <returns></returns>
+        protected void SetCollation(Expression<Func<T, object>> columnName, string collation)
+        {
+            var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
+
+            if (propertyName == null)
+                throw new SqlBulkToolsException("SetCollationOnColumn column name can't be null");
+
+            _collationColumnDic.Add(propertyName, collation);
         }
 
         /// <summary>
