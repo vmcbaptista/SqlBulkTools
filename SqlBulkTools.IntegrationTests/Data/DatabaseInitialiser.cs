@@ -5,7 +5,7 @@ using System.Data.SqlClient;
 
 namespace SqlBulkTools.IntegrationTests.Data
 {
-    public class DatabaseInitialiser : DropCreateDatabaseAlways<TestContext>
+    public class DatabaseInitialiser : /*CreateDatabaseIfNotExists<TestContext>*/DropCreateDatabaseAlways<TestContext>
     {
         protected override void Seed(TestContext context)
         {

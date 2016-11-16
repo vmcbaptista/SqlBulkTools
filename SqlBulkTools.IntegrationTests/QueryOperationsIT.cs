@@ -180,6 +180,7 @@ namespace SqlBulkTools.IntegrationTests
                         .Update()
                         .Where(x => x.ISBN == isbn)
                         .And(x => x.Price == 15)
+
                         .Commit(conn);
                 }
 

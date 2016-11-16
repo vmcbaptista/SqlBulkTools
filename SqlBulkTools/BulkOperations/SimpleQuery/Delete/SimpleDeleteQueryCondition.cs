@@ -49,7 +49,8 @@ namespace SqlBulkTools
 
             _conditionSortOrder++;
 
-            return new SimpleDeleteQueryReady<T>(_tableName, _schema, _sqlTimeout, _conditionSortOrder, _whereConditions, _parameters);
+            return new SimpleDeleteQueryReady<T>(_tableName, _schema, _sqlTimeout, _conditionSortOrder, 
+                _whereConditions, _parameters);
         }
 
     }

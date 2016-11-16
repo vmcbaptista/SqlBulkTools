@@ -28,6 +28,7 @@ namespace SqlBulkTools
         private readonly List<SqlParameter> _sqlParams;
         private int _conditionSortOrder;
         private string _identityColumn;
+        private readonly Dictionary<string, string> _collationColumnDic; 
 
         /// <summary>
         /// 
@@ -56,6 +57,7 @@ namespace SqlBulkTools
             _orConditions = new List<PredicateCondition>();
             _sqlParams = sqlParams;
             _identityColumn = string.Empty;
+            _collationColumnDic = new Dictionary<string, string>();
         }
 
         /// <summary>
@@ -109,6 +111,24 @@ namespace SqlBulkTools
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="columnName"></param>
+        /// <param name="collation"></param>
+        /// <returns></returns>
+        public SimpleUpdateQueryReady<T> SetCollationOnColumn(Expression<Func<T, object>> columnName, string collation)
+        {
+            var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
+
+            if (propertyName == null)
+                throw new SqlBulkToolsException("SetCollationOnColumn column name can't be null");
+
+            _collationColumnDic.Add(propertyName, collation);
+
+            return this;
+        }
+
+        /// <summary>
         /// Commits a transaction to database. A valid setup must exist for the operation to be 
         /// successful.
         /// </summary>
@@ -140,7 +160,7 @@ namespace SqlBulkTools
 
             string comm = $"UPDATE {fullQualifiedTableName} " +
             $"{BulkOperationsHelper.BuildUpdateSet(_columns, null, _identityColumn)}" +
-            $"{BulkOperationsHelper.BuildPredicateQuery(concatenatedQuery)}";
+            $"{BulkOperationsHelper.BuildPredicateQuery(concatenatedQuery, _collationColumnDic)}";
 
             command.CommandText = comm;
 
@@ -186,7 +206,7 @@ namespace SqlBulkTools
 
             string comm = $"UPDATE {fullQualifiedTableName} " +
             $"{BulkOperationsHelper.BuildUpdateSet(_columns, null, _identityColumn)}" +
-            $"{BulkOperationsHelper.BuildPredicateQuery(concatenatedQuery)}";
+            $"{BulkOperationsHelper.BuildPredicateQuery(concatenatedQuery, _collationColumnDic)}";
 
             command.CommandText = comm;
 

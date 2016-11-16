@@ -33,7 +33,6 @@ namespace SqlBulkTools
             Columns = new HashSet<string>();
             CustomColumnMappings = new Dictionary<string, string>();
             _tableName = tableName;
-            _schema = Constants.DefaultSchemaName;
             Columns = new HashSet<string>();
             CustomColumnMappings = new Dictionary<string, string>();
             _sqlParams = sqlParams;
@@ -63,15 +62,6 @@ namespace SqlBulkTools
 
             return new SimpleQueryAddColumnList<T>(_singleEntity, _tableName, Columns, _schema,
                 _sqlTimeout, _sqlParams);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public SimpleDeleteQueryCondition<T> Delete()
-        {
-            return new SimpleDeleteQueryCondition<T>(_tableName, _schema, _sqlTimeout);
         }
 
         /// <summary>

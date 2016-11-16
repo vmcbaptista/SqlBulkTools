@@ -107,7 +107,8 @@ namespace SqlBulkTools
         public BulkDelete<T> BulkDelete()
         {
             return new BulkDelete<T>(_list, _tableName, _schema, _columns, _disableIndexList, _disableAllIndexes, _customColumnMappings,
-                _sqlTimeout, _bulkCopyTimeout, _bulkCopyEnableStreaming, _bulkCopyNotifyAfter, _bulkCopyBatchSize, _sqlBulkCopyOptions, _bulkCopyDelegates);
+                _sqlTimeout, _bulkCopyTimeout, _bulkCopyEnableStreaming, _bulkCopyNotifyAfter, _bulkCopyBatchSize, _sqlBulkCopyOptions, 
+                _bulkCopyDelegates);
         }
     }
 }

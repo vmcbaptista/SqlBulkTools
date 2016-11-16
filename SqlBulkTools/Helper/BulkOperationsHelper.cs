@@ -149,12 +149,12 @@ namespace SqlBulkTools
             return columnType;
         }
 
-        internal static string BuildJoinConditionsForUpdateOrInsert(string[] updateOn, string sourceAlias, string targetAlias)
+        internal static string BuildJoinConditionsForInsertOrUpdate(string[] updateOn, string sourceAlias, string targetAlias, Dictionary<string, string> collationDic)
         {
             StringBuilder command = new StringBuilder();
 
             command.Append("ON " + "[" + targetAlias + "]" + "." + "[" + updateOn[0] + "]" + " = " + "[" + sourceAlias + "]" + "."
-                + "[" + updateOn[0] + "]" + " ");
+                + "[" + updateOn[0] + "]" + GetCollation(collationDic, updateOn[0]) + " ");
 
             if (updateOn.Length > 1)
             {
@@ -162,14 +162,28 @@ namespace SqlBulkTools
                 for (int i = 1; i < updateOn.Length; i++)
                 {
                     command.Append("AND " + "[" + targetAlias + "]" + "." + "[" + updateOn[i] + "]" + " = " + "[" +
-                        sourceAlias + "]" + "." + "[" + updateOn[i] + "]" + " ");
+                        sourceAlias + "]" + "." + "[" + updateOn[i] + "]" + GetCollation(collationDic, updateOn[i]) + " ");
                 }
             }
 
             return command.ToString();
         }
 
-        internal static string BuildMatchTargetOnList(HashSet<string> matchTargetOnColumns)
+        internal static string GetCollation(Dictionary<string, string> collationDic, string column)
+        {
+            if (collationDic == null)
+                return string.Empty;
+
+            string collateColumn = null;
+            if (collationDic.TryGetValue(column, out collateColumn))
+            {
+                return $" COLLATE {collateColumn}";
+            }
+
+            return string.Empty;
+        }
+
+        internal static string BuildMatchTargetOnList(HashSet<string> matchTargetOnColumns, Dictionary<string, string> collationDic)
         {
             StringBuilder sb = new StringBuilder();
 
@@ -177,7 +191,7 @@ namespace SqlBulkTools
 
             sb.Append("[");
             sb.Append(matchTargetOnColumns.ElementAt(0));
-            sb.Append($"] = @{matchTargetOnColumns.ElementAt(0)}");
+            sb.Append($"] = @{matchTargetOnColumns.ElementAt(0)}{GetCollation(collationDic, matchTargetOnColumns.ElementAt(0))}");
 
             if (matchTargetOnColumns.Count() > 1)
             {
@@ -189,7 +203,7 @@ namespace SqlBulkTools
                     sb.Append(" AND ");
                     sb.Append("[");
                     sb.Append(column);
-                    sb.Append($"] = @{column}");
+                    sb.Append($"] = @{column}{GetCollation(collationDic, column)}");
                 }
             }
 
@@ -198,7 +212,7 @@ namespace SqlBulkTools
             return sb.ToString();
         }
 
-        internal static string BuildPredicateQuery(string[] updateOn, IEnumerable<PredicateCondition> conditions, string targetAlias)
+        internal static string BuildPredicateQuery(string[] updateOn, IEnumerable<PredicateCondition> conditions, string targetAlias, Dictionary<string, string> collationDic)
         {
             if (conditions == null)
                 return null;
@@ -213,8 +227,9 @@ namespace SqlBulkTools
                 string targetColumn = condition.CustomColumnMapping ?? condition.LeftName;
 
                 command.Append("AND [" + targetAlias + "].[" + targetColumn + "] " +
-                               GetOperator(condition) + " " + (condition.Value != "NULL" ? ("@" + 
-                               condition.LeftName + Constants.UniqueParamIdentifier + condition.SortOrder) : "NULL") + " ");
+                               GetOperator(condition) + " " + (condition.Value != "NULL" ? ("@" +
+                               condition.LeftName + Constants.UniqueParamIdentifier + condition.SortOrder +
+                               GetCollation(collationDic, condition.LeftName)) : "NULL") + " ");
             }
 
             return command.ToString();
@@ -222,10 +237,11 @@ namespace SqlBulkTools
         }
 
         // Used for UpdateQuery and DeleteQuery where, and, or conditions. 
-        internal static string BuildPredicateQuery(IEnumerable<PredicateCondition> conditions)
+        internal static string BuildPredicateQuery(IEnumerable<PredicateCondition> conditions, Dictionary<string, string> collationDic)
         {
             if (conditions == null)
                 return null;
+
 
             conditions = conditions.OrderBy(x => x.SortOrder);
 
@@ -238,16 +254,16 @@ namespace SqlBulkTools
                 switch (condition.PredicateType)
                 {
                     case PredicateType.Where:
-                    {
-                        command.Append(" WHERE ");
-                        break;
-                    }
+                        {
+                            command.Append(" WHERE ");
+                            break;
+                        }
 
                     case PredicateType.And:
-                    {
+                        {
                             command.Append(" AND ");
                             break;
-                    }
+                        }
 
                     case PredicateType.Or:
                         {
@@ -256,13 +272,14 @@ namespace SqlBulkTools
                         }
 
                     default:
-                    {
-                        throw new KeyNotFoundException("Predicate not found");
-                    }
+                        {
+                            throw new KeyNotFoundException("Predicate not found");
+                        }
                 }
 
                 command.Append("[" + targetColumn + "] " +
-                               GetOperator(condition) + " " + (condition.Value != "NULL" ? ("@" + condition.LeftName + Constants.UniqueParamIdentifier + condition.SortOrder) : "NULL"));
+                               GetOperator(condition) + " " + (condition.Value != "NULL" ? ("@" + condition.LeftName
+                               + Constants.UniqueParamIdentifier + condition.SortOrder + GetCollation(collationDic, condition.LeftName)) : "NULL"));
             }
 
             return command.ToString();
@@ -562,7 +579,7 @@ namespace SqlBulkTools
         }
 
         // Loops through object properties, checks if column has been added, adds as sql parameter. Used for the UpdateQuery method. 
-        public static void AddSqlParamsForQuery<T>(List<SqlParameter> sqlParameters, HashSet<string> columns, T item, 
+        public static void AddSqlParamsForQuery<T>(List<SqlParameter> sqlParameters, HashSet<string> columns, T item,
             string identityColumn = null, ColumnDirectionType direction = ColumnDirectionType.Input, Dictionary<string, string> customColumns = null)
         {
             PropertyInfo[] props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
@@ -594,7 +611,7 @@ namespace SqlBulkTools
 
                         else
                             param.Value = propValue;
-                       
+
                         if (column == identityColumn && direction == ColumnDirectionType.InputOutput)
                             param.Direction = ParameterDirection.InputOutput;
 
@@ -1091,7 +1108,7 @@ namespace SqlBulkTools
         /// <param name="sqlParamsList"></param>
         /// <param name="sortOrder"></param>
         /// <param name="appendParam"></param>
-        internal static void AddPredicate<T>(Expression<Func<T, bool>> predicate, PredicateType predicateType, List<PredicateCondition> predicateList, 
+        internal static void AddPredicate<T>(Expression<Func<T, bool>> predicate, PredicateType predicateType, List<PredicateCondition> predicateList,
             List<SqlParameter> sqlParamsList, int sortOrder, string appendParam)
         {
             string leftName;
@@ -1164,7 +1181,7 @@ namespace SqlBulkTools
                                 Expression = ExpressionType.Equal,
                                 LeftName = leftName,
                                 ValueType = binaryBody.Right.Type,
-                                Value = value, 
+                                Value = value,
                                 PredicateType = predicateType,
                                 SortOrder = sortOrder
                             };
@@ -1181,13 +1198,13 @@ namespace SqlBulkTools
                             {
                                 Expression = ExpressionType.Equal,
                                 LeftName = leftName,
-                                Value = "NULL", 
+                                Value = "NULL",
                                 PredicateType = predicateType,
                                 SortOrder = sortOrder
                             };
                         }
 
-                            predicateList.Add(condition);
+                        predicateList.Add(condition);
 
                         break;
                     }
@@ -1195,7 +1212,7 @@ namespace SqlBulkTools
                     {
                         leftName = ((MemberExpression)binaryBody.Left).Member.Name;
                         value = Expression.Lambda(binaryBody.Right).Compile().DynamicInvoke()?.ToString();
-                        BuildCondition(leftName, value, binaryBody.Right.Type, ExpressionType.LessThan, predicateList, sqlParamsList, 
+                        BuildCondition(leftName, value, binaryBody.Right.Type, ExpressionType.LessThan, predicateList, sqlParamsList,
                             predicateType, sortOrder, appendParam);
                         break;
                     }
@@ -1203,7 +1220,7 @@ namespace SqlBulkTools
                     {
                         leftName = ((MemberExpression)binaryBody.Left).Member.Name;
                         value = Expression.Lambda(binaryBody.Right).Compile().DynamicInvoke()?.ToString();
-                        BuildCondition(leftName, value, binaryBody.Right.Type, ExpressionType.LessThanOrEqual, predicateList, 
+                        BuildCondition(leftName, value, binaryBody.Right.Type, ExpressionType.LessThanOrEqual, predicateList,
                             sqlParamsList, predicateType, sortOrder, appendParam);
                         break;
                     }
@@ -1211,7 +1228,7 @@ namespace SqlBulkTools
                     {
                         leftName = ((MemberExpression)binaryBody.Left).Member.Name;
                         value = Expression.Lambda(binaryBody.Right).Compile().DynamicInvoke()?.ToString();
-                        BuildCondition(leftName, value, binaryBody.Right.Type, ExpressionType.GreaterThan, predicateList, 
+                        BuildCondition(leftName, value, binaryBody.Right.Type, ExpressionType.GreaterThan, predicateList,
                             sqlParamsList, predicateType, sortOrder, appendParam);
                         break;
                     }
@@ -1219,7 +1236,7 @@ namespace SqlBulkTools
                     {
                         leftName = ((MemberExpression)binaryBody.Left).Member.Name;
                         value = Expression.Lambda(binaryBody.Right).Compile().DynamicInvoke()?.ToString();
-                        BuildCondition(leftName, value, binaryBody.Right.Type, ExpressionType.GreaterThanOrEqual, predicateList, 
+                        BuildCondition(leftName, value, binaryBody.Right.Type, ExpressionType.GreaterThanOrEqual, predicateList,
                             sqlParamsList, predicateType, sortOrder, appendParam);
                         break;
                     }
@@ -1253,7 +1270,7 @@ namespace SqlBulkTools
                 ? "UpdateWhen(...)"
                 : predicateType == PredicateType.Delete ?
                 "DeleteWhen(...)"
-                : predicateType == PredicateType.Where ? 
+                : predicateType == PredicateType.Where ?
                 "Where(...)"
                 : predicateType == PredicateType.And ?
                 "And(...)"
@@ -1274,7 +1291,7 @@ namespace SqlBulkTools
         /// <param name="sortOrder"></param>
         /// <param name="appendParam"></param>
         /// <param name="predicateType"></param>
-        internal static void BuildCondition(string leftName, string value, Type valueType, ExpressionType expressionType, 
+        internal static void BuildCondition(string leftName, string value, Type valueType, ExpressionType expressionType,
             List<PredicateCondition> predicateList, List<SqlParameter> sqlParamsList, PredicateType predicateType, int sortOrder, string appendParam)
         {
 
@@ -1283,7 +1300,7 @@ namespace SqlBulkTools
                 Expression = expressionType,
                 LeftName = leftName,
                 ValueType = valueType,
-                Value = value, 
+                Value = value,
                 PredicateType = predicateType,
                 SortOrder = sortOrder
             };
