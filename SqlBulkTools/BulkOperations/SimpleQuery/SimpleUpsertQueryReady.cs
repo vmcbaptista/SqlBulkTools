@@ -128,7 +128,8 @@ namespace SqlBulkTools
         }
 
         /// <summary>
-        /// 
+        /// Set the collation explicitly for join conditions. Can be recalled multiple times for more than one column. 
+        /// Note that this should only be used if there is a collation conflict and you can't resolve it by other means. 
         /// </summary>
         /// <param name="columnName"></param>
         /// <param name="collation"></param>
