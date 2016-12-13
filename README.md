@@ -453,7 +453,7 @@ AND [Description] IS NULL
 ---------------
 
 All setups include support for asynchronous transactions. Please note that you must supply
-the argument 'TransactionScopeAsyncFlowOption.Enabled' to TransactionScope. 
+the argument 'TransactionScopeAsyncFlowOption.Enabled' to TransactionScope and you must be using at least .NET 4.5.1 
 ```c#
 using (TransactionScope trans = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
 {
