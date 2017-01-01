@@ -34,6 +34,8 @@ namespace SqlBulkTools.IntegrationTests.Model
 
         public object InvalidType { get; set; }
 
+        public int? TestNullableInt { get; set; }
+
         public bool? BestSeller { get; set; }
 
         public DateTime? CreatedAt { get; set; } // nullable because it only references a few tests.

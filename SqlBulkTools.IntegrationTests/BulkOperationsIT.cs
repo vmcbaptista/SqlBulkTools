@@ -1544,6 +1544,57 @@ namespace SqlBulkTools.IntegrationTests
         }
 
         [Test]
+        public void SqlBulkTools_BulkUpdateWithNullablePredicate()
+        {
+            _db.Books.RemoveRange(_db.Books.ToList());
+            _db.SaveChanges();
+            BulkOperations bulk = new BulkOperations();
+
+            List<Book> books = _randomizer.GetRandomCollection(30);
+
+            using (TransactionScope trans = new TransactionScope())
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager
+                    .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+                {
+                    bulk.Setup<Book>()
+                        .ForCollection(books)
+                        .WithTable("Books")
+                        .AddAllColumns()
+                        .BulkInsert()
+                        .SetIdentityColumn(x => x.Id, ColumnDirectionType.InputOutput)
+                        .Commit(conn);
+
+                }
+
+                trans.Complete();
+            }
+
+            using (TransactionScope trans = new TransactionScope())
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager
+                    .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+                {
+                    Book book = new Book()
+                    {
+                        TestNullableInt = 40
+                    };
+
+                    bulk.Setup<Book>()
+                        .ForObject(new Book() { TestNullableInt = book.TestNullableInt })
+                        .WithTable("Books")
+                        .AddColumn(x => x.TestNullableInt)
+                        .Update()
+                        .Where(x => x.Id == 10)
+                        .And(x => x.TestNullableInt == book.TestNullableInt)
+                        .Commit(conn);
+                }
+
+                trans.Complete();
+            }
+        }
+
+        [Test]
         public void SqlBulkTools_BulkInsertOrUpdae_TestDataTypes()
         {
             _db.Books.RemoveRange(_db.Books.ToList());

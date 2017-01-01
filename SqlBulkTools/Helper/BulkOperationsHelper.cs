@@ -986,7 +986,8 @@ namespace SqlBulkTools
 
             if (operationType == OperationType.Insert)
             {
-                command.CommandText = "SELECT " + identityColumn + " FROM " + Constants.TempOutputTableName + ";";
+                command.CommandText =
+                    $"SELECT {identityColumn} FROM {Constants.TempOutputTableName} ORDER BY {identityColumn};";
 
                 using (SqlDataReader reader = command.ExecuteReader())
                 {
@@ -1048,7 +1049,8 @@ namespace SqlBulkTools
 
             if (operationType == OperationType.Insert)
             {
-                command.CommandText = "SELECT " + identityColumn + " FROM " + Constants.TempOutputTableName + ";";
+                command.CommandText =
+                    $"SELECT {identityColumn} FROM {Constants.TempOutputTableName} ORDER BY {identityColumn};";
 
                 using (SqlDataReader reader = await command.ExecuteReaderAsync())
                 {
