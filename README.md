@@ -143,7 +143,7 @@ to eat an SqlBulkToolsException.
 (3) If model property name does not match the actual SQL column name, you can set up a custom 
 mapping. An example of this is shown in a dedicated section somewhere in this documentation...
 (4) BulkInsertOrUpdate also supports DeleteWhenNotMatched which is false by default. With power 
-comes responsibility. You can specify a DeleteWhen condition to filter specific records. 
+comes responsibility. You can instead use DeleteWhen to filter specific records. 
 (5) If your model contains an identity column and it's included (via AddAllColumns, AddColumn or 
 MatchTargetOn) in your setup, you must use SetIdentityColumn to mark it as your identity column. 
 This is because identity columns are immutable and SQL will have a whinge when you try to update it. 
@@ -264,7 +264,6 @@ using (TransactionScope trans = new TransactionScope())
         .BulkInsertOrUpdate()
         .MatchTargetOn(x => x.ISBN)
         .SetIdentityColumn(x => x.Id)
-        .DeleteWhenNotMatched(true)
         .DeleteWhen(x => x.WarehouseId == 1)
         .Commit(conn); 
 

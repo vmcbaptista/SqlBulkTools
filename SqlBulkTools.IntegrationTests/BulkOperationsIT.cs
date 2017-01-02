@@ -1114,7 +1114,6 @@ namespace SqlBulkTools.IntegrationTests
                         .BulkInsertOrUpdate()
                         .MatchTargetOn(x => x.ISBN)
                         .DeleteWhen(x => x.WarehouseId == 1)
-                        .DeleteWhenNotMatched(true)
                         .SetIdentityColumn(x => x.Id)
                         .Commit(conn);
 

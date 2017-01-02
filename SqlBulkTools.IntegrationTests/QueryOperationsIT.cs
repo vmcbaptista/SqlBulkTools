@@ -786,8 +786,7 @@ namespace SqlBulkTools.IntegrationTests
             {
                 Assert.AreEqual("MatchTargetOn is a mandatory for upsert operation", e.Message);
                 Assert.IsNull(_db.Books.SingleOrDefault(x => x.ISBN == testIsbn));
-            }
-            
+            }            
         }
     }
 }

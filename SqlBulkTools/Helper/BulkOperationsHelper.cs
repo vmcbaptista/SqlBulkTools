@@ -68,7 +68,7 @@ namespace SqlBulkTools
 
             StringBuilder command = new StringBuilder();
 
-            command.Append("CREATE TABLE " + Constants.TempTableName + "(");
+            command.Append($"CREATE TABLE {Constants.TempTableName}(");
 
             List<string> paramList = new List<string>();
 
@@ -84,7 +84,7 @@ namespace SqlBulkTools
                     columnType = GetDateTimePrecisionType(column, columnType, actualColumnsDateTimePrecision);
                 }
 
-                paramList.Add("[" + column + "]" + " " + columnType);
+                paramList.Add($"[{column}] {columnType}");
             }
 
             string paramListConcatenated = string.Join(", ", paramList);
@@ -93,7 +93,7 @@ namespace SqlBulkTools
 
             if (outputIdentity == ColumnDirectionType.InputOutput)
             {
-                command.Append(", [" + Constants.InternalId + "] int");
+                command.Append($", [{Constants.InternalId}] int");
             }
             command.Append(");");
 
@@ -153,16 +153,14 @@ namespace SqlBulkTools
         {
             StringBuilder command = new StringBuilder();
 
-            command.Append("ON " + "[" + targetAlias + "]" + "." + "[" + updateOn[0] + "]" + " = " + "[" + sourceAlias + "]" + "."
-                + "[" + updateOn[0] + "]" + GetCollation(collationDic, updateOn[0]) + " ");
+            command.Append($"ON [{targetAlias}].[{updateOn[0]}] = [{sourceAlias}].[{updateOn[0]}]{GetCollation(collationDic, updateOn[0])} ");
 
             if (updateOn.Length > 1)
             {
                 // Start from index 1 to just append "AND" conditions
                 for (int i = 1; i < updateOn.Length; i++)
                 {
-                    command.Append("AND " + "[" + targetAlias + "]" + "." + "[" + updateOn[i] + "]" + " = " + "[" +
-                        sourceAlias + "]" + "." + "[" + updateOn[i] + "]" + GetCollation(collationDic, updateOn[i]) + " ");
+                    command.Append($"AND [{targetAlias}].[{updateOn[i]}] = [{sourceAlias}].[{updateOn[i]}]{GetCollation(collationDic, updateOn[i])} ");
                 }
             }
 
@@ -187,11 +185,7 @@ namespace SqlBulkTools
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append("WHERE ");
-
-            sb.Append("[");
-            sb.Append(matchTargetOnColumns.ElementAt(0));
-            sb.Append($"] = @{matchTargetOnColumns.ElementAt(0)}{GetCollation(collationDic, matchTargetOnColumns.ElementAt(0))}");
+            sb.Append($"WHERE [{matchTargetOnColumns.ElementAt(0)}] = @{matchTargetOnColumns.ElementAt(0)}{GetCollation(collationDic, matchTargetOnColumns.ElementAt(0))}");
 
             if (matchTargetOnColumns.Count() > 1)
             {
@@ -200,10 +194,7 @@ namespace SqlBulkTools
                     if (column.Equals(matchTargetOnColumns.ElementAt(0)))
                         continue;
 
-                    sb.Append(" AND ");
-                    sb.Append("[");
-                    sb.Append(column);
-                    sb.Append($"] = @{column}{GetCollation(collationDic, column)}");
+                    sb.Append($" AND [{column}] = @{column}{GetCollation(collationDic, column)}");
                 }
             }
 
@@ -226,10 +217,7 @@ namespace SqlBulkTools
             {
                 string targetColumn = condition.CustomColumnMapping ?? condition.LeftName;
 
-                command.Append("AND [" + targetAlias + "].[" + targetColumn + "] " +
-                               GetOperator(condition) + " " + (condition.Value != "NULL" ? ("@" +
-                               condition.LeftName + Constants.UniqueParamIdentifier + condition.SortOrder +
-                               GetCollation(collationDic, condition.LeftName)) : "NULL") + " ");
+                command.Append($"AND [{targetAlias}].[{targetColumn}] {GetOperator(condition)} {(condition.Value != "NULL" ? ("@" + condition.LeftName + Constants.UniqueParamIdentifier + condition.SortOrder + GetCollation(collationDic, condition.LeftName)) : "NULL")} ");
             }
 
             return command.ToString();
@@ -277,9 +265,7 @@ namespace SqlBulkTools
                         }
                 }
 
-                command.Append("[" + targetColumn + "] " +
-                               GetOperator(condition) + " " + (condition.Value != "NULL" ? ("@" + condition.LeftName
-                               + Constants.UniqueParamIdentifier + condition.SortOrder + GetCollation(collationDic, condition.LeftName)) : "NULL"));
+                command.Append($"[{targetColumn}] {GetOperator(condition)} {(condition.Value != "NULL" ? ("@" + condition.LeftName + Constants.UniqueParamIdentifier + condition.SortOrder + GetCollation(collationDic, condition.LeftName)) : "NULL")}");
             }
 
             return command.ToString();
@@ -347,8 +333,7 @@ namespace SqlBulkTools
                 if ((column != identityColumn || identityColumn == null) && !excludeFromUpdate.Contains(column))
                 {
                     if (column != Constants.InternalId)
-                        paramsSeparated.Add("[" + targetAlias + "]" + "." + "[" + column + "]" + " = " + "[" + sourceAlias + "]" + "."
-                            + "[" + column + "]");
+                        paramsSeparated.Add($"[{targetAlias}].[{column}] = [{sourceAlias}].[{column}]");
                 }
             }
 
@@ -401,16 +386,13 @@ namespace SqlBulkTools
 
                 if (column != Constants.InternalId && column != identityColumn)
                 {
-                    insertColumns.Add("[" + column + "]");
-                    values.Add("[" + sourceAlias + "]" + "." + "[" + column + "]");
+                    insertColumns.Add($"[{column}]");
+                    values.Add($"[{sourceAlias}].[{column}]");
                 }
 
             }
 
-            command.Append(string.Join(", ", insertColumns));
-            command.Append(") values (");
-            command.Append(string.Join(", ", values));
-            command.Append(")");
+            command.Append($"{string.Join(", ", insertColumns)}) values ({string.Join(", ", values)})");
 
             return command.ToString();
         }
@@ -420,9 +402,7 @@ namespace SqlBulkTools
             StringBuilder command = new StringBuilder();
             List<string> insertColumns = new List<string>();
 
-            command.Append("INSERT INTO ");
-            command.Append(fullQualifiedTableName);
-            command.Append(" (");
+            command.Append($"INSERT INTO {fullQualifiedTableName} (");
 
             foreach (var column in columns)
             {
@@ -430,8 +410,7 @@ namespace SqlBulkTools
                     insertColumns.Add("[" + column + "]");
             }
 
-            command.Append(string.Join(", ", insertColumns));
-            command.Append(") ");
+            command.Append($"{string.Join(", ", insertColumns)}) ");
 
             return command.ToString();
         }
@@ -467,8 +446,8 @@ namespace SqlBulkTools
                 {
                     if (column != Constants.InternalId)
                     {
-                        selectColumns.Add("[" + sourceAlias + "].[" + column + "]");
-                        values.Add("[" + column + "]");
+                        selectColumns.Add($"[{sourceAlias}].[{column}]");
+                        values.Add($"[{column}]");
                     }
                 }
             }
@@ -640,9 +619,9 @@ namespace SqlBulkTools
                 return true;
 
             if (throwIfInvalid)
-                throw new SqlBulkToolsException("Only value, string, char[], byte[] " +
-                                                    "and SqlXml types can be used with SqlBulkTools. " +
-                                                    "Refer to https://msdn.microsoft.com/en-us/library/cc716729(v=vs.110).aspx for more details.");
+                throw new SqlBulkToolsException($"Only value, string, char[], byte[] and SqlXml types can be used " +
+                                                $"with SqlBulkTools. Refer to https://msdn.microsoft.com/en-us/library/cc716729(v=vs.110).aspx for " +
+                                                $"more details.");
 
             return false;
         }
@@ -837,15 +816,13 @@ namespace SqlBulkTools
                 return null;
             }
             if (operation == OperationType.Insert)
-                sb.Append("OUTPUT INSERTED." + identityColumn + " INTO " + tmpTableName + "(" + identityColumn + "); ");
+                sb.Append($"OUTPUT inserted.{identityColumn} INTO {tmpTableName}({identityColumn}); ");
 
             else if (operation == OperationType.InsertOrUpdate || operation == OperationType.Update)
-                sb.Append("OUTPUT Source." + Constants.InternalId + ", INSERTED." + identityColumn + " INTO " + tmpTableName
-                    + "(" + Constants.InternalId + ", " + identityColumn + "); ");
+                sb.Append($"OUTPUT Source.{Constants.InternalId}, inserted.{identityColumn} INTO {tmpTableName}({Constants.InternalId}, {identityColumn}); ");
 
             else if (operation == OperationType.Delete)
-                sb.Append("OUTPUT Source." + Constants.InternalId + ", DELETED." + identityColumn + " INTO " + tmpTableName
-                    + "(" + Constants.InternalId + ", " + identityColumn + "); ");
+                sb.Append($"OUTPUT Source.{Constants.InternalId}, deleted.{identityColumn} INTO {tmpTableName}({Constants.InternalId}, {identityColumn}); ");
 
             return sb.ToString();
         }
@@ -854,18 +831,17 @@ namespace SqlBulkTools
         {
 
             if (operation == OperationType.Insert)
-                return (outputIdentity == ColumnDirectionType.InputOutput ? "CREATE TABLE " + tmpTablename + "(" + "[" + identityColumn + "] int); " : "");
+                return (outputIdentity == ColumnDirectionType.InputOutput ? $"CREATE TABLE {tmpTablename}([{identityColumn}] int); " : string.Empty);
 
             else if (operation == OperationType.InsertOrUpdate || operation == OperationType.Update || operation == OperationType.Delete)
-                return (outputIdentity == ColumnDirectionType.InputOutput ? "CREATE TABLE " + tmpTablename + "("
-                    + "[" + Constants.InternalId + "]" + " int, [" + identityColumn + "] int); " : "");
+                return (outputIdentity == ColumnDirectionType.InputOutput ? $"CREATE TABLE {tmpTablename}([{Constants.InternalId}] int, [{identityColumn}] int); " : string.Empty);
 
             return string.Empty;
         }
 
         internal static string GetDropTmpTableCmd()
         {
-            return "DROP TABLE " + Constants.TempOutputTableName + ";";
+            return $"DROP TABLE {Constants.TempOutputTableName};";
         }
 
         internal static string GetIndexManagementCmd(string action, string tableName,
@@ -877,20 +853,13 @@ namespace SqlBulkTools
             {
                 foreach (var index in disableIndexList)
                 {
-                    sb.Append(" AND sys.indexes.name = \'");
-                    sb.Append(index);
-                    sb.Append("\'");
+                    sb.Append($" AND sys.indexes.name = '{index}'");
                 }
             }
 
-            string cmd = "DECLARE @sql AS VARCHAR(MAX)=''; " +
-                                "SELECT @sql = @sql + " +
-                                "'ALTER INDEX ' + sys.indexes.name + ' ON ' + sys.objects.name + ' " + action + ";' " +
-                                "FROM sys.indexes JOIN sys.objects ON sys.indexes.object_id = sys.objects.object_id " +
-                                "WHERE sys.indexes.type_desc = 'NONCLUSTERED' " +
-                                "AND sys.objects.type_desc = 'USER_TABLE' " +
-                                "AND sys.objects.name = '" + GetFullQualifyingTableName(conn.Database, schema, tableName)
-                                + "'" + (sb.Length > 0 ? sb.ToString() : "") + "; EXEC(@sql);";
+            string cmd = $"DECLARE @sql AS VARCHAR(MAX)=''; SELECT @sql = @sql + 'ALTER INDEX ' + sys.indexes.name + ' ON ' + sys.objects.name + ' {action};' FROM sys.indexes " +
+                         $"JOIN sys.objects ON sys.indexes.object_id = sys.objects.object_id WHERE sys.indexes.type_desc = 'NONCLUSTERED' AND sys.objects.type_desc = 'USER_TABLE' " +
+                         $"AND sys.objects.name = '{GetFullQualifyingTableName(conn.Database, schema, tableName)}'{(sb.Length > 0 ? sb.ToString() : string.Empty)}; EXEC(@sql);";
 
             return cmd;
         }
@@ -911,12 +880,10 @@ namespace SqlBulkTools
             var dtCols = conn.GetSchema("Columns", restrictions);
 
             if (dtCols.Rows.Count == 0 && schema != null)
-                throw new SqlBulkToolsException("Table name '" + tableName
-                + "\' with schema name \'" + schema + "\' not found. Check your setup and try again.");
+                throw new SqlBulkToolsException($"Table name '{tableName}' with schema name '{schema}' not found. Check your setup and try again.");
 
             if (dtCols.Rows.Count == 0)
-                throw new SqlBulkToolsException("Table name \'" + tableName
-                + "\' not found. Check your setup and try again.");
+                throw new SqlBulkToolsException($"Table name '{tableName}' not found. Check your setup and try again.");
             return dtCols;
         }
 
@@ -957,8 +924,9 @@ namespace SqlBulkTools
                 || operationType == OperationType.Update
                 || operationType == OperationType.Delete)
             {
-                command.CommandText = "SELECT " + Constants.InternalId + ", " + identityColumn + " FROM "
-                    + Constants.TempOutputTableName + ";";
+                command.CommandText =
+                    $"SELECT {Constants.InternalId}, {identityColumn} FROM " +
+                    $"{Constants.TempOutputTableName} WHERE {Constants.InternalId} IS NOT NULL;";
 
                 using (SqlDataReader reader = command.ExecuteReader())
                 {
@@ -966,12 +934,12 @@ namespace SqlBulkTools
                     {
                         T item;
 
-                        if (outputIdentityDic.TryGetValue((int)reader[0], out item))
+                        if (outputIdentityDic.TryGetValue(reader.GetInt32(0), out item))
                         {
                             PropertyInfo p = item.GetType().GetProperty(identityColumn);
 
                             if (p.CanWrite)
-                                p.SetValue(item, reader[1], null);
+                                p.SetValue(item, reader.GetInt32(1), null);
 
                             else
                                 throw new SqlBulkToolsException(GetPrivateSetterExceptionMessage(identityColumn));
@@ -999,7 +967,7 @@ namespace SqlBulkTools
                         PropertyInfo p = items[counter].GetType().GetProperty(identityColumn);
 
                         if (p.CanWrite)
-                            p.SetValue(items[counter], reader[0], null);
+                            p.SetValue(items[counter], reader.GetInt32(0), null);
 
                         else
                             throw new SqlBulkToolsException(GetPrivateSetterExceptionMessage(identityColumn));
@@ -1020,8 +988,9 @@ namespace SqlBulkTools
                 || operationType == OperationType.Update
                 || operationType == OperationType.Delete)
             {
-                command.CommandText = "SELECT " + Constants.InternalId + ", " + identityColumn + " FROM "
-                    + Constants.TempOutputTableName + ";";
+                command.CommandText =
+                    $"SELECT {Constants.InternalId}, {identityColumn} FROM " +
+                    $"{Constants.TempOutputTableName} WHERE {Constants.InternalId} IS NOT NULL;";
 
                 using (SqlDataReader reader = await command.ExecuteReaderAsync())
                 {
@@ -1029,12 +998,12 @@ namespace SqlBulkTools
                     {
                         T item;
 
-                        if (outputIdentityDic.TryGetValue((int)reader[0], out item))
+                        if (outputIdentityDic.TryGetValue(reader.GetInt32(0), out item))
                         {
                             PropertyInfo p = item.GetType().GetProperty(identityColumn);
 
                             if (p.CanWrite)
-                                p.SetValue(item, reader[1], null);
+                                p.SetValue(item, reader.GetInt32(1), null);
 
                             else
                                 throw new SqlBulkToolsException(GetPrivateSetterExceptionMessage(identityColumn));
@@ -1062,7 +1031,7 @@ namespace SqlBulkTools
                         PropertyInfo p = items[counter].GetType().GetProperty(identityColumn);
 
                         if (p.CanWrite)
-                            p.SetValue(items[counter], reader[0], null);
+                            p.SetValue(items[counter], reader.GetInt32(0), null);
 
                         else
                             throw new SqlBulkToolsException(GetPrivateSetterExceptionMessage(identityColumn));

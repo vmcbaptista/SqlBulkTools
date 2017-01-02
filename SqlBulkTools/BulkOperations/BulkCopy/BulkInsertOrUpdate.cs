@@ -134,12 +134,13 @@ namespace SqlBulkTools
 
         /// <summary>
         /// Only delete records when the target satisfies a speicific requirement. This is used in conjunction with MatchTargetOn.
-        /// See help docs for examples. Notes: (1) DeleteWhenNotMatched must be set to true. 
+        /// See help docs for examples
         /// </summary>
         /// <param name="predicate"></param>
         /// <returns></returns>
         public BulkInsertOrUpdate<T> DeleteWhen(Expression<Func<T, bool>> predicate)
         {
+            _deleteWhenNotMatchedFlag = true;
             BulkOperationsHelper.AddPredicate(predicate, PredicateType.Delete, _deletePredicates, _parameters, _conditionSortOrder, Constants.UniqueParamIdentifier);
             _conditionSortOrder++;
 
@@ -401,7 +402,7 @@ namespace SqlBulkTools
 
                 if (_outputIdentity == ColumnDirectionType.InputOutput)
                 {
-                    BulkOperationsHelper.LoadFromTmpOutputTable(command, _identityColumn, _outputIdentityDic, OperationType.InsertOrUpdate, _list);
+                    await BulkOperationsHelper.LoadFromTmpOutputTableAsync(command, _identityColumn, _outputIdentityDic, OperationType.InsertOrUpdate, _list);
                 }
 
                 return affectedRows;
