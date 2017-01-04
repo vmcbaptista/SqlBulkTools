@@ -201,22 +201,14 @@ namespace SqlBulkTools
                 command.CommandTimeout = _sqlTimeout;
 
                 string fullQualifiedTableName = BulkOperationsHelper.GetFullQualifyingTableName(conn.Database, _schema, _tableName);
-                StringBuilder sb = new StringBuilder();
 
-                sb.Append(
-                    $"UPDATE {fullQualifiedTableName} {BulkOperationsHelper.BuildUpdateSet(_columns, _excludeFromUpdate, _identityColumn)} {BulkOperationsHelper.BuildMatchTargetOnList(_matchTargetOnSet, _collationColumnDic)}; " +
-                    $"IF (@@ROWCOUNT = 0) BEGIN " +
-                    $"{BulkOperationsHelper.BuildInsertIntoSet(_columns, _identityColumn, fullQualifiedTableName)} " +
-                    $"VALUES{BulkOperationsHelper.BuildValueSet(_columns, _identityColumn)} ");
-                    sb.Append($"END ");
-
-                if (_outputIdentity == ColumnDirectionType.InputOutput)
-                {
-                    sb.Append($"SET @{_identityColumn} = SCOPE_IDENTITY() ");
-                }
-
-
-                command.CommandText = sb.ToString();
+                command.CommandText = $"UPDATE {fullQualifiedTableName} {BulkOperationsHelper.BuildUpdateSet(_columns, _excludeFromUpdate, _identityColumn)}" +
+                $"{(_outputIdentity == ColumnDirectionType.InputOutput ? $", @{_identityColumn} = [{_identityColumn}] " : string.Empty)} " +
+                $"{BulkOperationsHelper.BuildMatchTargetOnList(_matchTargetOnSet, _collationColumnDic)} " +
+                $"IF (@@ROWCOUNT = 0) BEGIN " +
+                $"{BulkOperationsHelper.BuildInsertIntoSet(_columns, _identityColumn, fullQualifiedTableName)} " +
+                $"VALUES{BulkOperationsHelper.BuildValueSet(_columns, _identityColumn)}" +
+                $"{(_outputIdentity == ColumnDirectionType.InputOutput ? $" SET @{_identityColumn} = SCOPE_IDENTITY()" : string.Empty)} END";
 
                 if (_sqlParams.Count > 0)
                 {
@@ -294,20 +286,14 @@ namespace SqlBulkTools
                 command.CommandTimeout = _sqlTimeout;
 
                 string fullQualifiedTableName = BulkOperationsHelper.GetFullQualifyingTableName(conn.Database, _schema, _tableName);
-                StringBuilder sb = new StringBuilder();
 
-                sb.Append($"UPDATE {fullQualifiedTableName} {BulkOperationsHelper.BuildUpdateSet(_columns, _excludeFromUpdate, _identityColumn)} {BulkOperationsHelper.BuildMatchTargetOnList(_matchTargetOnSet, _collationColumnDic)} " +
-                  $"IF (@@ROWCOUNT = 0) BEGIN " +
-                  $"{ BulkOperationsHelper.BuildInsertIntoSet(_columns, _identityColumn, fullQualifiedTableName)} " +
-                  $"VALUES{BulkOperationsHelper.BuildValueSet(_columns, _identityColumn)} " +
-                  $"END ");
-
-                if (_outputIdentity == ColumnDirectionType.InputOutput)
-                {
-                    sb.Append($"SET @{_identityColumn} = SCOPE_IDENTITY()");
-                }
-
-                command.CommandText = sb.ToString();
+                command.CommandText = $"UPDATE {fullQualifiedTableName} {BulkOperationsHelper.BuildUpdateSet(_columns, _excludeFromUpdate, _identityColumn)}" +
+                    $"{(_outputIdentity == ColumnDirectionType.InputOutput ? $", @{_identityColumn} = [{_identityColumn}] " : string.Empty)} " +
+                    $"{BulkOperationsHelper.BuildMatchTargetOnList(_matchTargetOnSet, _collationColumnDic)} " +
+                    $"IF (@@ROWCOUNT = 0) BEGIN " +
+                    $"{BulkOperationsHelper.BuildInsertIntoSet(_columns, _identityColumn, fullQualifiedTableName)} " +
+                    $"VALUES{BulkOperationsHelper.BuildValueSet(_columns, _identityColumn)}" +
+                    $"{(_outputIdentity == ColumnDirectionType.InputOutput ? $" SET @{_identityColumn} = SCOPE_IDENTITY()" : string.Empty)} END";
 
                 if (_sqlParams.Count > 0)
                 {
