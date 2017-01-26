@@ -56,7 +56,7 @@ namespace SqlBulkTools
             _andConditions = new List<PredicateCondition>();
             _orConditions = new List<PredicateCondition>();
             _sqlParams = sqlParams;
-            _identityColumn = string.Empty;
+            _identityColumn = null;
             _collationColumnDic = new Dictionary<string, string>();
         }
 
