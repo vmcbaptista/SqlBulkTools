@@ -28,6 +28,7 @@ namespace SqlBulkTools
         private int _conditionSortOrder;
         private string _identityColumn;
         private readonly Dictionary<string, string> _collationColumnDic;
+        private int? _batchQuantity;
 
         /// <summary>
         /// 
@@ -56,6 +57,7 @@ namespace SqlBulkTools
             _sqlParams = sqlParams;
             _identityColumn = null;
             _collationColumnDic = collationColumnDic;
+            _batchQuantity = null;
         }
 
         /// <summary>
@@ -80,7 +82,6 @@ namespace SqlBulkTools
 
             return this;
         }
-
 
         /// <summary>
         /// Specify an additional condition to match on.
@@ -146,6 +147,17 @@ namespace SqlBulkTools
         }
 
         /// <summary>
+        /// The maximum number of records to update per transaction.
+        /// </summary>
+        /// <param name="batchQuantity"></param>
+        /// <returns></returns>
+        public QueryUpdateReady<T> SetBatchQuantity(int batchQuantity)
+        {
+            _batchQuantity = batchQuantity;
+            return this;
+        }
+
+        /// <summary>
         /// Commits a transaction to database. A valid setup must exist for the operation to be 
         /// successful.
         /// </summary>
@@ -162,23 +174,10 @@ namespace SqlBulkTools
             if (connection.State == ConnectionState.Closed)
                 connection.Open();
 
-
             SqlCommand command = connection.CreateCommand();
             command.Connection = connection;
 
-            string fullQualifiedTableName = BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema,
-                _tableName);
-
-
-            BulkOperationsHelper.AddSqlParamsForQuery(_sqlParams, _columns, _singleEntity, customColumns: _customColumnMappings);          
-            var concatenatedQuery = _whereConditions.Concat(_andConditions).Concat(_orConditions).OrderBy(x => x.SortOrder);
-            BulkOperationsHelper.DoColumnMappings(_customColumnMappings, _columns);
-
-            string comm = $"UPDATE {fullQualifiedTableName} " +
-            $"{BulkOperationsHelper.BuildUpdateSet(_columns, null, _identityColumn)}" +
-            $"{BulkOperationsHelper.BuildPredicateQuery(concatenatedQuery, _collationColumnDic)}";
-
-            command.CommandText = comm;
+            command.CommandText = GetQuery(connection);
 
             if (_sqlParams.Count > 0)
             {
@@ -211,19 +210,7 @@ namespace SqlBulkTools
             SqlCommand command = connection.CreateCommand();
             command.Connection = connection;
 
-            string fullQualifiedTableName = BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema,
-                _tableName);
-
-
-            BulkOperationsHelper.AddSqlParamsForQuery(_sqlParams, _columns, _singleEntity, customColumns: _customColumnMappings);
-            var concatenatedQuery = _whereConditions.Concat(_andConditions).Concat(_orConditions).OrderBy(x => x.SortOrder);
-            BulkOperationsHelper.DoColumnMappings(_customColumnMappings, _columns);
-
-            string comm = $"UPDATE {fullQualifiedTableName} " +
-            $"{BulkOperationsHelper.BuildUpdateSet(_columns, null, _identityColumn)}" +
-            $"{BulkOperationsHelper.BuildPredicateQuery(concatenatedQuery, _collationColumnDic)}";
-
-            command.CommandText = comm;
+            command.CommandText = GetQuery(connection);
 
             if (_sqlParams.Count > 0)
             {
@@ -233,6 +220,26 @@ namespace SqlBulkTools
             affectedRows = await command.ExecuteNonQueryAsync();
 
             return affectedRows;
+        }
+
+        private string GetQuery(SqlConnection connection)
+        {
+            string fullQualifiedTableName = BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema,
+                _tableName);
+
+            BulkOperationsHelper.AddSqlParamsForQuery(_sqlParams, _columns, _singleEntity, customColumns: _customColumnMappings);
+            var concatenatedQuery = _whereConditions.Concat(_andConditions).Concat(_orConditions).OrderBy(x => x.SortOrder);
+            BulkOperationsHelper.DoColumnMappings(_customColumnMappings, _columns);
+
+            string batchQtyStart = _batchQuantity != null ? "UpdateMore:\n" : string.Empty;
+            string batchQty = _batchQuantity != null ? $"TOP ({_batchQuantity}) " : string.Empty;
+            string batchQtyRepeat = _batchQuantity != null ? $"\nIF @@ROWCOUNT != 0\ngoto UpdateMore" : string.Empty;
+
+            string comm = $"{batchQtyStart}UPDATE {batchQty}{fullQualifiedTableName} " +
+            $"{BulkOperationsHelper.BuildUpdateSet(_columns, null, _identityColumn)}" +
+            $"{BulkOperationsHelper.BuildPredicateQuery(concatenatedQuery, _collationColumnDic)}{batchQtyRepeat}";
+
+            return comm;
         }
     }
 }

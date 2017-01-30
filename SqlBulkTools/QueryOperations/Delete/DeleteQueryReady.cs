@@ -24,6 +24,7 @@ namespace SqlBulkTools
         private readonly List<SqlParameter> _parameters;
         private int _conditionSortOrder;
         private readonly Dictionary<string, string> _collationColumnDic;
+        private int? _batchQuantity;
 
         /// <summary>
         /// 
@@ -45,6 +46,7 @@ namespace SqlBulkTools
             _conditionSortOrder = conditionSortOrder;
             _parameters = parameters;
             _collationColumnDic = collationColumnDic;
+            _batchQuantity = null;
         }
 
 
@@ -113,21 +115,13 @@ namespace SqlBulkTools
         }
 
         /// <summary>
-        /// Set the collation explicitly for join conditions. Can be recalled multiple times for more than one column. 
-        /// Note that this should only be used if there is a collation conflict and you can't resolve it by other means. 
+        /// The maximum number of records to delete per transaction.
         /// </summary>
-        /// <param name="columnName"></param>
-        /// <param name="collation"></param>
+        /// <param name="batchQuantity"></param>
         /// <returns></returns>
-        public DeleteQueryReady<T> SetCollationOnColumn(Expression<Func<T, object>> columnName, string collation)
+        public DeleteQueryReady<T> SetBatchQuantity(int batchQuantity)
         {
-            var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
-
-            if (propertyName == null)
-                throw new SqlBulkToolsException("SetCollationOnColumn column name can't be null");
-
-            _collationColumnDic.Add(propertyName, collation);
-
+            _batchQuantity = batchQuantity;
             return this;
         }
 
@@ -138,22 +132,14 @@ namespace SqlBulkTools
         /// <param name="connection"></param>
         /// <returns></returns>
         public int Commit(SqlConnection connection)
-        {
-            var concatenatedQuery = _whereConditions.Concat(_andConditions).Concat(_orConditions).OrderBy(x => x.SortOrder);
-
+        {            
             if (connection.State == ConnectionState.Closed)
                 connection.Open();
 
             SqlCommand command = connection.CreateCommand();
             command.Connection = connection;
 
-            string fullQualifiedTableName = BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema,
-                _tableName);
-
-            string comm = $"DELETE FROM {fullQualifiedTableName} " +
-                          $"{BulkOperationsHelper.BuildPredicateQuery(concatenatedQuery, _collationColumnDic)}";
-
-            command.CommandText = comm;
+            command.CommandText = GetQuery(connection);
 
             if (_parameters.Count > 0)
             {
@@ -173,7 +159,6 @@ namespace SqlBulkTools
         /// <returns></returns>
         public async Task<int> CommitAsync(SqlConnection connection)
         {
-            var concatenatedQuery = _whereConditions.Concat(_andConditions).Concat(_orConditions).OrderBy(x => x.SortOrder);
 
             if (connection.State == ConnectionState.Closed)
                 await connection.OpenAsync();
@@ -181,13 +166,7 @@ namespace SqlBulkTools
             SqlCommand command = connection.CreateCommand();
             command.Connection = connection;
 
-            string fullQualifiedTableName = BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema,
-                _tableName);
-
-            string comm = $"DELETE FROM {fullQualifiedTableName} " +
-                          $"{BulkOperationsHelper.BuildPredicateQuery(concatenatedQuery, _collationColumnDic)}";
-
-            command.CommandText = comm;
+            command.CommandText = command.CommandText = GetQuery(connection);
 
             if (_parameters.Count > 0)
             {
@@ -197,6 +176,23 @@ namespace SqlBulkTools
             int affectedRows = await command.ExecuteNonQueryAsync();
 
             return affectedRows;
+        }
+
+        private string GetQuery(SqlConnection connection)
+        {
+            var concatenatedQuery = _whereConditions.Concat(_andConditions).Concat(_orConditions).OrderBy(x => x.SortOrder);
+
+            string fullQualifiedTableName = BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema,
+                 _tableName);
+
+            string batchQtyStart = _batchQuantity != null ? "DeleteMore:\n" : string.Empty;
+            string batchQty = _batchQuantity != null ? $"TOP ({_batchQuantity}) " : string.Empty;
+            string batchQtyRepeat = _batchQuantity != null ? $"\nIF @@ROWCOUNT != 0\ngoto DeleteMore" : string.Empty;
+
+            string comm = $"{batchQtyStart}DELETE {batchQty}FROM {fullQualifiedTableName} " +
+                          $"{BulkOperationsHelper.BuildPredicateQuery(concatenatedQuery, _collationColumnDic)}{batchQtyRepeat}";
+
+            return comm;
         }
     }
 }
