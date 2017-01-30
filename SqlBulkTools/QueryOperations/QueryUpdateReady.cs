@@ -27,7 +27,7 @@ namespace SqlBulkTools
         private readonly List<SqlParameter> _sqlParams;
         private int _conditionSortOrder;
         private string _identityColumn;
-        private readonly Dictionary<string, string> _collationColumnDic; 
+        private readonly Dictionary<string, string> _collationColumnDic;
 
         /// <summary>
         /// 
@@ -40,8 +40,9 @@ namespace SqlBulkTools
         /// <param name="conditionSortOrder"></param>
         /// <param name="whereConditions"></param>
         /// <param name="sqlParams"></param>
+        /// <param name="collationColumnDic"></param>
         public QueryUpdateReady(T singleEntity, string tableName, string schema, HashSet<string> columns, Dictionary<string, string> customColumnMappings,
-            int conditionSortOrder, List<PredicateCondition> whereConditions, List<SqlParameter> sqlParams)
+            int conditionSortOrder, List<PredicateCondition> whereConditions, List<SqlParameter> sqlParams, Dictionary<string, string> collationColumnDic)
         {
             _singleEntity = singleEntity;
             _tableName = tableName;
@@ -54,7 +55,7 @@ namespace SqlBulkTools
             _orConditions = new List<PredicateCondition>();
             _sqlParams = sqlParams;
             _identityColumn = null;
-            _collationColumnDic = new Dictionary<string, string>();
+            _collationColumnDic = collationColumnDic;
         }
 
         /// <summary>
@@ -116,6 +117,20 @@ namespace SqlBulkTools
         /// Specify an additional condition to match on.
         /// </summary>
         /// <param name="expression"></param>
+        /// <returns></returns>
+        /// <exception cref="SqlBulkToolsException"></exception>
+        public QueryUpdateReady<T> Or(Expression<Func<T, bool>> expression)
+        {
+            BulkOperationsHelper.AddPredicate(expression, PredicateType.Or, _orConditions, _sqlParams, _conditionSortOrder, appendParam: Constants.UniqueParamIdentifier);
+            _conditionSortOrder++;
+
+            return this;
+        }
+
+        /// <summary>
+        /// Specify an additional condition to match on.
+        /// </summary>
+        /// <param name="expression"></param>
         /// <param name="collation">Only explicitly set the collation if there is a collation conflict.</param>
         /// <returns></returns>
         /// <exception cref="SqlBulkToolsException"></exception>
@@ -126,25 +141,6 @@ namespace SqlBulkTools
 
             string leftName = BulkOperationsHelper.GetExpressionLeftName(expression, PredicateType.Or, "Collation");
             _collationColumnDic.Add(leftName, collation);
-
-            return this;
-        }
-
-        /// <summary>
-        /// Set the collation explicitly for join conditions. Can be recalled multiple times for more than one column. 
-        /// Note that this should only be used if there is a collation conflict and you can't resolve it by other means. 
-        /// </summary>
-        /// <param name="columnName"></param>
-        /// <param name="collation"></param>
-        /// <returns></returns>
-        public QueryUpdateReady<T> SetCollationOnColumn(Expression<Func<T, object>> columnName, string collation)
-        {
-            var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
-
-            if (propertyName == null)
-                throw new SqlBulkToolsException("SetCollationOnColumn column name can't be null");
-
-            _collationColumnDic.Add(propertyName, collation);
 
             return this;
         }

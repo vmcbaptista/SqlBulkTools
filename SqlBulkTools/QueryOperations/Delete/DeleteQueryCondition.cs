@@ -11,55 +11,46 @@ namespace SqlBulkTools
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class QueryUpdateCondition<T>
+    public class DeleteQueryCondition<T>
     {
-        private readonly T _singleEntity;
         private readonly string _tableName;
         private readonly string _schema;
-        private readonly HashSet<string> _columns;
-        private readonly Dictionary<string, string> _customColumnMappings;
         private readonly List<PredicateCondition> _whereConditions;
+        private readonly List<SqlParameter> _parameters;
         private int _conditionSortOrder;
-        private readonly List<SqlParameter> _sqlParams;
         private readonly Dictionary<string, string> _collationColumnDic;
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="singleEntity"></param>
         /// <param name="tableName"></param>
         /// <param name="schema"></param>
-        /// <param name="columns"></param>
-        /// <param name="customColumnMappings"></param>
-        /// <param name="sqlParams"></param>
-        public QueryUpdateCondition(T singleEntity, string tableName, string schema, HashSet<string> columns, 
-            Dictionary<string, string> customColumnMappings, List<SqlParameter> sqlParams)
+        /// <param name="sqlTimeout"></param>
+        public DeleteQueryCondition(string tableName, string schema, int sqlTimeout)
         {
-            _singleEntity = singleEntity;
             _tableName = tableName;
             _schema = schema;
-            _columns = columns;
-            _customColumnMappings = customColumnMappings;
             _whereConditions = new List<PredicateCondition>();
+            _parameters = new List<SqlParameter>();
             _collationColumnDic = new Dictionary<string, string>();
-            _sqlParams = sqlParams;
             _conditionSortOrder = 1;
         }
 
         /// <summary>
+        /// Specify a condition.
         /// </summary>
         /// <param name="expression"></param>
         /// <returns></returns>
-        public QueryUpdateReady<T> Where(Expression<Func<T, bool>> expression)
+        public DeleteQueryReady<T> Where(Expression<Func<T, bool>> expression)
         {
             // _whereConditions list will only ever contain one element.
-            BulkOperationsHelper.AddPredicate(expression, PredicateType.Where, _whereConditions, _sqlParams, 
-                _conditionSortOrder, appendParam: Constants.UniqueParamIdentifier);
+            BulkOperationsHelper.AddPredicate(expression, PredicateType.Where, _whereConditions, _parameters, 
+                _conditionSortOrder, Constants.UniqueParamIdentifier);
 
             _conditionSortOrder++;
 
-            return new QueryUpdateReady<T>(_singleEntity, _tableName, _schema, _columns, _customColumnMappings, 
-                _conditionSortOrder, _whereConditions, _sqlParams, _collationColumnDic);
+            return new DeleteQueryReady<T>(_tableName, _schema, _conditionSortOrder, 
+                _whereConditions, _parameters, _collationColumnDic);
         }
 
         /// <summary>
@@ -69,10 +60,10 @@ namespace SqlBulkTools
         /// <param name="collation">Only explicitly set the collation if there is a collation conflict.</param>
         /// <returns></returns>
         /// <exception cref="SqlBulkToolsException"></exception>
-        public QueryUpdateReady<T> Where(Expression<Func<T, bool>> expression, string collation)
+        public DeleteQueryReady<T> Where(Expression<Func<T, bool>> expression, string collation)
         {
             // _whereConditions list will only ever contain one element.
-            BulkOperationsHelper.AddPredicate(expression, PredicateType.Where, _whereConditions, _sqlParams,
+            BulkOperationsHelper.AddPredicate(expression, PredicateType.Where, _whereConditions, _parameters,
                 _conditionSortOrder, Constants.UniqueParamIdentifier);
 
             _conditionSortOrder++;
@@ -80,8 +71,8 @@ namespace SqlBulkTools
             string leftName = BulkOperationsHelper.GetExpressionLeftName(expression, PredicateType.Or, "Collation");
             _collationColumnDic.Add(leftName, collation);
 
-            return new QueryUpdateReady<T>(_singleEntity, _tableName, _schema, _columns, _customColumnMappings,
-                _conditionSortOrder, _whereConditions, _sqlParams, _collationColumnDic);
+            return new DeleteQueryReady<T>(_tableName, _schema, _conditionSortOrder,
+                _whereConditions, _parameters, _collationColumnDic);
         }
 
     }

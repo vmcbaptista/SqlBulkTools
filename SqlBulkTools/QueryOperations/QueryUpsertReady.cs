@@ -157,6 +157,7 @@ namespace SqlBulkTools
         {
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
 
+
             if (propertyName == null)
                 throw new NullReferenceException("MatchTargetOn column name can't be null.");
 

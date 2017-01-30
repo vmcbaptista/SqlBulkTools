@@ -14,39 +14,37 @@ namespace SqlBulkTools
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class SimpleDeleteQueryReady<T> : ITransaction
+    public class DeleteQueryReady<T> : ITransaction
     {
         private readonly string _tableName;
         private readonly string _schema;
-        private readonly int _sqlTimeout;
         private readonly List<PredicateCondition> _whereConditions;
         private readonly List<PredicateCondition> _andConditions;
         private readonly List<PredicateCondition> _orConditions;
         private readonly List<SqlParameter> _parameters;
         private int _conditionSortOrder;
-        private readonly Dictionary<string, string> _collationColumnDic; 
+        private readonly Dictionary<string, string> _collationColumnDic;
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="tableName"></param>
         /// <param name="schema"></param>
-        /// <param name="sqlTimeout"></param>
         /// <param name="conditionSortOrder"></param>
         /// <param name="whereConditions"></param>
         /// <param name="parameters"></param>
-        public SimpleDeleteQueryReady(string tableName, string schema,
-            int sqlTimeout, int conditionSortOrder, List<PredicateCondition> whereConditions, List<SqlParameter> parameters)
+        /// <param name="collationColumnDic"></param>
+        public DeleteQueryReady(string tableName, string schema, int conditionSortOrder, List<PredicateCondition> whereConditions, 
+            List<SqlParameter> parameters, Dictionary<string, string> collationColumnDic)
         {
             _tableName = tableName;
             _schema = schema;
-            _sqlTimeout = sqlTimeout;
             _whereConditions = whereConditions;
             _andConditions = new List<PredicateCondition>();
             _orConditions = new List<PredicateCondition>();
             _conditionSortOrder = conditionSortOrder;
             _parameters = parameters;
-            _collationColumnDic = new Dictionary<string, string>();
+            _collationColumnDic = collationColumnDic;
         }
 
 
@@ -56,7 +54,7 @@ namespace SqlBulkTools
         /// <param name="expression"></param>
         /// <returns></returns>
         /// <exception cref="SqlBulkToolsException"></exception>
-        public SimpleDeleteQueryReady<T> And(Expression<Func<T, bool>> expression)
+        public DeleteQueryReady<T> And(Expression<Func<T, bool>> expression)
         {
             BulkOperationsHelper.AddPredicate(expression, PredicateType.And, _andConditions, _parameters,
                 _conditionSortOrder, appendParam: Constants.UniqueParamIdentifier);
@@ -67,14 +65,50 @@ namespace SqlBulkTools
         /// <summary>
         /// Specify an additional condition to match on.
         /// </summary>
+        /// <param name="expression">Only explicitly set the collation if there is a collation conflict.</param>
+        /// <param name="collation"></param>
+        /// <returns></returns>
+        /// <exception cref="SqlBulkToolsException">Only explicitly set the collation if there is a collation conflict.</exception>
+        public DeleteQueryReady<T> And(Expression<Func<T, bool>> expression, string collation)
+        {
+            BulkOperationsHelper.AddPredicate(expression, PredicateType.And, _andConditions, _parameters, _conditionSortOrder, appendParam: Constants.UniqueParamIdentifier);
+            _conditionSortOrder++;
+
+            string leftName = BulkOperationsHelper.GetExpressionLeftName(expression, PredicateType.And, "Collation");
+            _collationColumnDic.Add(leftName, collation);
+
+            return this;
+        }
+
+        /// <summary>
+        /// Specify an additional condition to match on.
+        /// </summary>
         /// <param name="expression"></param>
         /// <returns></returns>
         /// <exception cref="SqlBulkToolsException"></exception>
-        public SimpleDeleteQueryReady<T> Or(Expression<Func<T, bool>> expression)
+        public DeleteQueryReady<T> Or(Expression<Func<T, bool>> expression)
         {
             BulkOperationsHelper.AddPredicate(expression, PredicateType.Or, _orConditions, _parameters,
                 _conditionSortOrder, appendParam: Constants.UniqueParamIdentifier);
             _conditionSortOrder++;
+            return this;
+        }
+
+        /// <summary>
+        /// Specify an additional condition to match on.
+        /// </summary>
+        /// <param name="expression"></param>
+        /// <param name="collation">Only explicitly set the collation if there is a collation conflict.</param>
+        /// <returns></returns>
+        /// <exception cref="SqlBulkToolsException"></exception>
+        public DeleteQueryReady<T> Or(Expression<Func<T, bool>> expression, string collation)
+        {
+            BulkOperationsHelper.AddPredicate(expression, PredicateType.Or, _orConditions, _parameters, _conditionSortOrder, appendParam: Constants.UniqueParamIdentifier);
+            _conditionSortOrder++;
+
+            string leftName = BulkOperationsHelper.GetExpressionLeftName(expression, PredicateType.Or, "Collation");
+            _collationColumnDic.Add(leftName, collation);
+
             return this;
         }
 
@@ -85,7 +119,7 @@ namespace SqlBulkTools
         /// <param name="columnName"></param>
         /// <param name="collation"></param>
         /// <returns></returns>
-        public SimpleDeleteQueryReady<T> SetCollationOnColumn(Expression<Func<T, object>> columnName, string collation)
+        public DeleteQueryReady<T> SetCollationOnColumn(Expression<Func<T, object>> columnName, string collation)
         {
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
 
@@ -112,7 +146,6 @@ namespace SqlBulkTools
 
             SqlCommand command = connection.CreateCommand();
             command.Connection = connection;
-            command.CommandTimeout = _sqlTimeout;
 
             string fullQualifiedTableName = BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema,
                 _tableName);
@@ -147,7 +180,6 @@ namespace SqlBulkTools
 
             SqlCommand command = connection.CreateCommand();
             command.Connection = connection;
-            command.CommandTimeout = _sqlTimeout;
 
             string fullQualifiedTableName = BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema,
                 _tableName);

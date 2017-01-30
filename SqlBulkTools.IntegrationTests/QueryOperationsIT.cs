@@ -713,7 +713,7 @@ namespace SqlBulkTools.IntegrationTests
                         .CustomColumnMapping(x => x.ColumnXIsDifferent, "ColumnX")
                         .CustomColumnMapping(x => x.ColumnYIsDifferentInDatabase, "ColumnY")
                         .Update()
-                        .Where(x => x.NaturalId == 1)
+                        .Where(x => x.NaturalId == 1, "database_default")
                         .Commit(conn);
                 }
 

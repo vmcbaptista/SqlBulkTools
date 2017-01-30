@@ -51,10 +51,10 @@
     <Compile Include="BulkOperations\AbstractOperation.cs" />
     <Compile Include="Core\BulkOperationsUtility.cs" />
     <Compile Include="Interface\IBulkOperations.cs" />
-    <Compile Include="QueryOperations\Delete\SimpleDeleteQueryCondition.cs" />
-    <Compile Include="QueryOperations\Delete\SimpleDeleteQueryReady.cs" />
-    <Compile Include="QueryOperations\Delete\SimpleDeleteQueryTable.cs" />
-    <Compile Include="QueryOperations\Delete\SimpleDeleteQuery.cs" />
+    <Compile Include="QueryOperations\Delete\DeleteQueryCondition.cs" />
+    <Compile Include="QueryOperations\Delete\DeleteQueryReady.cs" />
+    <Compile Include="QueryOperations\Delete\DeleteQueryTable.cs" />
+    <Compile Include="QueryOperations\Delete\DeleteQuery.cs" />
     <Compile Include="QueryOperations\QueryInsertReady.cs" />
     <Compile Include="QueryOperations\QueryAddColumnList.cs" />
     <Compile Include="QueryOperations\QueryForObject.cs" />
