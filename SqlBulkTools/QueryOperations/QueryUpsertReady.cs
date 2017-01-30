@@ -4,7 +4,6 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using SqlBulkTools.Enumeration;
 
@@ -15,14 +14,13 @@ namespace SqlBulkTools
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class SimpleUpsertQueryReady<T> : ITransaction
+    public class QueryUpsertReady<T> : ITransaction
     {
         private readonly T _singleEntity;
         private readonly string _tableName;
         private readonly string _schema;
         private readonly HashSet<string> _columns;
         private readonly Dictionary<string, string> _customColumnMappings;
-        private readonly int _sqlTimeout;
         private string _identityColumn;
         private readonly List<SqlParameter> _sqlParams;
         private readonly HashSet<string> _matchTargetOnSet;
@@ -38,17 +36,15 @@ namespace SqlBulkTools
         /// <param name="schema"></param>
         /// <param name="columns"></param>
         /// <param name="customColumnMappings"></param>
-        /// <param name="sqlTimeout"></param>
         /// <param name="sqlParams"></param>
-        public SimpleUpsertQueryReady(T singleEntity, string tableName, string schema, HashSet<string> columns, Dictionary<string, string> customColumnMappings, 
-            int sqlTimeout, List<SqlParameter> sqlParams)
+        public QueryUpsertReady(T singleEntity, string tableName, string schema, HashSet<string> columns, Dictionary<string, string> customColumnMappings, 
+            List<SqlParameter> sqlParams)
         {
             _singleEntity = singleEntity;
             _tableName = tableName;
             _schema = schema;
             _columns = columns;
             _customColumnMappings = customColumnMappings;
-            _sqlTimeout = sqlTimeout;
             _sqlParams = sqlParams;
             _matchTargetOnSet = new HashSet<string>();
             _outputIdentity = ColumnDirectionType.Input;
@@ -62,7 +58,7 @@ namespace SqlBulkTools
         /// <param name="columnName"></param>
         /// <param name="outputIdentity"></param>
         /// <returns></returns>
-        public SimpleUpsertQueryReady<T> SetIdentityColumn(Expression<Func<T, object>> columnName, ColumnDirectionType outputIdentity)
+        public QueryUpsertReady<T> SetIdentityColumn(Expression<Func<T, object>> columnName, ColumnDirectionType outputIdentity)
         {
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
             _outputIdentity = outputIdentity;
@@ -86,7 +82,7 @@ namespace SqlBulkTools
         /// </summary>
         /// <param name="columnName"></param>
         /// <returns></returns>
-        public SimpleUpsertQueryReady<T> ExcludeColumnFromUpdate(Expression<Func<T, object>> columnName)
+        public QueryUpsertReady<T> ExcludeColumnFromUpdate(Expression<Func<T, object>> columnName)
         {
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
 
@@ -109,7 +105,7 @@ namespace SqlBulkTools
         /// </summary>
         /// <param name="columnName"></param>
         /// <returns></returns>
-        public SimpleUpsertQueryReady<T> SetIdentityColumn(Expression<Func<T, object>> columnName)
+        public QueryUpsertReady<T> SetIdentityColumn(Expression<Func<T, object>> columnName)
         {
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
 
@@ -128,32 +124,13 @@ namespace SqlBulkTools
         }
 
         /// <summary>
-        /// Set the collation explicitly for join conditions. Can be recalled multiple times for more than one column. 
-        /// Note that this should only be used if there is a collation conflict and you can't resolve it by other means. 
-        /// </summary>
-        /// <param name="columnName"></param>
-        /// <param name="collation"></param>
-        /// <returns></returns>
-        public SimpleUpsertQueryReady<T> SetCollationOnColumn(Expression<Func<T, object>> columnName, string collation)
-        {
-            var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
-
-            if (propertyName == null)
-                throw new SqlBulkToolsException("SetCollationOnColumn column name can't be null");
-
-            _collationColumnDic.Add(propertyName, collation);
-
-            return this;
-        }
-
-        /// <summary>
         /// At least one MatchTargetOn is required for correct configuration. MatchTargetOn is the matching clause for evaluating 
         /// each row in table. This is usally set to the unique identifier in the table (e.g. Id). Multiple MatchTargetOn members are allowed 
         /// for matching composite relationships. 
         /// </summary>
         /// <param name="columnName"></param>
         /// <returns></returns>
-        public SimpleUpsertQueryReady<T> MatchTargetOn(Expression<Func<T, object>> columnName)
+        public QueryUpsertReady<T> MatchTargetOn(Expression<Func<T, object>> columnName)
         {
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
 
@@ -164,6 +141,31 @@ namespace SqlBulkTools
 
             if (!_columns.Contains(propertyName))
                 _columns.Add(propertyName);
+
+            return this;
+        }
+
+        /// <summary>
+        /// At least one MatchTargetOn is required for correct configuration. MatchTargetOn is the matching clause for evaluating 
+        /// each row in table. This is usally set to the unique identifier in the table (e.g. Id). Multiple MatchTargetOn members are allowed 
+        /// for matching composite relationships. 
+        /// </summary>
+        /// <param name="columnName"></param>
+        /// <param name="collation">Only explicitly set the collation if there is a collation conflict.</param>
+        /// <returns></returns>
+        public QueryUpsertReady<T> MatchTargetOn(Expression<Func<T, object>> columnName, string collation)
+        {
+            var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
+
+            if (propertyName == null)
+                throw new NullReferenceException("MatchTargetOn column name can't be null.");
+
+            _matchTargetOnSet.Add(propertyName);
+
+            if (collation == null)
+                throw new SqlBulkToolsException("Collation can't be null");
+
+            _collationColumnDic.Add(propertyName, collation);
 
             return this;
         }
@@ -198,7 +200,6 @@ namespace SqlBulkTools
 
                 SqlCommand command = conn.CreateCommand();
                 command.Connection = conn;
-                command.CommandTimeout = _sqlTimeout;
 
                 string fullQualifiedTableName = BulkOperationsHelper.GetFullQualifyingTableName(conn.Database, _schema, _tableName);
 
@@ -283,7 +284,6 @@ namespace SqlBulkTools
 
                 SqlCommand command = conn.CreateCommand();
                 command.Connection = conn;
-                command.CommandTimeout = _sqlTimeout;
 
                 string fullQualifiedTableName = BulkOperationsHelper.GetFullQualifyingTableName(conn.Database, _schema, _tableName);
 

@@ -50,7 +50,6 @@ namespace SqlBulkTools
         /// <param name="disableIndexList"></param>
         /// <param name="disableAllIndexes"></param>
         /// <param name="customColumnMappings"></param>
-        /// <param name="sqlTimeout"></param>
         /// <param name="bulkCopyTimeout"></param>
         /// <param name="bulkCopyEnableStreaming"></param>
         /// <param name="bulkCopyNotifyAfter"></param>
@@ -59,7 +58,7 @@ namespace SqlBulkTools
         /// <param name="bulkCopyDelegates"></param>
         protected AbstractOperation(IEnumerable<T> list, string tableName, string schema, HashSet<string> columns,
             HashSet<string> disableIndexList, bool disableAllIndexes,
-            Dictionary<string, string> customColumnMappings, int sqlTimeout, int bulkCopyTimeout,
+            Dictionary<string, string> customColumnMappings, int bulkCopyTimeout,
             bool bulkCopyEnableStreaming,
             int? bulkCopyNotifyAfter, int? bulkCopyBatchSize, SqlBulkCopyOptions sqlBulkCopyOptions, 
             IEnumerable<SqlRowsCopiedEventHandler> bulkCopyDelegates)
@@ -71,7 +70,6 @@ namespace SqlBulkTools
             _disableIndexList = disableIndexList;
             _disableAllIndexes = disableAllIndexes;
             _customColumnMappings = customColumnMappings;
-            _sqlTimeout = sqlTimeout;
             _bulkCopyTimeout = bulkCopyTimeout;
             _bulkCopyEnableStreaming = bulkCopyEnableStreaming;
             _bulkCopyNotifyAfter = bulkCopyNotifyAfter;
@@ -142,7 +140,7 @@ namespace SqlBulkTools
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
 
             if (propertyName == null)
-                throw new SqlBulkToolsException("SetCollationOnColumn column name can't be null");
+                throw new SqlBulkToolsException("Collation can't be null");
 
             _collationColumnDic.Add(propertyName, collation);
         }

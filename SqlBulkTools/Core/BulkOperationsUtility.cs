@@ -16,42 +16,6 @@ namespace SqlBulkTools
     /// </summary>
     public static class BulkOperationsUtility
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="connectionName"></param>
-        /// <returns></returns>
-        /// <exception cref="SqlBulkToolsException"></exception>
-        public static SqlConnection GetSqlConnection(string connectionName)
-        {
-            if (connectionName != null)
-            {
-                var conn = new SqlConnection(ConfigurationManager
-                    .ConnectionStrings[connectionName].ConnectionString);
-                return conn;
-            }
-
-            throw new SqlBulkToolsException("SqlConnection requested could not be resolved. Please check the arguments supplied to GetSqlConnection");
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="connectionName"></param>
-        /// <param name="credentials"></param>
-        /// <returns></returns>
-        /// <exception cref="SqlBulkToolsException"></exception>
-        public static SqlConnection GetSqlConnection(string connectionName, SqlCredential credentials)
-        {
-            if (connectionName != null)
-            {
-                var conn = new SqlConnection(ConfigurationManager
-                    .ConnectionStrings[connectionName].ConnectionString, credentials);
-                return conn;
-            }
-
-            throw new SqlBulkToolsException("SqlConnection requested could not be resolved. Please check the arguments supplied to GetSqlConnection");
-        }
 
         private static readonly Dictionary<Type, DbType> TypeMappings = new Dictionary<Type, DbType>()
         {

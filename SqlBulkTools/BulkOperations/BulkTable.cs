@@ -23,7 +23,6 @@ namespace SqlBulkTools.BulkCopy
         private string _schema;
         private readonly string _tableName;
         private Dictionary<string, string> CustomColumnMappings { get; set; }
-        private int _sqlTimeout;
 
         /// <summary>
         /// 
@@ -35,7 +34,6 @@ namespace SqlBulkTools.BulkCopy
             _bulkCopyBatchSize = null;
             _bulkCopyNotifyAfter = null;
             _bulkCopyEnableStreaming = false;
-            _sqlTimeout = 600;
             _bulkCopyTimeout = 600;
             _list = list;
             _schema = Constants.DefaultSchemaName;
@@ -58,7 +56,7 @@ namespace SqlBulkTools.BulkCopy
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
             Columns.Add(propertyName);
             return new BulkAddColumn<T>(_list, _tableName, Columns, _schema, 
-                _sqlTimeout, _bulkCopyTimeout, _bulkCopyEnableStreaming, _bulkCopyNotifyAfter, _bulkCopyBatchSize, _sqlBulkCopyOptions, _bulkCopyDelegates);
+                _bulkCopyTimeout, _bulkCopyEnableStreaming, _bulkCopyNotifyAfter, _bulkCopyBatchSize, _sqlBulkCopyOptions, _bulkCopyDelegates);
         }
 
         /// <summary>
@@ -69,7 +67,7 @@ namespace SqlBulkTools.BulkCopy
         {
             Columns = BulkOperationsHelper.GetAllValueTypeAndStringColumns(typeof(T));
             return new BulkAddColumnList<T>(_list, _tableName, Columns, _schema, 
-                _sqlTimeout, _bulkCopyTimeout, _bulkCopyEnableStreaming, _bulkCopyNotifyAfter, _bulkCopyBatchSize, _sqlBulkCopyOptions, _bulkCopyDelegates);
+                _bulkCopyTimeout, _bulkCopyEnableStreaming, _bulkCopyNotifyAfter, _bulkCopyBatchSize, _sqlBulkCopyOptions, _bulkCopyDelegates);
         }
 
         /// <summary>
@@ -80,17 +78,6 @@ namespace SqlBulkTools.BulkCopy
         public BulkTable<T> WithSchema(string schema)
         {
             _schema = schema;
-            return this;
-        }
-
-        /// <summary>
-        /// Default is 600 seconds. See docs for more info. 
-        /// </summary>
-        /// <param name="seconds"></param>
-        /// <returns></returns>
-        public BulkTable<T> WithSqlCommandTimeout(int seconds)
-        {
-            _sqlTimeout = seconds;
             return this;
         }
 

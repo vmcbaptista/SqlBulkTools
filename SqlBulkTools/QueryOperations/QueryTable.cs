@@ -3,20 +3,19 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq.Expressions;
 
-namespace SqlBulkTools
+namespace SqlBulkTools.QueryOperations
 {
     /// <summary>
     /// Configurable options for table. 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class SimpleQueryTable<T>
+    public class QueryTable<T>
     {
         private readonly T _singleEntity;
         private HashSet<string> Columns { get; set; }
         private string _schema;
         private readonly string _tableName;
         private Dictionary<string, string> CustomColumnMappings { get; set; }
-        private int _sqlTimeout;
         private readonly List<SqlParameter> _sqlParams;
 
         /// <summary>
@@ -25,10 +24,9 @@ namespace SqlBulkTools
         /// <param name="singleEntity"></param>
         /// <param name="tableName"></param>
         /// <param name="sqlParams"></param>
-        public SimpleQueryTable(T singleEntity, string tableName, List<SqlParameter> sqlParams)
+        public QueryTable(T singleEntity, string tableName, List<SqlParameter> sqlParams)
         {
             _singleEntity = singleEntity;
-            _sqlTimeout = 600;
             _schema = Constants.DefaultSchemaName;
             Columns = new HashSet<string>();
             CustomColumnMappings = new Dictionary<string, string>();
@@ -43,25 +41,22 @@ namespace SqlBulkTools
         /// </summary>
         /// <param name="columnName">Column name as represented in database</param>
         /// <returns></returns>
-        public SimpleQueryAddColumn<T> AddColumn(Expression<Func<T, object>> columnName)
+        public QueryAddColumn<T> AddColumn(Expression<Func<T, object>> columnName)
         {
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
             Columns.Add(propertyName);
-            return new SimpleQueryAddColumn<T>(_singleEntity, _tableName, Columns, _schema,
-                _sqlTimeout, _sqlParams);
+            return new QueryAddColumn<T>(_singleEntity, _tableName, Columns, _schema, _sqlParams);
         }
-
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public SimpleQueryAddColumnList<T> AddAllColumns()
+        public QueryAddColumnList<T> AddAllColumns()
         {
             Columns = BulkOperationsHelper.GetAllValueTypeAndStringColumns(typeof(T));
 
-            return new SimpleQueryAddColumnList<T>(_singleEntity, _tableName, Columns, _schema,
-                _sqlTimeout, _sqlParams);
+            return new QueryAddColumnList<T>(_singleEntity, _tableName, Columns, _schema, _sqlParams);
         }
 
         /// <summary>
@@ -69,20 +64,9 @@ namespace SqlBulkTools
         /// </summary>
         /// <param name="schema"></param>
         /// <returns></returns>
-        public SimpleQueryTable<T> WithSchema(string schema)
+        public QueryTable<T> WithSchema(string schema)
         {
             _schema = schema;
-            return this;
-        }
-
-        /// <summary>
-        /// Default is 600 seconds. See docs for more info. 
-        /// </summary>
-        /// <param name="seconds"></param>
-        /// <returns></returns>
-        public SimpleQueryTable<T> WithSqlCommandTimeout(int seconds)
-        {
-            _sqlTimeout = seconds;
             return this;
         }
     }

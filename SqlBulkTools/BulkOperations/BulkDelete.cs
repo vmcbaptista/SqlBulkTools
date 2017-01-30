@@ -25,7 +25,6 @@ namespace SqlBulkTools
         /// <param name="columns"></param>
         /// <param name="disableAllIndexes"></param>
         /// <param name="customColumnMappings"></param>
-        /// <param name="sqlTimeout"></param>
         /// <param name="bulkCopyTimeout"></param>
         /// <param name="bulkCopyEnableStreaming"></param>
         /// <param name="bulkCopyNotifyAfter"></param>
@@ -35,11 +34,11 @@ namespace SqlBulkTools
         /// <param name="bulkCopyDelegates"></param>
         public BulkDelete(IEnumerable<T> list, string tableName, string schema, HashSet<string> columns, HashSet<string> disableIndexList,
             bool disableAllIndexes,
-            Dictionary<string, string> customColumnMappings, int sqlTimeout, int bulkCopyTimeout,
+            Dictionary<string, string> customColumnMappings, int bulkCopyTimeout,
             bool bulkCopyEnableStreaming, int? bulkCopyNotifyAfter, int? bulkCopyBatchSize, SqlBulkCopyOptions sqlBulkCopyOptions,
             IEnumerable<SqlRowsCopiedEventHandler> bulkCopyDelegates)
             :
-            base(list, tableName, schema, columns, disableIndexList, disableAllIndexes, customColumnMappings, sqlTimeout,
+            base(list, tableName, schema, columns, disableIndexList, disableAllIndexes, customColumnMappings, 
                 bulkCopyTimeout, bulkCopyEnableStreaming, bulkCopyNotifyAfter, bulkCopyBatchSize, sqlBulkCopyOptions, 
                 bulkCopyDelegates)
         {
@@ -59,6 +58,27 @@ namespace SqlBulkTools
         {
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
             _matchTargetOn.Add(propertyName);
+            return this;
+        }
+
+        /// <summary>
+        /// At least one MatchTargetOn is required for correct configuration. MatchTargetOn is the matching clause for evaluating 
+        /// each row in table. This is usally set to the unique identifier in the table (e.g. Id). Multiple MatchTargetOn members are allowed 
+        /// for matching composite relationships. 
+        /// </summary>
+        /// <param name="columnName"></param>
+        /// <param name="collation">Only explicitly set the collation if there is a collation conflict.</param>
+        /// <returns></returns>
+        public BulkDelete<T> MatchTargetOn(Expression<Func<T, object>> columnName, string collation)
+        {
+            var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
+
+            if (propertyName == null)
+                throw new NullReferenceException("MatchTargetOn column name can't be null.");
+
+            _matchTargetOn.Add(propertyName);
+            base.SetCollation(columnName, collation);
+
             return this;
         }
 
@@ -98,19 +118,6 @@ namespace SqlBulkTools
         public BulkDelete<T> SetIdentityColumn(Expression<Func<T, object>> columnName, ColumnDirectionType outputIdentity)
         {
             base.SetIdentity(columnName, outputIdentity);
-            return this;
-        }
-
-        /// <summary>
-        /// Set the collation explicitly for join conditions. Can be recalled multiple times for more than one column. 
-        /// Note that this should only be used if there is a collation conflict and you can't resolve it by other means. 
-        /// </summary>
-        /// <param name="columnName"></param>
-        /// <param name="collation"></param>
-        /// <returns></returns>
-        public BulkDelete<T> SetCollationOnColumn(Expression<Func<T, object>> columnName, string collation)
-        {
-            base.SetCollation(columnName, collation);
             return this;
         }
 

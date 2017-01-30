@@ -3,20 +3,19 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq.Expressions;
 
-namespace SqlBulkTools
+namespace SqlBulkTools.QueryOperations
 {
     /// <summary>
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class SimpleQueryAddColumnList<T>
+    public class QueryAddColumnList<T>
     {
         private readonly T _singleEntity;
         private readonly string _tableName;
-        private Dictionary<string, string> _customColumnMappings { get; }
+        private Dictionary<string, string> CustomColumnMappings { get; }
         private HashSet<string> _columns;
         private readonly string _schema;
-        private readonly int _sqlTimeout;
         private List<SqlParameter> _sqlParams;
 
         /// <summary>
@@ -26,17 +25,15 @@ namespace SqlBulkTools
         /// <param name="tableName"></param>
         /// <param name="columns"></param>
         /// <param name="schema"></param>
-        /// <param name="sqlTimeout"></param>
         /// <param name="sqlParams"></param>
-        public SimpleQueryAddColumnList(T singleEntity, string tableName, HashSet<string> columns, string schema,
-            int sqlTimeout, List<SqlParameter> sqlParams)
+        public QueryAddColumnList(T singleEntity, string tableName, HashSet<string> columns, string schema,
+            List<SqlParameter> sqlParams)
         {
             _singleEntity = singleEntity;
             _tableName = tableName;
             _columns = columns;
             _schema = schema;
-            _sqlTimeout = sqlTimeout;
-            _customColumnMappings = new Dictionary<string, string>();
+            CustomColumnMappings = new Dictionary<string, string>();
             _sqlParams = sqlParams;
         }
 
@@ -44,10 +41,10 @@ namespace SqlBulkTools
         /// 
         /// </summary>
         /// <returns></returns>
-        public SimpleInsertQueryReady<T> Insert()
+        public QueryInsertReady<T> Insert()
         {
-            return new SimpleInsertQueryReady<T>(_singleEntity, _tableName, _schema, _columns, _customColumnMappings,
-                _sqlTimeout, _sqlParams);
+            return new QueryInsertReady<T>(_singleEntity, _tableName, _schema, _columns, CustomColumnMappings,
+                _sqlParams);
         }
 
 
@@ -55,20 +52,20 @@ namespace SqlBulkTools
         /// 
         /// </summary>
         /// <returns></returns>
-        public SimpleUpsertQueryReady<T> Upsert()
+        public QueryUpsertReady<T> Upsert()
         {
-            return new SimpleUpsertQueryReady<T>(_singleEntity, _tableName, _schema, _columns, _customColumnMappings,
-                _sqlTimeout, _sqlParams);
+            return new QueryUpsertReady<T>(_singleEntity, _tableName, _schema, _columns, CustomColumnMappings,
+                 _sqlParams);
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public SimpleUpdateQueryCondition<T> Update()
+        public QueryUpdateCondition<T> Update()
         {
-            return new SimpleUpdateQueryCondition<T>(_singleEntity, _tableName, _schema, _columns, _customColumnMappings, 
-                _sqlTimeout, _sqlParams);
+            return new QueryUpdateCondition<T>(_singleEntity, _tableName, _schema, _columns, CustomColumnMappings, 
+                 _sqlParams);
         }  
 
         /// <summary>
@@ -77,7 +74,7 @@ namespace SqlBulkTools
         /// <param name="columnName"></param>
         /// <returns></returns>
         /// <exception cref="SqlBulkToolsException"></exception>
-        public SimpleQueryAddColumnList<T> RemoveColumn(Expression<Func<T, object>> columnName)
+        public QueryAddColumnList<T> RemoveColumn(Expression<Func<T, object>> columnName)
         {
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
             if (_columns.Contains(propertyName))
@@ -103,10 +100,10 @@ namespace SqlBulkTools
         /// The actual name of column as represented in SQL table. 
         /// </param>
         /// <returns></returns>
-        public SimpleQueryAddColumnList<T> CustomColumnMapping(Expression<Func<T, object>> source, string destination)
+        public QueryAddColumnList<T> CustomColumnMapping(Expression<Func<T, object>> source, string destination)
         {
             var propertyName = BulkOperationsHelper.GetPropertyName(source);
-            _customColumnMappings.Add(propertyName, destination);
+            CustomColumnMappings.Add(propertyName, destination);
             return this;
         }
     }

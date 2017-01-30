@@ -302,7 +302,8 @@ namespace SqlBulkTools.IntegrationTests
 
             using (TransactionScope trans = new TransactionScope())
             {
-                using (SqlConnection conn = BulkOperationsUtility.GetSqlConnection("SqlBulkToolsTest"))
+                using (SqlConnection conn = 
+                    new SqlConnection(ConfigurationManager.ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
                 {
                     bulk.Setup<SchemaTest2>()
                         .ForCollection(col)

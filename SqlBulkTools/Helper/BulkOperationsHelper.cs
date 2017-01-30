@@ -1230,6 +1230,23 @@ namespace SqlBulkTools
             }
         }
 
+        internal static string GetExpressionLeftName<T>(Expression<Func<T, bool>> predicate, PredicateType predicateType, string columnType)
+        {
+            BinaryExpression binaryBody = predicate.Body as BinaryExpression;
+
+            if (binaryBody == null)
+                throw new SqlBulkToolsException($"Expression not supported for {GetPredicateMethodName(predicateType)}");
+
+            string leftName = ((MemberExpression)binaryBody.Left).Member.Name;
+
+            if (leftName == null)
+            {
+                throw new SqlBulkToolsException($"{columnType} can't be null");
+            }
+
+            return leftName;
+        }
+
         /// <summary>
         /// 
         /// </summary>

@@ -26,7 +26,6 @@ namespace SqlBulkTools
         /// <param name="disableIndexList"></param>
         /// <param name="disableAllIndexes"></param>
         /// <param name="customColumnMappings"></param>
-        /// <param name="sqlTimeout"></param>
         /// <param name="bulkCopyTimeout"></param>
         /// <param name="bulkCopyEnableStreaming"></param>
         /// <param name="bulkCopyNotifyAfter"></param>
@@ -35,11 +34,11 @@ namespace SqlBulkTools
         /// <param name="bulkCopyDelegates"></param>
         public BulkInsert(IEnumerable<T> list, string tableName, string schema, HashSet<string> columns,
             HashSet<string> disableIndexList, bool disableAllIndexes,
-            Dictionary<string, string> customColumnMappings, int sqlTimeout, int bulkCopyTimeout, bool bulkCopyEnableStreaming,
+            Dictionary<string, string> customColumnMappings, int bulkCopyTimeout, bool bulkCopyEnableStreaming,
             int? bulkCopyNotifyAfter, int? bulkCopyBatchSize, SqlBulkCopyOptions sqlBulkCopyOptions, 
             IEnumerable<SqlRowsCopiedEventHandler> bulkCopyDelegates) :
 
-            base(list, tableName, schema, columns, disableIndexList, disableAllIndexes, customColumnMappings, sqlTimeout,
+            base(list, tableName, schema, columns, disableIndexList, disableAllIndexes, customColumnMappings,
                 bulkCopyTimeout, bulkCopyEnableStreaming, bulkCopyNotifyAfter, bulkCopyBatchSize, sqlBulkCopyOptions, 
                 bulkCopyDelegates)
         {
