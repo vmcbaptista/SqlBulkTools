@@ -47,21 +47,18 @@ namespace SqlBulkTools
         }
 
         /// <summary>
-        /// By default SqlBulkTools will attempt to match the model property names to SQL column names (case insensitive). 
-        /// If any of your model property names do not match 
-        /// the SQL table column(s) as defined in given table, then use this method to set up a custom mapping.  
+        /// Add each column that you want to include in the query. Only include the columns that are relevant to the 
+        /// procedure for best performance. 
         /// </summary>
-        /// <param name="source">
-        /// The object member that has a different name in SQL table. 
-        /// </param>
-        /// <param name="destination">
-        /// The actual name of column as represented in SQL table. 
-        /// </param>
+        /// <param name="columnName">Column name as represented in database</param>
+        /// <param name="destination">The actual name of column as represented in SQL table. By default SqlBulkTools will attempt to match the model property names to SQL column names (case insensitive). 
+        /// If any of your model property names do not match 
+        /// the SQL table column(s) as defined in given table, then use this overload to set up a custom mapping. </param>
         /// <returns></returns>
-        public BulkAddColumn<T> CustomColumnMapping(Expression<Func<T, object>> source, string destination)
+        public BulkAddColumn<T> AddColumn(Expression<Func<T, object>> columnName, string destination)
         {
-            var propertyName = BulkOperationsHelper.GetPropertyName(source);
-            _customColumnMappings.Add(propertyName, destination);
+            var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
+            _columns.Add(propertyName);
             return this;
         }
 
