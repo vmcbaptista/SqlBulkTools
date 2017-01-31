@@ -1,67 +1,61 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq.Expressions;
 
-namespace SqlBulkTools
+// ReSharper disable once CheckNamespace
+namespace SqlBulkTools.BulkCopy
 {
     /// <summary>
     /// Configurable options for table. 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class SimpleQueryTable<T>
+    public class BulkTable<T>
     {
-        private readonly T _singleEntity;
+        private readonly IEnumerable<T> _list;
         private HashSet<string> Columns { get; set; }
         private string _schema;
         private readonly string _tableName;
         private Dictionary<string, string> CustomColumnMappings { get; set; }
-        private int _sqlTimeout;
-        private readonly List<SqlParameter> _sqlParams;
+        private BulkCopySettings _bulkCopySettings;
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="singleEntity"></param>
+        /// <param name="list"></param>
         /// <param name="tableName"></param>
-        /// <param name="sqlParams"></param>
-        public SimpleQueryTable(T singleEntity, string tableName, List<SqlParameter> sqlParams)
+        public BulkTable(IEnumerable<T> list, string tableName)
         {
-            _singleEntity = singleEntity;
-            _sqlTimeout = 600;
+            _list = list;
             _schema = Constants.DefaultSchemaName;
             Columns = new HashSet<string>();
             CustomColumnMappings = new Dictionary<string, string>();
             _tableName = tableName;
+            _schema = Constants.DefaultSchemaName;
             Columns = new HashSet<string>();
             CustomColumnMappings = new Dictionary<string, string>();
-            _sqlParams = sqlParams;
+            _bulkCopySettings = new BulkCopySettings();
         }
 
         /// <summary>
-        /// Add each column that you want to include in the query.
+        /// Add each column that you want to include in the query. Only include the columns that are relevant to the procedure for best performance. 
         /// </summary>
         /// <param name="columnName">Column name as represented in database</param>
         /// <returns></returns>
-        public SimpleQueryAddColumn<T> AddColumn(Expression<Func<T, object>> columnName)
+        public BulkAddColumn<T> AddColumn(Expression<Func<T, object>> columnName)
         {
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
             Columns.Add(propertyName);
-            return new SimpleQueryAddColumn<T>(_singleEntity, _tableName, Columns, _schema,
-                _sqlTimeout, _sqlParams);
+            return new BulkAddColumn<T>(_list, _tableName, Columns, _schema, _bulkCopySettings);
         }
 
-
         /// <summary>
-        /// 
+        /// Adds all properties in model that are either value, string, char[] or byte[] type. 
         /// </summary>
         /// <returns></returns>
-        public SimpleQueryAddColumnList<T> AddAllColumns()
+        public BulkAddColumnList<T> AddAllColumns()
         {
             Columns = BulkOperationsHelper.GetAllValueTypeAndStringColumns(typeof(T));
-
-            return new SimpleQueryAddColumnList<T>(_singleEntity, _tableName, Columns, _schema,
-                _sqlTimeout, _sqlParams);
+            return new BulkAddColumnList<T>(_list, _tableName, Columns, _schema, _bulkCopySettings);
         }
 
         /// <summary>
@@ -69,21 +63,22 @@ namespace SqlBulkTools
         /// </summary>
         /// <param name="schema"></param>
         /// <returns></returns>
-        public SimpleQueryTable<T> WithSchema(string schema)
+        public BulkTable<T> WithSchema(string schema)
         {
             _schema = schema;
             return this;
         }
 
         /// <summary>
-        /// Default is 600 seconds. See docs for more info. 
+        /// 
         /// </summary>
-        /// <param name="seconds"></param>
+        /// <param name="settings"></param>
         /// <returns></returns>
-        public SimpleQueryTable<T> WithSqlCommandTimeout(int seconds)
+        public BulkTable<T> WithBulkCopySettings(BulkCopySettings settings)
         {
-            _sqlTimeout = seconds;
+            _bulkCopySettings = settings;
             return this;
         }
+
     }
 }

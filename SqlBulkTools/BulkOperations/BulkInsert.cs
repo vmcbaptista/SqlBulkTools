@@ -23,28 +23,13 @@ namespace SqlBulkTools
         /// <param name="tableName"></param>
         /// <param name="schema"></param>
         /// <param name="columns"></param>
-        /// <param name="disableIndexList"></param>
-        /// <param name="disableAllIndexes"></param>
         /// <param name="customColumnMappings"></param>
-        /// <param name="sqlTimeout"></param>
-        /// <param name="bulkCopyTimeout"></param>
-        /// <param name="bulkCopyEnableStreaming"></param>
-        /// <param name="bulkCopyNotifyAfter"></param>
-        /// <param name="bulkCopyBatchSize"></param>
-        /// <param name="sqlBulkCopyOptions"></param>
-        /// <param name="bulkCopyDelegates"></param>
+        /// <param name="bulkCopySettings"></param>
         public BulkInsert(IEnumerable<T> list, string tableName, string schema, HashSet<string> columns,
-            HashSet<string> disableIndexList, bool disableAllIndexes,
-            Dictionary<string, string> customColumnMappings, int sqlTimeout, int bulkCopyTimeout, bool bulkCopyEnableStreaming,
-            int? bulkCopyNotifyAfter, int? bulkCopyBatchSize, SqlBulkCopyOptions sqlBulkCopyOptions, 
-            IEnumerable<SqlRowsCopiedEventHandler> bulkCopyDelegates) :
+            Dictionary<string, string> customColumnMappings, BulkCopySettings bulkCopySettings) :
 
-            base(list, tableName, schema, columns, disableIndexList, disableAllIndexes, customColumnMappings, sqlTimeout,
-                bulkCopyTimeout, bulkCopyEnableStreaming, bulkCopyNotifyAfter, bulkCopyBatchSize, sqlBulkCopyOptions, 
-                bulkCopyDelegates)
-        {
-            
-        }
+            base(list, tableName, schema, columns, customColumnMappings, bulkCopySettings)
+        {}
 
         /// <summary>
         /// Sets the identity column for the table. Required if an Identity column exists in table and one of the two 
@@ -72,6 +57,17 @@ namespace SqlBulkTools
         }
 
         /// <summary>
+        /// Disables all Non-Clustered indexes on the table before the transaction and rebuilds after the 
+        /// transaction. This option should only be considered for very large operations.
+        /// </summary>
+        /// <returns></returns>
+        public BulkInsert<T> TmpDisableAllNonClusteredIndexes()
+        {
+            _disableAllIndexes = true;
+            return this;
+        }
+
+        /// <summary>
         /// Commits a transaction to database. A valid setup must exist for the operation to be 
         /// successful.
         /// </summary>
@@ -85,8 +81,6 @@ namespace SqlBulkTools
             {
                 return affectedRows;
             }
-
-            base.IndexCheck();
 
             DataTable dt = BulkOperationsHelper.CreateDataTable<T>(_columns, _customColumnMappings, _matchTargetOn, _outputIdentity);
             dt = BulkOperationsHelper.ConvertListToDataTable(dt, _list, _columns);
@@ -103,21 +97,20 @@ namespace SqlBulkTools
                 dtCols = BulkOperationsHelper.GetDatabaseSchema(connection, _schema, _tableName);
 
             //Bulk insert into temp table
-            using (SqlBulkCopy bulkcopy = new SqlBulkCopy(connection, _sqlBulkCopyOptions, null))
+            using (SqlBulkCopy bulkcopy = new SqlBulkCopy(connection, _bulkCopySettings.SqlBulkCopyOptions, null))
             {
                 bulkcopy.DestinationTableName = BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema, _tableName);
                 BulkOperationsHelper.MapColumns(bulkcopy, _columns, _customColumnMappings);
 
-                BulkOperationsHelper.SetSqlBulkCopySettings(bulkcopy, _bulkCopyEnableStreaming, _bulkCopyBatchSize,
-                    _bulkCopyNotifyAfter, _bulkCopyTimeout, _bulkCopyDelegates);
+                BulkOperationsHelper.SetSqlBulkCopySettings(bulkcopy, _bulkCopySettings);
 
                 SqlCommand command = connection.CreateCommand();
                 command.Connection = connection;
 
-                if (_disableAllIndexes || (_disableIndexList != null && _disableIndexList.Any()))
+                if (_disableAllIndexes)
                 {
                     command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(Constants.Disable, _tableName,
-                        _schema, connection, _disableIndexList, _disableAllIndexes);
+                        _schema, connection);
                     command.ExecuteNonQuery();
                 }
 
@@ -127,8 +120,7 @@ namespace SqlBulkTools
                     command.CommandText = BulkOperationsHelper.BuildCreateTempTable(_columns, dtCols, _outputIdentity);
                     command.ExecuteNonQuery();
 
-                    BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopyEnableStreaming, _bulkCopyBatchSize,
-                        _bulkCopyNotifyAfter, _bulkCopyTimeout, _sqlBulkCopyOptions, _bulkCopyDelegates);
+                    BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopySettings);
 
                     command.CommandText = BulkOperationsHelper.GetInsertIntoStagingTableCmd(command, connection, _schema, _tableName,
                         _columns, _identityColumn, _outputIdentity);
@@ -141,10 +133,10 @@ namespace SqlBulkTools
                 else
                     bulkcopy.WriteToServer(dt);
 
-                if (_disableAllIndexes || (_disableIndexList != null && _disableIndexList.Any()))
+                if (_disableAllIndexes)
                 {
                     command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(Constants.Rebuild, _tableName,
-                        _schema, connection, _disableIndexList, _disableAllIndexes);
+                        _schema, connection);
                     command.ExecuteNonQuery();
                 }
 
@@ -171,8 +163,6 @@ namespace SqlBulkTools
                 return affectedRows;
             }
 
-            base.IndexCheck();
-
             DataTable dt = BulkOperationsHelper.CreateDataTable<T>(_columns, _customColumnMappings, _matchTargetOn, _outputIdentity);
             dt = BulkOperationsHelper.ConvertListToDataTable(dt, _list, _columns);
 
@@ -187,22 +177,20 @@ namespace SqlBulkTools
             if (_outputIdentity == ColumnDirectionType.InputOutput)
                 dtCols = BulkOperationsHelper.GetDatabaseSchema(connection, _schema, _tableName);
 
-            //Bulk insert into temp table
-            using (SqlBulkCopy bulkcopy = new SqlBulkCopy(connection, _sqlBulkCopyOptions, null))
+            using (SqlBulkCopy bulkcopy = new SqlBulkCopy(connection, _bulkCopySettings.SqlBulkCopyOptions, null))
             {
                 bulkcopy.DestinationTableName = BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema, _tableName);
                 BulkOperationsHelper.MapColumns(bulkcopy, _columns, _customColumnMappings);
 
-                BulkOperationsHelper.SetSqlBulkCopySettings(bulkcopy, _bulkCopyEnableStreaming, _bulkCopyBatchSize,
-                    _bulkCopyNotifyAfter, _bulkCopyTimeout, _bulkCopyDelegates);
+                BulkOperationsHelper.SetSqlBulkCopySettings(bulkcopy, _bulkCopySettings);
 
                 SqlCommand command = connection.CreateCommand();
                 command.Connection = connection;
 
-                if (_disableAllIndexes || (_disableIndexList != null && _disableIndexList.Any()))
+                if (_disableAllIndexes)
                 {
                     command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(Constants.Disable, _tableName,
-                        _schema, connection, _disableIndexList, _disableAllIndexes);
+                        _schema, connection);
                     await command.ExecuteNonQueryAsync();
                 }
 
@@ -212,24 +200,22 @@ namespace SqlBulkTools
                     command.CommandText = BulkOperationsHelper.BuildCreateTempTable(_columns, dtCols, _outputIdentity);
                     await command.ExecuteNonQueryAsync();
 
-                    BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopyEnableStreaming, _bulkCopyBatchSize,
-                        _bulkCopyNotifyAfter, _bulkCopyTimeout, _sqlBulkCopyOptions, _bulkCopyDelegates);
+                    BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopySettings);
 
                     command.CommandText = BulkOperationsHelper.GetInsertIntoStagingTableCmd(command, connection, _schema, _tableName,
                         _columns, _identityColumn, _outputIdentity);
                     await command.ExecuteNonQueryAsync();
 
                     BulkOperationsHelper.LoadFromTmpOutputTable(command, _identityColumn, _outputIdentityDic, OperationType.Insert, _list);
-
                 }
 
                 else
                     await bulkcopy.WriteToServerAsync(dt);
 
-                if (_disableAllIndexes || (_disableIndexList != null && _disableIndexList.Any()))
+                if (_disableAllIndexes)
                 {
                     command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(Constants.Rebuild, _tableName,
-                        _schema, connection, _disableIndexList, _disableAllIndexes);
+                        _schema, connection);
                     await command.ExecuteNonQueryAsync();
                 }
 

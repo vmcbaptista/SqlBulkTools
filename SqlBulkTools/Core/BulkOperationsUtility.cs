@@ -1,57 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Data.Linq;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-// ReSharper disable once CheckNamespace
-namespace SqlBulkTools
+namespace SqlBulkTools.Core
 {
     /// <summary>
     /// 
     /// </summary>
     public static class BulkOperationsUtility
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="connectionName"></param>
-        /// <returns></returns>
-        /// <exception cref="SqlBulkToolsException"></exception>
-        public static SqlConnection GetSqlConnection(string connectionName)
-        {
-            if (connectionName != null)
-            {
-                var conn = new SqlConnection(ConfigurationManager
-                    .ConnectionStrings[connectionName].ConnectionString);
-                return conn;
-            }
-
-            throw new SqlBulkToolsException("SqlConnection requested could not be resolved. Please check the arguments supplied to GetSqlConnection");
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="connectionName"></param>
-        /// <param name="credentials"></param>
-        /// <returns></returns>
-        /// <exception cref="SqlBulkToolsException"></exception>
-        public static SqlConnection GetSqlConnection(string connectionName, SqlCredential credentials)
-        {
-            if (connectionName != null)
-            {
-                var conn = new SqlConnection(ConfigurationManager
-                    .ConnectionStrings[connectionName].ConnectionString, credentials);
-                return conn;
-            }
-
-            throw new SqlBulkToolsException("SqlConnection requested could not be resolved. Please check the arguments supplied to GetSqlConnection");
-        }
 
         private static readonly Dictionary<Type, DbType> TypeMappings = new Dictionary<Type, DbType>()
         {

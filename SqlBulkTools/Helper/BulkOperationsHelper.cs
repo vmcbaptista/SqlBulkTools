@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using SqlBulkTools.Core;
 using SqlBulkTools.Enumeration;
 
 [assembly: InternalsVisibleTo("SqlBulkTools.UnitTests")]
@@ -739,30 +740,19 @@ namespace SqlBulkTools
         /// Advanced Settings for SQLBulkCopy class. 
         /// </summary>
         /// <param name="bulkcopy"></param>
-        /// <param name="bulkCopyEnableStreaming"></param>
-        /// <param name="bulkCopyBatchSize"></param>
-        /// <param name="bulkCopyNotifyAfter"></param>
-        /// <param name="bulkCopyTimeout"></param>
-        /// <param name="bulkCopyDelegates"></param>
-        internal static void SetSqlBulkCopySettings(SqlBulkCopy bulkcopy, bool bulkCopyEnableStreaming, int? bulkCopyBatchSize,
-            int? bulkCopyNotifyAfter, int bulkCopyTimeout, IEnumerable<SqlRowsCopiedEventHandler> bulkCopyDelegates)
+        /// <param name="options"></param>
+        internal static void SetSqlBulkCopySettings(SqlBulkCopy bulkcopy, BulkCopySettings options)
         {
-            bulkcopy.EnableStreaming = bulkCopyEnableStreaming;
+            bulkcopy.EnableStreaming = options.EnableStreaming;
+            bulkcopy.BatchSize = options.BatchSize;
+            bulkcopy.BulkCopyTimeout = options.BulkCopyTimeout;
 
-            if (bulkCopyBatchSize.HasValue)
+            if (options.BulkCopyNotification != null)
             {
-                bulkcopy.BatchSize = bulkCopyBatchSize.Value;
+                bulkcopy.NotifyAfter = options.BulkCopyNotification.NotifyAfter;
+                bulkcopy.SqlRowsCopied += options.BulkCopyNotification.SqlRowsCopied;
             }
-
-            if (bulkCopyNotifyAfter.HasValue)
-            {
-                bulkcopy.NotifyAfter = bulkCopyNotifyAfter.Value;
-                bulkCopyDelegates?.ToList().ForEach(x => bulkcopy.SqlRowsCopied += x);
-            }
-
-            bulkcopy.BulkCopyTimeout = bulkCopyTimeout;
         }
-
 
         /// <summary>
         /// This is used only for the BulkInsert method at this time.  
@@ -845,21 +835,11 @@ namespace SqlBulkTools
         }
 
         internal static string GetIndexManagementCmd(string action, string tableName,
-            string schema, IDbConnection conn, HashSet<string> disableIndexList, bool disableAllIndexes = false)
+            string schema, IDbConnection conn)
         {
-            StringBuilder sb = new StringBuilder();
-
-            if (disableIndexList != null && disableIndexList.Any())
-            {
-                foreach (var index in disableIndexList)
-                {
-                    sb.Append($" AND sys.indexes.name = '{index}'");
-                }
-            }
-
             string cmd = $"DECLARE @sql AS VARCHAR(MAX)=''; SELECT @sql = @sql + 'ALTER INDEX ' + sys.indexes.name + ' ON ' + sys.objects.name + ' {action};' FROM sys.indexes " +
                          $"JOIN sys.objects ON sys.indexes.object_id = sys.objects.object_id WHERE sys.indexes.type_desc = 'NONCLUSTERED' AND sys.objects.type_desc = 'USER_TABLE' " +
-                         $"AND sys.objects.name = '{GetFullQualifyingTableName(conn.Database, schema, tableName)}'{(sb.Length > 0 ? sb.ToString() : string.Empty)}; EXEC(@sql);";
+                         $"AND sys.objects.name = '{GetFullQualifyingTableName(conn.Database, schema, tableName)}'; EXEC(@sql);";
 
             return cmd;
         }
@@ -887,31 +867,25 @@ namespace SqlBulkTools
             return dtCols;
         }
 
-        internal static void InsertToTmpTable(SqlConnection conn, DataTable dt, bool bulkCopyEnableStreaming,
-            int? bulkCopyBatchSize, int? bulkCopyNotifyAfter, int bulkCopyTimeout, SqlBulkCopyOptions sqlBulkCopyOptions, IEnumerable<SqlRowsCopiedEventHandler> bulkCopyDelegates)
+        internal static void InsertToTmpTable(SqlConnection conn, DataTable dt, BulkCopySettings bulkCopySettings)
         {
-            using (SqlBulkCopy bulkcopy = new SqlBulkCopy(conn, sqlBulkCopyOptions, null))
+            using (SqlBulkCopy bulkcopy = new SqlBulkCopy(conn, bulkCopySettings.SqlBulkCopyOptions, null))
             {
                 bulkcopy.DestinationTableName = Constants.TempTableName;
 
-                SetSqlBulkCopySettings(bulkcopy, bulkCopyEnableStreaming,
-                    bulkCopyBatchSize,
-                    bulkCopyNotifyAfter, bulkCopyTimeout, bulkCopyDelegates);
+                SetSqlBulkCopySettings(bulkcopy, bulkCopySettings);
 
                 bulkcopy.WriteToServer(dt);
             }
         }
 
-        internal static async Task InsertToTmpTableAsync(SqlConnection conn, SqlTransaction transaction, DataTable dt, bool bulkCopyEnableStreaming,
-            int? bulkCopyBatchSize, int? bulkCopyNotifyAfter, int bulkCopyTimeout, SqlBulkCopyOptions sqlBulkCopyOptions, IEnumerable<SqlRowsCopiedEventHandler> bulkCopyDelegates)
+        internal static async Task InsertToTmpTableAsync(SqlConnection conn, SqlTransaction transaction, DataTable dt, BulkCopySettings bulkCopySettings)
         {
-            using (SqlBulkCopy bulkcopy = new SqlBulkCopy(conn, sqlBulkCopyOptions, transaction))
+            using (SqlBulkCopy bulkcopy = new SqlBulkCopy(conn, bulkCopySettings.SqlBulkCopyOptions, transaction))
             {
                 bulkcopy.DestinationTableName = Constants.TempTableName;
 
-                SetSqlBulkCopySettings(bulkcopy, bulkCopyEnableStreaming,
-                    bulkCopyBatchSize,
-                    bulkCopyNotifyAfter, bulkCopyTimeout, bulkCopyDelegates);
+                SetSqlBulkCopySettings(bulkcopy, bulkCopySettings);
 
                 await bulkcopy.WriteToServerAsync(dt);
             }
@@ -1228,6 +1202,23 @@ namespace SqlBulkTools
                                                         $"Only == != < <= > >= expressions are accepted.");
                     }
             }
+        }
+
+        internal static string GetExpressionLeftName<T>(Expression<Func<T, bool>> predicate, PredicateType predicateType, string columnType)
+        {
+            BinaryExpression binaryBody = predicate.Body as BinaryExpression;
+
+            if (binaryBody == null)
+                throw new SqlBulkToolsException($"Expression not supported for {GetPredicateMethodName(predicateType)}");
+
+            string leftName = ((MemberExpression)binaryBody.Left).Member.Name;
+
+            if (leftName == null)
+            {
+                throw new SqlBulkToolsException($"{columnType} can't be null");
+            }
+
+            return leftName;
         }
 
         /// <summary>

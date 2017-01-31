@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Linq;
 using System.Linq.Expressions;
 using SqlBulkTools.Enumeration;
 
-// ReSharper disable once CheckNamespace
 namespace SqlBulkTools
 {
     /// <summary>
@@ -21,23 +19,18 @@ namespace SqlBulkTools
         protected bool _disableAllIndexes;
         protected int _sqlTimeout;
         protected HashSet<string> _columns;
-        protected int? _bulkCopyBatchSize;
-        protected int? _bulkCopyNotifyAfter;
-        protected HashSet<string> _disableIndexList;
-        protected bool _bulkCopyEnableStreaming;
-        protected int _bulkCopyTimeout;
         protected string _schema;
         protected string _tableName;
         protected Dictionary<string, string> _customColumnMappings;
         protected IEnumerable<T> _list;
         protected List<string> _matchTargetOn;
-        protected SqlBulkCopyOptions _sqlBulkCopyOptions;
-        protected IEnumerable<SqlRowsCopiedEventHandler> _bulkCopyDelegates;
         protected List<PredicateCondition> _updatePredicates;
         protected List<PredicateCondition> _deletePredicates;
         protected List<SqlParameter> _parameters;
         protected Dictionary<string, string> _collationColumnDic;
         protected int _conditionSortOrder;
+        protected BulkCopySettings _bulkCopySettings;
+        protected string _tableHint;
         #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         /// <summary>
@@ -47,42 +40,24 @@ namespace SqlBulkTools
         /// <param name="tableName"></param>
         /// <param name="schema"></param>
         /// <param name="columns"></param>
-        /// <param name="disableIndexList"></param>
-        /// <param name="disableAllIndexes"></param>
         /// <param name="customColumnMappings"></param>
-        /// <param name="sqlTimeout"></param>
-        /// <param name="bulkCopyTimeout"></param>
-        /// <param name="bulkCopyEnableStreaming"></param>
-        /// <param name="bulkCopyNotifyAfter"></param>
-        /// <param name="bulkCopyBatchSize"></param>
-        /// <param name="sqlBulkCopyOptions"></param>
-        /// <param name="bulkCopyDelegates"></param>
+        /// <param name="bulkCopySettings"></param>
         protected AbstractOperation(IEnumerable<T> list, string tableName, string schema, HashSet<string> columns,
-            HashSet<string> disableIndexList, bool disableAllIndexes,
-            Dictionary<string, string> customColumnMappings, int sqlTimeout, int bulkCopyTimeout,
-            bool bulkCopyEnableStreaming,
-            int? bulkCopyNotifyAfter, int? bulkCopyBatchSize, SqlBulkCopyOptions sqlBulkCopyOptions, 
-            IEnumerable<SqlRowsCopiedEventHandler> bulkCopyDelegates)
+            Dictionary<string, string> customColumnMappings, BulkCopySettings bulkCopySettings)
         {
             _list = list;
             _tableName = tableName;
             _schema = schema;
             _columns = columns;
-            _disableIndexList = disableIndexList;
-            _disableAllIndexes = disableAllIndexes;
+            _disableAllIndexes = false;
             _customColumnMappings = customColumnMappings;
-            _sqlTimeout = sqlTimeout;
-            _bulkCopyTimeout = bulkCopyTimeout;
-            _bulkCopyEnableStreaming = bulkCopyEnableStreaming;
-            _bulkCopyNotifyAfter = bulkCopyNotifyAfter;
-            _bulkCopyBatchSize = bulkCopyBatchSize;
-            _sqlBulkCopyOptions = sqlBulkCopyOptions;
             _identityColumn = null;
             _collationColumnDic = new Dictionary<string, string>();
             _outputIdentityDic = new Dictionary<int, T>();
             _outputIdentity = ColumnDirectionType.Input;
             _matchTargetOn = new List<string>();
-            _bulkCopyDelegates = bulkCopyDelegates;
+            _bulkCopySettings = bulkCopySettings;
+            _tableHint = "HOLDLOCK";
         }
 
         /// <summary>
@@ -142,7 +117,7 @@ namespace SqlBulkTools
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
 
             if (propertyName == null)
-                throw new SqlBulkToolsException("SetCollationOnColumn column name can't be null");
+                throw new SqlBulkToolsException("Collation can't be null");
 
             _collationColumnDic.Add(propertyName, collation);
         }
@@ -158,19 +133,6 @@ namespace SqlBulkTools
                 throw new SqlBulkToolsException("MatchTargetOn list is empty when it's required for this operation. " +
                                                     "This is usually the primary key of your table but can also be more than one " +
                                                     "column depending on your business rules.");
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <exception cref="SqlBulkToolsException"></exception>
-        protected void IndexCheck()
-        {
-            if (_disableAllIndexes && (_disableIndexList != null && _disableIndexList.Any()))
-            {
-                throw new SqlBulkToolsException("Invalid setup. If \'TmpDisableAllNonClusteredIndexes\' is invoked, you can not use " +
-                                                    "the \'AddTmpDisableNonClusteredIndex\' method.");
             }
         }
     }

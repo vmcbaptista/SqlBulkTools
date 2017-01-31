@@ -8,21 +8,19 @@ using System.Text;
 using System.Threading.Tasks;
 using SqlBulkTools.Enumeration;
 
-// ReSharper disable once CheckNamespace
-namespace SqlBulkTools
+namespace SqlBulkTools.QueryOperations
 {
     /// <summary>
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class SimpleInsertQueryReady<T> : ITransaction
+    public class QueryInsertReady<T> : ITransaction
     {
         private readonly T _singleEntity;
         private readonly string _tableName;
         private readonly string _schema;
         private readonly HashSet<string> _columns;
         private readonly Dictionary<string, string> _customColumnMappings;
-        private readonly int _sqlTimeout;
         private string _identityColumn;
         private ColumnDirectionType _outputIdentity;
         private readonly List<SqlParameter> _sqlParams;
@@ -35,10 +33,9 @@ namespace SqlBulkTools
         /// <param name="schema"></param>
         /// <param name="columns"></param>
         /// <param name="customColumnMappings"></param>
-        /// <param name="sqlTimeout"></param>
         /// <param name="sqlParams"></param>
-        public SimpleInsertQueryReady(T singleEntity, string tableName, string schema, HashSet<string> columns, Dictionary<string, string> customColumnMappings,
-            int sqlTimeout, List<SqlParameter> sqlParams)
+        public QueryInsertReady(T singleEntity, string tableName, string schema, HashSet<string> columns, Dictionary<string, string> customColumnMappings,
+            List<SqlParameter> sqlParams)
         {
             _singleEntity = singleEntity;
             _tableName = tableName;
@@ -47,7 +44,6 @@ namespace SqlBulkTools
             _customColumnMappings = customColumnMappings;
             _sqlParams = sqlParams;
             _outputIdentity = ColumnDirectionType.Input;
-            _sqlTimeout = sqlTimeout;
         }
 
         /// <summary>
@@ -55,7 +51,7 @@ namespace SqlBulkTools
         /// </summary>
         /// <param name="columnName"></param>
         /// <returns></returns>
-        public SimpleInsertQueryReady<T> SetIdentityColumn(Expression<Func<T, object>> columnName)
+        public QueryInsertReady<T> SetIdentityColumn(Expression<Func<T, object>> columnName)
         {
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
 
@@ -81,7 +77,7 @@ namespace SqlBulkTools
         /// <param name="columnName"></param>
         /// <param name="direction"></param>
         /// <returns></returns>
-        public SimpleInsertQueryReady<T> SetIdentityColumn(Expression<Func<T, object>> columnName, ColumnDirectionType direction)
+        public QueryInsertReady<T> SetIdentityColumn(Expression<Func<T, object>> columnName, ColumnDirectionType direction)
         {
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
             _outputIdentity = direction;
@@ -128,7 +124,6 @@ namespace SqlBulkTools
 
                 SqlCommand command = connection.CreateCommand();
                 command.Connection = connection;
-                command.CommandTimeout = _sqlTimeout;
 
                 string fullQualifiedTableName = BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema,
                 _tableName);
@@ -212,7 +207,6 @@ namespace SqlBulkTools
 
                 SqlCommand command = connection.CreateCommand();
                 command.Connection = connection;
-                command.CommandTimeout = _sqlTimeout;
 
                 string fullQualifiedTableName = BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema,
                 _tableName);

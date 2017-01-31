@@ -8,7 +8,7 @@ namespace SqlBulkTools
     /// Configurable options for table. 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class SimpleDeleteQueryTable<T>
+    public class DeleteQueryTable<T>
     {
         private HashSet<string> Columns { get; set; }
         private string _schema;
@@ -19,7 +19,7 @@ namespace SqlBulkTools
         /// 
         /// </summary>
         /// <param name="tableName"></param>
-        public SimpleDeleteQueryTable(string tableName)
+        public DeleteQueryTable(string tableName)
         {
             _sqlTimeout = 600;
             _schema = Constants.DefaultSchemaName;
@@ -36,9 +36,9 @@ namespace SqlBulkTools
         /// matched by a generic condition, use the BulkDelete method instead. 
         /// </summary>
         /// <returns></returns>
-        public SimpleDeleteQueryCondition<T> Delete()
+        public DeleteQueryCondition<T> Delete()
         {
-            return new SimpleDeleteQueryCondition<T>(_tableName, _schema, _sqlTimeout);
+            return new DeleteQueryCondition<T>(_tableName, _schema, _sqlTimeout);
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace SqlBulkTools
         /// </summary>
         /// <param name="schema"></param>
         /// <returns></returns>
-        public SimpleDeleteQueryTable<T> WithSchema(string schema)
+        public DeleteQueryTable<T> WithSchema(string schema)
         {
             _schema = schema;
             return this;
@@ -57,7 +57,7 @@ namespace SqlBulkTools
         /// </summary>
         /// <param name="seconds"></param>
         /// <returns></returns>
-        public SimpleDeleteQueryTable<T> WithSqlCommandTimeout(int seconds)
+        public DeleteQueryTable<T> WithSqlCommandTimeout(int seconds)
         {
             _sqlTimeout = seconds;
             return this;

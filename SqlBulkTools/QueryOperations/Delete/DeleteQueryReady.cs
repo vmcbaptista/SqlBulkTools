@@ -14,39 +14,39 @@ namespace SqlBulkTools
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class SimpleDeleteQueryReady<T> : ITransaction
+    public class DeleteQueryReady<T> : ITransaction
     {
         private readonly string _tableName;
         private readonly string _schema;
-        private readonly int _sqlTimeout;
         private readonly List<PredicateCondition> _whereConditions;
         private readonly List<PredicateCondition> _andConditions;
         private readonly List<PredicateCondition> _orConditions;
         private readonly List<SqlParameter> _parameters;
         private int _conditionSortOrder;
-        private readonly Dictionary<string, string> _collationColumnDic; 
+        private readonly Dictionary<string, string> _collationColumnDic;
+        private int? _batchQuantity;
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="tableName"></param>
         /// <param name="schema"></param>
-        /// <param name="sqlTimeout"></param>
         /// <param name="conditionSortOrder"></param>
         /// <param name="whereConditions"></param>
         /// <param name="parameters"></param>
-        public SimpleDeleteQueryReady(string tableName, string schema,
-            int sqlTimeout, int conditionSortOrder, List<PredicateCondition> whereConditions, List<SqlParameter> parameters)
+        /// <param name="collationColumnDic"></param>
+        public DeleteQueryReady(string tableName, string schema, int conditionSortOrder, List<PredicateCondition> whereConditions, 
+            List<SqlParameter> parameters, Dictionary<string, string> collationColumnDic)
         {
             _tableName = tableName;
             _schema = schema;
-            _sqlTimeout = sqlTimeout;
             _whereConditions = whereConditions;
             _andConditions = new List<PredicateCondition>();
             _orConditions = new List<PredicateCondition>();
             _conditionSortOrder = conditionSortOrder;
             _parameters = parameters;
-            _collationColumnDic = new Dictionary<string, string>();
+            _collationColumnDic = collationColumnDic;
+            _batchQuantity = null;
         }
 
 
@@ -56,7 +56,7 @@ namespace SqlBulkTools
         /// <param name="expression"></param>
         /// <returns></returns>
         /// <exception cref="SqlBulkToolsException"></exception>
-        public SimpleDeleteQueryReady<T> And(Expression<Func<T, bool>> expression)
+        public DeleteQueryReady<T> And(Expression<Func<T, bool>> expression)
         {
             BulkOperationsHelper.AddPredicate(expression, PredicateType.And, _andConditions, _parameters,
                 _conditionSortOrder, appendParam: Constants.UniqueParamIdentifier);
@@ -67,10 +67,28 @@ namespace SqlBulkTools
         /// <summary>
         /// Specify an additional condition to match on.
         /// </summary>
+        /// <param name="expression">Only explicitly set the collation if there is a collation conflict.</param>
+        /// <param name="collation"></param>
+        /// <returns></returns>
+        /// <exception cref="SqlBulkToolsException">Only explicitly set the collation if there is a collation conflict.</exception>
+        public DeleteQueryReady<T> And(Expression<Func<T, bool>> expression, string collation)
+        {
+            BulkOperationsHelper.AddPredicate(expression, PredicateType.And, _andConditions, _parameters, _conditionSortOrder, appendParam: Constants.UniqueParamIdentifier);
+            _conditionSortOrder++;
+
+            string leftName = BulkOperationsHelper.GetExpressionLeftName(expression, PredicateType.And, "Collation");
+            _collationColumnDic.Add(leftName, collation);
+
+            return this;
+        }
+
+        /// <summary>
+        /// Specify an additional condition to match on.
+        /// </summary>
         /// <param name="expression"></param>
         /// <returns></returns>
         /// <exception cref="SqlBulkToolsException"></exception>
-        public SimpleDeleteQueryReady<T> Or(Expression<Func<T, bool>> expression)
+        public DeleteQueryReady<T> Or(Expression<Func<T, bool>> expression)
         {
             BulkOperationsHelper.AddPredicate(expression, PredicateType.Or, _orConditions, _parameters,
                 _conditionSortOrder, appendParam: Constants.UniqueParamIdentifier);
@@ -79,21 +97,31 @@ namespace SqlBulkTools
         }
 
         /// <summary>
-        /// Set the collation explicitly for join conditions. Can be recalled multiple times for more than one column. 
-        /// Note that this should only be used if there is a collation conflict and you can't resolve it by other means. 
+        /// Specify an additional condition to match on.
         /// </summary>
-        /// <param name="columnName"></param>
-        /// <param name="collation"></param>
+        /// <param name="expression"></param>
+        /// <param name="collation">Only explicitly set the collation if there is a collation conflict.</param>
         /// <returns></returns>
-        public SimpleDeleteQueryReady<T> SetCollationOnColumn(Expression<Func<T, object>> columnName, string collation)
+        /// <exception cref="SqlBulkToolsException"></exception>
+        public DeleteQueryReady<T> Or(Expression<Func<T, bool>> expression, string collation)
         {
-            var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
+            BulkOperationsHelper.AddPredicate(expression, PredicateType.Or, _orConditions, _parameters, _conditionSortOrder, appendParam: Constants.UniqueParamIdentifier);
+            _conditionSortOrder++;
 
-            if (propertyName == null)
-                throw new SqlBulkToolsException("SetCollationOnColumn column name can't be null");
+            string leftName = BulkOperationsHelper.GetExpressionLeftName(expression, PredicateType.Or, "Collation");
+            _collationColumnDic.Add(leftName, collation);
 
-            _collationColumnDic.Add(propertyName, collation);
+            return this;
+        }
 
+        /// <summary>
+        /// The maximum number of records to delete per transaction.
+        /// </summary>
+        /// <param name="batchQuantity"></param>
+        /// <returns></returns>
+        public DeleteQueryReady<T> SetBatchQuantity(int batchQuantity)
+        {
+            _batchQuantity = batchQuantity;
             return this;
         }
 
@@ -104,23 +132,14 @@ namespace SqlBulkTools
         /// <param name="connection"></param>
         /// <returns></returns>
         public int Commit(SqlConnection connection)
-        {
-            var concatenatedQuery = _whereConditions.Concat(_andConditions).Concat(_orConditions).OrderBy(x => x.SortOrder);
-
+        {            
             if (connection.State == ConnectionState.Closed)
                 connection.Open();
 
             SqlCommand command = connection.CreateCommand();
             command.Connection = connection;
-            command.CommandTimeout = _sqlTimeout;
 
-            string fullQualifiedTableName = BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema,
-                _tableName);
-
-            string comm = $"DELETE FROM {fullQualifiedTableName} " +
-                          $"{BulkOperationsHelper.BuildPredicateQuery(concatenatedQuery, _collationColumnDic)}";
-
-            command.CommandText = comm;
+            command.CommandText = GetQuery(connection);
 
             if (_parameters.Count > 0)
             {
@@ -140,22 +159,14 @@ namespace SqlBulkTools
         /// <returns></returns>
         public async Task<int> CommitAsync(SqlConnection connection)
         {
-            var concatenatedQuery = _whereConditions.Concat(_andConditions).Concat(_orConditions).OrderBy(x => x.SortOrder);
 
             if (connection.State == ConnectionState.Closed)
                 await connection.OpenAsync();
 
             SqlCommand command = connection.CreateCommand();
             command.Connection = connection;
-            command.CommandTimeout = _sqlTimeout;
 
-            string fullQualifiedTableName = BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema,
-                _tableName);
-
-            string comm = $"DELETE FROM {fullQualifiedTableName} " +
-                          $"{BulkOperationsHelper.BuildPredicateQuery(concatenatedQuery, _collationColumnDic)}";
-
-            command.CommandText = comm;
+            command.CommandText = command.CommandText = GetQuery(connection);
 
             if (_parameters.Count > 0)
             {
@@ -165,6 +176,23 @@ namespace SqlBulkTools
             int affectedRows = await command.ExecuteNonQueryAsync();
 
             return affectedRows;
+        }
+
+        private string GetQuery(SqlConnection connection)
+        {
+            var concatenatedQuery = _whereConditions.Concat(_andConditions).Concat(_orConditions).OrderBy(x => x.SortOrder);
+
+            string fullQualifiedTableName = BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema,
+                 _tableName);
+
+            string batchQtyStart = _batchQuantity != null ? "DeleteMore:\n" : string.Empty;
+            string batchQty = _batchQuantity != null ? $"TOP ({_batchQuantity}) " : string.Empty;
+            string batchQtyRepeat = _batchQuantity != null ? $"\nIF @@ROWCOUNT != 0\ngoto DeleteMore" : string.Empty;
+
+            string comm = $"{batchQtyStart}DELETE {batchQty}FROM {fullQualifiedTableName} " +
+                          $"{BulkOperationsHelper.BuildPredicateQuery(concatenatedQuery, _collationColumnDic)}{batchQtyRepeat}";
+
+            return comm;
         }
     }
 }

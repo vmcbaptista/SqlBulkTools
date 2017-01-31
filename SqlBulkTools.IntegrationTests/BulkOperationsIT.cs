@@ -5,7 +5,6 @@ using System.Data;
 using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Threading;
 using System.Transactions;
 using NUnit.Framework;
 using Ploeh.AutoFixture;
@@ -807,14 +806,17 @@ namespace SqlBulkTools.IntegrationTests
                     bulk.Setup<Book>()
                         .ForCollection(books)
                         .WithTable("Books")
-                        .WithBulkCopyBatchSize(5000)
+                        .WithBulkCopySettings(new BulkCopySettings()
+                        {
+                            BatchSize = 5000
+                        })
                         .AddColumn(x => x.Title)
                         .AddColumn(x => x.Price)
                         .AddColumn(x => x.Description)
                         .AddColumn(x => x.ISBN)
-                        .AddColumn(x => x.PublishDate)
-                        .TmpDisableAllNonClusteredIndexes()
+                        .AddColumn(x => x.PublishDate)                      
                         .BulkInsert()
+                        .TmpDisableAllNonClusteredIndexes()
                         .SetIdentityColumn(x => x.Id, ColumnDirectionType.InputOutput)
                         .Commit(conn);
 
@@ -861,7 +863,10 @@ namespace SqlBulkTools.IntegrationTests
                     bulk.Setup<Book>()
                         .ForCollection(books)
                         .WithTable("Books")
-                        .WithBulkCopyBatchSize(5000)
+                        .WithBulkCopySettings(new BulkCopySettings()
+                        {
+                            BatchSize = 5000
+                        })                   
                         .AddColumn(x => x.ISBN)
                         .BulkDelete()
                         .MatchTargetOn(x => x.ISBN)
@@ -1705,14 +1710,17 @@ namespace SqlBulkTools.IntegrationTests
                     bulk.Setup<Book>()
                         .ForCollection(col)
                         .WithTable("Books")
-                        .WithBulkCopyBatchSize(5000)
+                        .WithBulkCopySettings(new BulkCopySettings()
+                        {
+                            BatchSize = 5000
+                        })
                         .AddColumn(x => x.Title)
                         .AddColumn(x => x.Price)
                         .AddColumn(x => x.Description)
                         .AddColumn(x => x.ISBN)
-                        .AddColumn(x => x.PublishDate)
-                        .TmpDisableAllNonClusteredIndexes()
+                        .AddColumn(x => x.PublishDate)                      
                         .BulkInsert()
+                        .TmpDisableAllNonClusteredIndexes()
                         .Commit(conn);
                 }
 
@@ -1736,9 +1744,9 @@ namespace SqlBulkTools.IntegrationTests
                     bulk.Setup<Book>()
                         .ForCollection(col)
                         .WithTable("Books")
-                        .AddAllColumns()
-                        .TmpDisableAllNonClusteredIndexes()
+                        .AddAllColumns()                       
                         .BulkInsert()
+                        .TmpDisableAllNonClusteredIndexes()
                         .Commit(conn);
                 }
 

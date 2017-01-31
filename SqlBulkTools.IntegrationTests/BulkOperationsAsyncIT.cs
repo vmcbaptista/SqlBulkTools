@@ -73,7 +73,10 @@ namespace SqlBulkTools.IntegrationTests
                     await bulk.Setup<Book>()
                         .ForCollection(books)
                         .WithTable("Books")
-                        .WithBulkCopyBatchSize(5000)
+                        .WithBulkCopySettings(new BulkCopySettings()
+                        {
+                            BatchSize = 5000
+                        })
                         .AddColumn(x => x.ISBN)
                         .BulkDelete()
                         .MatchTargetOn(x => x.ISBN)
@@ -348,14 +351,17 @@ namespace SqlBulkTools.IntegrationTests
                     await bulk.Setup<Book>()
                         .ForCollection(books)
                         .WithTable("Books")
-                        .WithBulkCopyBatchSize(5000)
+                        .WithBulkCopySettings(new BulkCopySettings()
+                        {
+                            BatchSize = 5000
+                        })                        
                         .AddColumn(x => x.Title)
                         .AddColumn(x => x.Price)
                         .AddColumn(x => x.Description)
                         .AddColumn(x => x.ISBN)
-                        .AddColumn(x => x.PublishDate)
-                        .TmpDisableAllNonClusteredIndexes()
+                        .AddColumn(x => x.PublishDate)                      
                         .BulkInsert()
+                        .TmpDisableAllNonClusteredIndexes()
                         .SetIdentityColumn(x => x.Id, ColumnDirectionType.InputOutput)
                         .CommitAsync(conn);
                 }
@@ -494,8 +500,11 @@ namespace SqlBulkTools.IntegrationTests
                     await bulk.Setup<Book>()
                         .ForCollection(col)
                         .WithTable("Books")
-                        .WithSqlBulkCopyOptions(SqlBulkCopyOptions.TableLock)
-                        .WithBulkCopyBatchSize(3000)
+                        .WithBulkCopySettings(new BulkCopySettings()
+                        {
+                            SqlBulkCopyOptions = SqlBulkCopyOptions.TableLock,
+                            BatchSize = 3000
+                        })                    
                         .AddColumn(x => x.Title)
                         .AddColumn(x => x.Price)
                         .AddColumn(x => x.Description)

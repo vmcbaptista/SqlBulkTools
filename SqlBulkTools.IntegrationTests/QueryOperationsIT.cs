@@ -6,6 +6,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Transactions;
 using NUnit.Framework;
+using SqlBulkTools.Core;
 using SqlBulkTools.Enumeration;
 using SqlBulkTools.IntegrationTests.Data;
 using SqlBulkTools.IntegrationTests.Model;
@@ -247,6 +248,60 @@ namespace SqlBulkTools.IntegrationTests
         }
 
         [Test]
+        public void SqlBulkTools_UpdateQuery_UpdateInBatches()
+        {
+            _db.Books.RemoveRange(_db.Books.ToList());
+            _db.SaveChanges();
+            BulkOperations bulk = new BulkOperations();
+
+            List<Book> books = _randomizer.GetRandomCollection(1000);
+
+            for (int i = 0; i < books.Count; i++)
+            {
+                if (i < 500)
+                {
+                    books[i].Price = 15;
+                }
+                else
+                    books[i].Price = 25;
+            }
+
+            var bookToTest = books[5];
+            var isbn = bookToTest.ISBN;
+            int updatedRecords = 0;
+
+            using (TransactionScope trans = new TransactionScope())
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager
+                    .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+                {
+                    bulk.Setup<Book>()
+                        .ForCollection(books)
+                        .WithTable("Books")
+                        .AddAllColumns()
+                        .BulkInsert()
+                        .Commit(conn);
+
+                    // Update price to 100
+
+                    updatedRecords = bulk.Setup<Book>()
+                        .ForObject(new Book() { Price = 100, WarehouseId = 5 })
+                        .WithTable("Books")
+                        .AddColumn(x => x.Price)
+                        .AddColumn(x => x.WarehouseId)
+                        .Update()
+                        .Where(x => x.Price == 25)
+                        .SetBatchQuantity(100)
+                        .Commit(conn);
+                }
+
+                trans.Complete();
+            }
+
+            Assert.IsTrue(updatedRecords == 500);
+        }
+
+        [Test]
         public void SqlBulkTools_DeleteQuery_DeleteSingleEntity()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -302,7 +357,8 @@ namespace SqlBulkTools.IntegrationTests
 
             using (TransactionScope trans = new TransactionScope())
             {
-                using (SqlConnection conn = BulkOperationsUtility.GetSqlConnection("SqlBulkToolsTest"))
+                using (SqlConnection conn = 
+                    new SqlConnection(ConfigurationManager.ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
                 {
                     bulk.Setup<SchemaTest2>()
                         .ForCollection(col)
@@ -425,6 +481,50 @@ namespace SqlBulkTools.IntegrationTests
             Assert.AreEqual(25, _db.Books.Count());
         }
 
+        [Test]
+        public void SqlBulkTools_DeleteQuery_DeleteInBatches()
+        {
+            _db.Books.RemoveRange(_db.Books.ToList());
+            _db.SaveChanges();
+            BulkOperations bulk = new BulkOperations();
+
+            List<Book> books = _randomizer.GetRandomCollection(1000);
+
+            foreach (Book b in books)
+            {
+                b.WarehouseId = 1;
+            }
+
+            int deletedRecords = 0;
+
+            using (TransactionScope trans = new TransactionScope())
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager
+                    .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+                {
+
+                    bulk.Setup<Book>()
+                        .ForCollection(books)
+                        .WithTable("Books")
+                        .AddAllColumns()
+                        .BulkInsert()
+                        .Commit(conn);
+
+                    deletedRecords = bulk.Setup<Book>()
+                        .ForDeleteQuery()
+                        .WithTable("Books")
+                        .Delete()
+                        .Where(x => x.WarehouseId == 1)      
+                        .SetBatchQuantity(100)                  
+                        .Commit(conn);
+                }
+
+                trans.Complete();
+            }
+
+            Assert.AreEqual(1000, deletedRecords);
+
+        }
         [Test]
         public void SqlBulkTools_Insert_ManualAddColumn()
         {
@@ -712,7 +812,7 @@ namespace SqlBulkTools.IntegrationTests
                         .CustomColumnMapping(x => x.ColumnXIsDifferent, "ColumnX")
                         .CustomColumnMapping(x => x.ColumnYIsDifferentInDatabase, "ColumnY")
                         .Update()
-                        .Where(x => x.NaturalId == 1)
+                        .Where(x => x.NaturalId == 1, "database_default")
                         .Commit(conn);
                 }
 

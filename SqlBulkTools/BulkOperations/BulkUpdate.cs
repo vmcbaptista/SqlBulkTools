@@ -23,24 +23,12 @@ namespace SqlBulkTools
         /// <param name="tableName"></param>
         /// <param name="schema"></param>
         /// <param name="columns"></param>
-        /// <param name="disableAllIndexes"></param>
         /// <param name="customColumnMappings"></param>
-        /// <param name="sqlTimeout"></param>
-        /// <param name="bulkCopyTimeout"></param>
-        /// <param name="bulkCopyEnableStreaming"></param>
-        /// <param name="bulkCopyNotifyAfter"></param>
-        /// <param name="bulkCopyBatchSize"></param>
-        /// <param name="sqlBulkCopyOptions"></param>
-        /// <param name="disableIndexList"></param>
-        /// <param name="bulkCopyDelegates"></param>
-        public BulkUpdate(IEnumerable<T> list, string tableName, string schema, HashSet<string> columns, HashSet<string> disableIndexList,
-            bool disableAllIndexes, Dictionary<string, string> customColumnMappings, int sqlTimeout, int bulkCopyTimeout,
-            bool bulkCopyEnableStreaming, int? bulkCopyNotifyAfter, int? bulkCopyBatchSize, SqlBulkCopyOptions sqlBulkCopyOptions,
-            IEnumerable<SqlRowsCopiedEventHandler> bulkCopyDelegates)
+        /// <param name="bulkCopySettings"></param>
+        public BulkUpdate(IEnumerable<T> list, string tableName, string schema, HashSet<string> columns, 
+            Dictionary<string, string> customColumnMappings, BulkCopySettings bulkCopySettings)
             :
-            base(list, tableName, schema, columns, disableIndexList, disableAllIndexes, customColumnMappings, sqlTimeout,
-                bulkCopyTimeout, bulkCopyEnableStreaming, bulkCopyNotifyAfter, bulkCopyBatchSize, sqlBulkCopyOptions, 
-                bulkCopyDelegates)
+            base(list, tableName, schema, columns, customColumnMappings, bulkCopySettings)
         {
             _updatePredicates = new List<PredicateCondition>();
             _parameters = new List<SqlParameter>();
@@ -82,6 +70,27 @@ namespace SqlBulkTools
         }
 
         /// <summary>
+        /// At least one MatchTargetOn is required for correct configuration. MatchTargetOn is the matching clause for evaluating 
+        /// each row in table. This is usally set to the unique identifier in the table (e.g. Id). Multiple MatchTargetOn members are allowed 
+        /// for matching composite relationships. 
+        /// </summary>
+        /// <param name="columnName"></param>
+        /// <param name="collation">Only explicitly set the collation if there is a collation conflict.</param>
+        /// <returns></returns>
+        public BulkUpdate<T> MatchTargetOn(Expression<Func<T, object>> columnName, string collation)
+        {
+            var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
+
+            if (propertyName == null)
+                throw new NullReferenceException("MatchTargetOn column name can't be null.");
+
+            _matchTargetOn.Add(propertyName);
+            base.SetCollation(columnName, collation);
+
+            return this;
+        }
+
+        /// <summary>
         /// Sets the identity column for the table. Required if an Identity column exists in table and one of the two 
         /// following conditions is met: (1) MatchTargetOn list contains an identity column (2) AddAllColumns is used in setup. 
         /// </summary>
@@ -107,15 +116,13 @@ namespace SqlBulkTools
         }
 
         /// <summary>
-        /// Set the collation explicitly for join conditions. Can be recalled multiple times for more than one column. 
-        /// Note that this should only be used if there is a collation conflict and you can't resolve it by other means. 
+        /// Sets the table hint to be used in the merge query. HOLDLOCk is the default that will be used if one is not set. 
         /// </summary>
-        /// <param name="columnName"></param>
-        /// <param name="collation"></param>
+        /// <param name="tableHint"></param>
         /// <returns></returns>
-        public BulkUpdate<T> SetCollationOnColumn(Expression<Func<T, object>> columnName, string collation)
+        public BulkUpdate<T> SetTableHint(string tableHint)
         {
-            base.SetCollation(columnName, collation);
+            _tableHint = tableHint;
             return this;
         }
 
@@ -134,7 +141,6 @@ namespace SqlBulkTools
                 return affectedRows;
             }
 
-            base.IndexCheck();
             base.MatchTargetCheck();
 
             DataTable dt = BulkOperationsHelper.CreateDataTable<T>(_columns, _customColumnMappings, _matchTargetOn, _outputIdentity);
@@ -160,16 +166,7 @@ namespace SqlBulkTools
                 command.ExecuteNonQuery();
 
                 //Bulk insert into temp table
-                BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopyEnableStreaming, _bulkCopyBatchSize,
-                    _bulkCopyNotifyAfter, _bulkCopyTimeout, _sqlBulkCopyOptions, _bulkCopyDelegates);
-
-                // Updating destination table, and dropping temp table
-                if (_disableIndexList != null && _disableIndexList.Any())
-                {
-                    command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(Constants.Disable, _tableName,
-                        _schema, connection, _disableIndexList, _disableAllIndexes);
-                    command.ExecuteNonQuery();
-                }
+                BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopySettings);
 
                 string comm = BulkOperationsHelper.GetOutputCreateTableCmd(_outputIdentity, Constants.TempOutputTableName,
                 OperationType.InsertOrUpdate, _identityColumn);
@@ -180,16 +177,8 @@ namespace SqlBulkTools
                     command.ExecuteNonQuery();
                 }
 
-                comm = "MERGE INTO " + BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema, _tableName) + " WITH (HOLDLOCK) AS Target " +
-                              "USING " + Constants.TempTableName + " AS Source " +
-                              BulkOperationsHelper.BuildJoinConditionsForInsertOrUpdate(_matchTargetOn.ToArray(),
-                                  Constants.SourceAlias, Constants.TargetAlias, base._collationColumnDic) +
-                              "WHEN MATCHED " + BulkOperationsHelper.BuildPredicateQuery(_matchTargetOn.ToArray(), _updatePredicates, Constants.TargetAlias, base._collationColumnDic) +
-                              "THEN UPDATE " +
-                              BulkOperationsHelper.BuildUpdateSet(_columns, Constants.SourceAlias, Constants.TargetAlias, _identityColumn) +
-                              BulkOperationsHelper.GetOutputIdentityCmd(_identityColumn, _outputIdentity, Constants.TempOutputTableName,
-                        OperationType.Update) + "; " +
-                              "DROP TABLE " + Constants.TempTableName + ";";
+                comm = GetCommand(connection);
+
                 command.CommandText = comm;
 
                 if (_parameters.Count > 0)
@@ -198,13 +187,6 @@ namespace SqlBulkTools
                 }
 
                 affectedRows = command.ExecuteNonQuery();
-
-                if (_disableIndexList != null && _disableIndexList.Any())
-                {
-                    command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(Constants.Rebuild, _tableName, _schema,
-                        connection, _disableIndexList);
-                    command.ExecuteNonQuery();
-                }
 
                 if (_outputIdentity == ColumnDirectionType.InputOutput)
                 {
@@ -246,7 +228,6 @@ namespace SqlBulkTools
                 return affectedRows;
             }
 
-            base.IndexCheck();
             base.MatchTargetCheck();
 
             DataTable dt = BulkOperationsHelper.CreateDataTable<T>(_columns, _customColumnMappings, _matchTargetOn, _outputIdentity);
@@ -272,16 +253,7 @@ namespace SqlBulkTools
                 await command.ExecuteNonQueryAsync();
 
                 //Bulk insert into temp table
-                BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopyEnableStreaming, _bulkCopyBatchSize,
-                    _bulkCopyNotifyAfter, _bulkCopyTimeout, _sqlBulkCopyOptions, _bulkCopyDelegates);
-
-                // Updating destination table, and dropping temp table
-                if (_disableIndexList != null && _disableIndexList.Any())
-                {
-                    command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(Constants.Disable, _tableName,
-                        _schema, connection, _disableIndexList, _disableAllIndexes);
-                    await command.ExecuteNonQueryAsync();
-                }
+                BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopySettings);
 
                 string comm = BulkOperationsHelper.GetOutputCreateTableCmd(_outputIdentity, Constants.TempOutputTableName,
                 OperationType.InsertOrUpdate, _identityColumn);
@@ -292,16 +264,8 @@ namespace SqlBulkTools
                     await command.ExecuteNonQueryAsync();
                 }
 
-                comm = "MERGE INTO " + BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema, _tableName) + " WITH (HOLDLOCK) AS Target " +
-                              "USING " + Constants.TempTableName + " AS Source " +
-                              BulkOperationsHelper.BuildJoinConditionsForInsertOrUpdate(_matchTargetOn.ToArray(),
-                                  Constants.SourceAlias, Constants.TargetAlias, base._collationColumnDic) +
-                              "WHEN MATCHED " + BulkOperationsHelper.BuildPredicateQuery(_matchTargetOn.ToArray(), _updatePredicates, Constants.TargetAlias, base._collationColumnDic) +
-                              "THEN UPDATE " +
-                              BulkOperationsHelper.BuildUpdateSet(_columns, Constants.SourceAlias, Constants.TargetAlias, _identityColumn) +
-                              BulkOperationsHelper.GetOutputIdentityCmd(_identityColumn, _outputIdentity, Constants.TempOutputTableName,
-                        OperationType.Update) + "; " +
-                              "DROP TABLE " + Constants.TempTableName + ";";
+                comm = GetCommand(connection);
+
                 command.CommandText = comm;
 
                 if (_parameters.Count > 0)
@@ -310,13 +274,6 @@ namespace SqlBulkTools
                 }
 
                 affectedRows = await command.ExecuteNonQueryAsync();
-
-                if (_disableIndexList != null && _disableIndexList.Any())
-                {
-                    command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(Constants.Rebuild, _tableName, _schema,
-                        connection, _disableIndexList);
-                    await command.ExecuteNonQueryAsync();
-                }
 
                 if (_outputIdentity == ColumnDirectionType.InputOutput)
                 {
@@ -340,7 +297,22 @@ namespace SqlBulkTools
                 }
                 throw;
             }
+        }
 
+        private string GetCommand(SqlConnection connection)
+        {
+            string comm = "MERGE INTO " + BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema, _tableName) + $" WITH ({_tableHint}) AS Target " +
+                              "USING " + Constants.TempTableName + " AS Source " +
+                              BulkOperationsHelper.BuildJoinConditionsForInsertOrUpdate(_matchTargetOn.ToArray(),
+                                  Constants.SourceAlias, Constants.TargetAlias, base._collationColumnDic) +
+                              "WHEN MATCHED " + BulkOperationsHelper.BuildPredicateQuery(_matchTargetOn.ToArray(), _updatePredicates, Constants.TargetAlias, base._collationColumnDic) +
+                              "THEN UPDATE " +
+                              BulkOperationsHelper.BuildUpdateSet(_columns, Constants.SourceAlias, Constants.TargetAlias, _identityColumn) +
+                              BulkOperationsHelper.GetOutputIdentityCmd(_identityColumn, _outputIdentity, Constants.TempOutputTableName,
+                              OperationType.Update) + "; " +
+                              "DROP TABLE " + Constants.TempTableName + ";";
+
+            return comm;
         }
     }
 }
