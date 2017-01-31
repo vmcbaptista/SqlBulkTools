@@ -2,8 +2,7 @@
 using System.Data.SqlClient;
 using SqlBulkTools.QueryOperations;
 
-// ReSharper disable once CheckNamespace
-namespace SqlBulkTools
+namespace SqlBulkTools.Core
 {
     /// <summary>
     /// 

@@ -1,5 +1,4 @@
-﻿// ReSharper disable once CheckNamespace
-namespace SqlBulkTools
+﻿namespace SqlBulkTools.Core
 {
     /// <summary>
     /// 

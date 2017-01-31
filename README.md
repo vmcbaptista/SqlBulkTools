@@ -494,10 +494,55 @@ using (TransactionScope trans = new TransactionScope())
             .BulkInsert()
             .Commit(conn);
 	}
-
 	trans.Complete();
 }
 
+// or if adding each column one by one...
+using (TransactionScope trans = new TransactionScope())
+{
+  using (SqlConnection conn = new SqlConnection(ConfigurationManager
+  .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+  {
+        bulk.Setup<Book>()
+            .ForCollection(books)
+            .WithTable("Books")
+            .AddColumn(x => x.Title, "BookTitle") // Title property corrosponds to BookTitle in table
+            .AddColumn(x => x.ISBN)
+            .AddColumn(x => x.Description)
+            .BulkInsert()
+            .Commit(conn);
+  }
+  trans.Complete();
+}
+
+```
+###Collation conflicts
+---------------
+If you attempt to use MatchTargetOn against a string and you have mixed collations, you will receive a collation
+SQL Exception. To overcome this error, you can set a collation in the MatchTargetOn overload.
+
+```c#
+var bulk = new BulkOperations();
+books = GetBooks();
+
+using (TransactionScope trans = new TransactionScope())
+{
+  using (SqlConnection conn = new SqlConnection(ConfigurationManager
+  .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+  {
+        bulk.Setup<Book>()
+            .ForCollection(books)
+            .WithTable("Books")
+            .AddColumn(x => x.ISBN)
+            .AddColumn(x => x.Title)
+            .AddColumn(x => x.Description)
+            .BulkInsertOrUpdate()
+            .MatchTargetOn(x => x.ISBN, "DATABASE_DEFAULT")
+            .Commit(conn);
+  }
+
+  trans.Complete();
+}
 ```
 
 ###BuildPreparedDataDable
@@ -560,15 +605,16 @@ bulk.Setup<Book>()
     .ForCollection(books)
     .WithTable("Books")
     .WithSchema("Api") // Specify a schema 
-    .WithBulkCopyBatchSize(4000)
-    .WithBulkCopyCommandTimeout(720) // Default is 600 seconds
-    .WithBulkCopyEnableStreaming(false)
-    .WithBulkCopyNotifyAfter(300)
-    .WithSqlCommandTimeout(720) // Default is 600 seconds
-    .WithSqlBulkCopyOptions(SqlBulkCopyOptions.TableLock)
+    .WithBulkCopySettings(new BulkCopySettings()
+    {
+      BatchSize = 5000,
+      BulkCopyTimeout = 720, // Default is 600 seconds
+      EnableStreaming = true,
+      SqlBulkCopyOptions = SqlBulkCopyOptions.TableLock
+    })
     .AddColumn(x =>  // ........
 
-/* SqlBulkTools gives you the ability to disable all or selected non-clustered indexes during 
+/* SqlBulkTools gives you the ability to disable all non-clustered indexes during 
 the transaction. Indexes are rebuilt once the transaction is completed. If at any time during 
 the transaction an exception arises, the transaction is safely rolled back and indexes revert 
 to their initial state. */
@@ -578,11 +624,10 @@ to their initial state. */
 bulk.Setup<Book>()
     .ForCollection(books)
     .WithTable("Books")
-    .WithBulkCopyBatchSize(5000)
-    .WithSqlBulkCopyOptions(SqlBulkCopyOptions.TableLock)
-    .AddAllColumns()
+    .AddAllColumns() 
+    .BulkInsert()
     .TmpDisableAllNonClusteredIndexes()
-    .BulkInsert();
+    .Commit(conn);
 
 ```
 

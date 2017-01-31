@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq.Expressions;
+using SqlBulkTools.BulkOperations;
 
 // ReSharper disable once CheckNamespace
 namespace SqlBulkTools.BulkCopy

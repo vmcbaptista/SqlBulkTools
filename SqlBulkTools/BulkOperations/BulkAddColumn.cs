@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq.Expressions;
 
-// ReSharper disable once CheckNamespace
-namespace SqlBulkTools
+namespace SqlBulkTools.BulkOperations
 {
     /// <summary>
     /// 

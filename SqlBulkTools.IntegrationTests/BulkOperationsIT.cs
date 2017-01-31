@@ -9,6 +9,8 @@ using System.Threading;
 using System.Transactions;
 using NUnit.Framework;
 using Ploeh.AutoFixture;
+using SqlBulkTools.BulkOperations;
+using SqlBulkTools.Core;
 using SqlBulkTools.Enumeration;
 using SqlBulkTools.IntegrationTests.Data;
 using SqlBulkTools.IntegrationTests.Model;
