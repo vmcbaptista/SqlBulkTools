@@ -815,9 +815,9 @@ namespace SqlBulkTools.IntegrationTests
                         .AddColumn(x => x.Price)
                         .AddColumn(x => x.Description)
                         .AddColumn(x => x.ISBN)
-                        .AddColumn(x => x.PublishDate)
-                        .TmpDisableAllNonClusteredIndexes()
+                        .AddColumn(x => x.PublishDate)                      
                         .BulkInsert()
+                        .TmpDisableAllNonClusteredIndexes()
                         .SetIdentityColumn(x => x.Id, ColumnDirectionType.InputOutput)
                         .Commit(conn);
 
@@ -1719,9 +1719,9 @@ namespace SqlBulkTools.IntegrationTests
                         .AddColumn(x => x.Price)
                         .AddColumn(x => x.Description)
                         .AddColumn(x => x.ISBN)
-                        .AddColumn(x => x.PublishDate)
-                        .TmpDisableAllNonClusteredIndexes()
+                        .AddColumn(x => x.PublishDate)                      
                         .BulkInsert()
+                        .TmpDisableAllNonClusteredIndexes()
                         .Commit(conn);
                 }
 

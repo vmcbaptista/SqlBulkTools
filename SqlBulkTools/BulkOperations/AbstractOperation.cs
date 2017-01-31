@@ -21,7 +21,6 @@ namespace SqlBulkTools
         protected bool _disableAllIndexes;
         protected int _sqlTimeout;
         protected HashSet<string> _columns;
-        protected HashSet<string> _disableIndexList;
         protected string _schema;
         protected string _tableName;
         protected Dictionary<string, string> _customColumnMappings;
@@ -42,20 +41,16 @@ namespace SqlBulkTools
         /// <param name="tableName"></param>
         /// <param name="schema"></param>
         /// <param name="columns"></param>
-        /// <param name="disableIndexList"></param>
-        /// <param name="disableAllIndexes"></param>
         /// <param name="customColumnMappings"></param>
         /// <param name="bulkCopySettings"></param>
         protected AbstractOperation(IEnumerable<T> list, string tableName, string schema, HashSet<string> columns,
-            HashSet<string> disableIndexList, bool disableAllIndexes,
             Dictionary<string, string> customColumnMappings, BulkCopySettings bulkCopySettings)
         {
             _list = list;
             _tableName = tableName;
             _schema = schema;
             _columns = columns;
-            _disableIndexList = disableIndexList;
-            _disableAllIndexes = disableAllIndexes;
+            _disableAllIndexes = false;
             _customColumnMappings = customColumnMappings;
             _identityColumn = null;
             _collationColumnDic = new Dictionary<string, string>();
@@ -138,19 +133,6 @@ namespace SqlBulkTools
                 throw new SqlBulkToolsException("MatchTargetOn list is empty when it's required for this operation. " +
                                                     "This is usually the primary key of your table but can also be more than one " +
                                                     "column depending on your business rules.");
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <exception cref="SqlBulkToolsException"></exception>
-        protected void IndexCheck()
-        {
-            if (_disableAllIndexes && (_disableIndexList != null && _disableIndexList.Any()))
-            {
-                throw new SqlBulkToolsException("Invalid setup. If \'TmpDisableAllNonClusteredIndexes\' is invoked, you can not use " +
-                                                    "the \'AddTmpDisableNonClusteredIndex\' method.");
             }
         }
     }

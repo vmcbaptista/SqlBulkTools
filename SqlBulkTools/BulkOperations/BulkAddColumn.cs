@@ -54,33 +54,5 @@ namespace SqlBulkTools
             _columns.Add(propertyName);
             return this;
         }
-
-        /// <summary>
-        /// Disables non-clustered index. You can select One to Many non-clustered indexes. This option should be considered on 
-        /// a case-by-case basis. Understand the consequences before using this option.  
-        /// </summary>
-        /// <param name="indexName"></param>
-        /// <returns></returns>
-        public BulkAddColumn<T> AddTmpDisableNonClusteredIndex(string indexName)
-        {
-            if (indexName == null)
-                throw new ArgumentNullException(nameof(indexName));
-
-            _disableIndexList.Add(indexName);
-
-            return this;
-        }
-
-        /// <summary>
-        /// Disables all Non-Clustered indexes on the table before the transaction and rebuilds after the 
-        /// transaction. This option should be considered on a case-by-case basis. Understand the 
-        /// consequences before using this option.  
-        /// </summary>
-        /// <returns></returns>
-        public BulkAddColumn<T> TmpDisableAllNonClusteredIndexes()
-        {
-            _disableAllIndexes = true;
-            return this;
-        }
     }
 }

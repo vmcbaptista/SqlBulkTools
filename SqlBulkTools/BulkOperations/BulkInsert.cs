@@ -23,15 +23,12 @@ namespace SqlBulkTools
         /// <param name="tableName"></param>
         /// <param name="schema"></param>
         /// <param name="columns"></param>
-        /// <param name="disableIndexList"></param>
-        /// <param name="disableAllIndexes"></param>
         /// <param name="customColumnMappings"></param>
         /// <param name="bulkCopySettings"></param>
         public BulkInsert(IEnumerable<T> list, string tableName, string schema, HashSet<string> columns,
-            HashSet<string> disableIndexList, bool disableAllIndexes,
             Dictionary<string, string> customColumnMappings, BulkCopySettings bulkCopySettings) :
 
-            base(list, tableName, schema, columns, disableIndexList, disableAllIndexes, customColumnMappings, bulkCopySettings)
+            base(list, tableName, schema, columns, customColumnMappings, bulkCopySettings)
         {
             
         }
@@ -62,6 +59,17 @@ namespace SqlBulkTools
         }
 
         /// <summary>
+        /// Disables all Non-Clustered indexes on the table before the transaction and rebuilds after the 
+        /// transaction. This option should only be considered for very large operations.
+        /// </summary>
+        /// <returns></returns>
+        public BulkInsert<T> TmpDisableAllNonClusteredIndexes()
+        {
+            _disableAllIndexes = true;
+            return this;
+        }
+
+        /// <summary>
         /// Commits a transaction to database. A valid setup must exist for the operation to be 
         /// successful.
         /// </summary>
@@ -75,8 +83,6 @@ namespace SqlBulkTools
             {
                 return affectedRows;
             }
-
-            base.IndexCheck();
 
             DataTable dt = BulkOperationsHelper.CreateDataTable<T>(_columns, _customColumnMappings, _matchTargetOn, _outputIdentity);
             dt = BulkOperationsHelper.ConvertListToDataTable(dt, _list, _columns);
@@ -103,10 +109,10 @@ namespace SqlBulkTools
                 SqlCommand command = connection.CreateCommand();
                 command.Connection = connection;
 
-                if (_disableAllIndexes || (_disableIndexList != null && _disableIndexList.Any()))
+                if (_disableAllIndexes)
                 {
                     command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(Constants.Disable, _tableName,
-                        _schema, connection, _disableIndexList, _disableAllIndexes);
+                        _schema, connection);
                     command.ExecuteNonQuery();
                 }
 
@@ -129,10 +135,10 @@ namespace SqlBulkTools
                 else
                     bulkcopy.WriteToServer(dt);
 
-                if (_disableAllIndexes || (_disableIndexList != null && _disableIndexList.Any()))
+                if (_disableAllIndexes)
                 {
                     command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(Constants.Rebuild, _tableName,
-                        _schema, connection, _disableIndexList, _disableAllIndexes);
+                        _schema, connection);
                     command.ExecuteNonQuery();
                 }
 
@@ -159,8 +165,6 @@ namespace SqlBulkTools
                 return affectedRows;
             }
 
-            base.IndexCheck();
-
             DataTable dt = BulkOperationsHelper.CreateDataTable<T>(_columns, _customColumnMappings, _matchTargetOn, _outputIdentity);
             dt = BulkOperationsHelper.ConvertListToDataTable(dt, _list, _columns);
 
@@ -186,10 +190,10 @@ namespace SqlBulkTools
                 SqlCommand command = connection.CreateCommand();
                 command.Connection = connection;
 
-                if (_disableAllIndexes || (_disableIndexList != null && _disableIndexList.Any()))
+                if (_disableAllIndexes)
                 {
                     command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(Constants.Disable, _tableName,
-                        _schema, connection, _disableIndexList, _disableAllIndexes);
+                        _schema, connection);
                     await command.ExecuteNonQueryAsync();
                 }
 
@@ -212,10 +216,10 @@ namespace SqlBulkTools
                 else
                     await bulkcopy.WriteToServerAsync(dt);
 
-                if (_disableAllIndexes || (_disableIndexList != null && _disableIndexList.Any()))
+                if (_disableAllIndexes)
                 {
                     command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(Constants.Rebuild, _tableName,
-                        _schema, connection, _disableIndexList, _disableAllIndexes);
+                        _schema, connection);
                     await command.ExecuteNonQueryAsync();
                 }
 

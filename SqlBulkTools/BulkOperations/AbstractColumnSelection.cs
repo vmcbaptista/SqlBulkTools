@@ -17,7 +17,6 @@ namespace SqlBulkTools
         protected Dictionary<string, string> _customColumnMappings { get; }        
         protected HashSet<string> _columns;
         protected bool _disableAllIndexes;
-        protected HashSet<string> _disableIndexList;
         protected BulkCopySettings _bulkCopySettings;
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member   
 
@@ -32,7 +31,6 @@ namespace SqlBulkTools
         protected AbstractColumnSelection(IEnumerable<T> list, string tableName, HashSet<string> columns, string schema, BulkCopySettings bulkCopySettings)
         {
             _disableAllIndexes = false;
-            _disableIndexList = new HashSet<string>();
             _customColumnMappings = new Dictionary<string, string>();
             _list = list;
             _tableName = tableName;
@@ -48,8 +46,7 @@ namespace SqlBulkTools
         /// <returns></returns>
         public BulkInsert<T> BulkInsert()
         {
-            return new BulkInsert<T>(_list, _tableName, _schema, _columns, _disableIndexList, _disableAllIndexes,
-                _customColumnMappings, _bulkCopySettings);
+            return new BulkInsert<T>(_list, _tableName, _schema, _columns, _customColumnMappings, _bulkCopySettings);
         }
 
         /// <summary>
@@ -61,7 +58,7 @@ namespace SqlBulkTools
         /// <returns></returns>
         public BulkInsertOrUpdate<T> BulkInsertOrUpdate()
         {
-            return new BulkInsertOrUpdate<T>(_list, _tableName, _schema, _columns, _disableIndexList, _disableAllIndexes,
+            return new BulkInsertOrUpdate<T>(_list, _tableName, _schema, _columns,
                 _customColumnMappings, _bulkCopySettings);
         }
 
@@ -72,7 +69,7 @@ namespace SqlBulkTools
         /// <returns></returns>
         public BulkUpdate<T> BulkUpdate()
         {
-            return new BulkUpdate<T>(_list, _tableName, _schema, _columns, _disableIndexList, _disableAllIndexes,
+            return new BulkUpdate<T>(_list, _tableName, _schema, _columns, 
                 _customColumnMappings, _bulkCopySettings);
         }
 
@@ -83,7 +80,7 @@ namespace SqlBulkTools
         /// <returns></returns>
         public BulkDelete<T> BulkDelete()
         {
-            return new BulkDelete<T>(_list, _tableName, _schema, _columns, _disableIndexList, _disableAllIndexes, 
+            return new BulkDelete<T>(_list, _tableName, _schema, _columns,  
                 _customColumnMappings, _bulkCopySettings);
         }
     }

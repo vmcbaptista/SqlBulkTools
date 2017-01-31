@@ -26,14 +26,12 @@ namespace SqlBulkTools
         /// <param name="tableName"></param>
         /// <param name="schema"></param>
         /// <param name="columns"></param>
-        /// <param name="disableIndexList"></param>
-        /// <param name="disableAllIndexes"></param>
         /// <param name="customColumnMappings"></param>
         /// <param name="bulkCopySettings"></param>
-        public BulkInsertOrUpdate(IEnumerable<T> list, string tableName, string schema, HashSet<string> columns, HashSet<string> disableIndexList, bool disableAllIndexes,
+        public BulkInsertOrUpdate(IEnumerable<T> list, string tableName, string schema, HashSet<string> columns,
             Dictionary<string, string> customColumnMappings, BulkCopySettings bulkCopySettings) :
 
-            base(list, tableName, schema, columns, disableIndexList, disableAllIndexes, customColumnMappings, bulkCopySettings)
+            base(list, tableName, schema, columns, customColumnMappings, bulkCopySettings)
         {
             _deleteWhenNotMatchedFlag = false;
             _updatePredicates = new List<PredicateCondition>();
@@ -192,7 +190,6 @@ namespace SqlBulkTools
                 throw new SqlBulkToolsException($"{BulkOperationsHelper.GetPredicateMethodName(PredicateType.Delete)} only usable on BulkInsertOrUpdate " +
                                                 $"method when 'DeleteWhenNotMatched' is set to true.");
 
-            base.IndexCheck();
             base.MatchTargetCheck();
 
             DataTable dt = BulkOperationsHelper.CreateDataTable<T>(_columns, _customColumnMappings, _matchTargetOn, _outputIdentity);
@@ -220,13 +217,6 @@ namespace SqlBulkTools
                 command.ExecuteNonQuery();
 
                 BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopySettings);
-
-                if (_disableIndexList != null && _disableIndexList.Any())
-                {
-                    command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(Constants.Disable, _tableName,
-                        _schema, connection, _disableIndexList, _disableAllIndexes);
-                    command.ExecuteNonQuery();
-                }
 
                 string comm = BulkOperationsHelper.GetOutputCreateTableCmd(_outputIdentity, Constants.TempOutputTableName,
                 OperationType.InsertOrUpdate, _identityColumn);
@@ -263,13 +253,6 @@ namespace SqlBulkTools
                 }
 
                 affectedRows = command.ExecuteNonQuery();
-
-                if (_disableIndexList != null && _disableIndexList.Any())
-                {
-                    command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(Constants.Rebuild,
-                        _tableName, _schema, connection, _disableIndexList);
-                    command.ExecuteNonQuery();
-                }
 
                 if (_outputIdentity == ColumnDirectionType.InputOutput)
                 {
@@ -316,7 +299,6 @@ namespace SqlBulkTools
                 throw new SqlBulkToolsException($"{BulkOperationsHelper.GetPredicateMethodName(PredicateType.Delete)} only usable on BulkInsertOrUpdate " +
                                                 $"method when 'DeleteWhenNotMatched' is set to true.");
 
-            base.IndexCheck();
             base.MatchTargetCheck();
 
             DataTable dt = BulkOperationsHelper.CreateDataTable<T>(_columns, _customColumnMappings, _matchTargetOn, _outputIdentity);
@@ -345,13 +327,6 @@ namespace SqlBulkTools
                 await command.ExecuteNonQueryAsync();
 
                 BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopySettings);
-
-                if (_disableIndexList != null && _disableIndexList.Any())
-                {
-                    command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(Constants.Disable, _tableName,
-                        _schema, connection, _disableIndexList, _disableAllIndexes);
-                    await command.ExecuteNonQueryAsync();
-                }
 
                 string comm = BulkOperationsHelper.GetOutputCreateTableCmd(_outputIdentity, Constants.TempOutputTableName,
                 OperationType.InsertOrUpdate, _identityColumn);
@@ -388,13 +363,6 @@ namespace SqlBulkTools
                 }
 
                 affectedRows = await command.ExecuteNonQueryAsync();
-
-                if (_disableIndexList != null && _disableIndexList.Any())
-                {
-                    command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(Constants.Rebuild,
-                        _tableName, _schema, connection, _disableIndexList);
-                    await command.ExecuteNonQueryAsync();
-                }
 
                 if (_outputIdentity == ColumnDirectionType.InputOutput)
                 {

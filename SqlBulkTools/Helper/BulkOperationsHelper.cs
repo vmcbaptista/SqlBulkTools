@@ -834,21 +834,11 @@ namespace SqlBulkTools
         }
 
         internal static string GetIndexManagementCmd(string action, string tableName,
-            string schema, IDbConnection conn, HashSet<string> disableIndexList, bool disableAllIndexes = false)
+            string schema, IDbConnection conn)
         {
-            StringBuilder sb = new StringBuilder();
-
-            if (disableIndexList != null && disableIndexList.Any())
-            {
-                foreach (var index in disableIndexList)
-                {
-                    sb.Append($" AND sys.indexes.name = '{index}'");
-                }
-            }
-
             string cmd = $"DECLARE @sql AS VARCHAR(MAX)=''; SELECT @sql = @sql + 'ALTER INDEX ' + sys.indexes.name + ' ON ' + sys.objects.name + ' {action};' FROM sys.indexes " +
                          $"JOIN sys.objects ON sys.indexes.object_id = sys.objects.object_id WHERE sys.indexes.type_desc = 'NONCLUSTERED' AND sys.objects.type_desc = 'USER_TABLE' " +
-                         $"AND sys.objects.name = '{GetFullQualifyingTableName(conn.Database, schema, tableName)}'{(sb.Length > 0 ? sb.ToString() : string.Empty)}; EXEC(@sql);";
+                         $"AND sys.objects.name = '{GetFullQualifyingTableName(conn.Database, schema, tableName)}'; EXEC(@sql);";
 
             return cmd;
         }

@@ -23,14 +23,12 @@ namespace SqlBulkTools
         /// <param name="tableName"></param>
         /// <param name="schema"></param>
         /// <param name="columns"></param>
-        /// <param name="disableAllIndexes"></param>
         /// <param name="customColumnMappings"></param>
-        /// <param name="disableIndexList"></param>
         /// <param name="bulkCopySettings"></param>
-        public BulkUpdate(IEnumerable<T> list, string tableName, string schema, HashSet<string> columns, HashSet<string> disableIndexList,
-            bool disableAllIndexes, Dictionary<string, string> customColumnMappings, BulkCopySettings bulkCopySettings)
+        public BulkUpdate(IEnumerable<T> list, string tableName, string schema, HashSet<string> columns, 
+            Dictionary<string, string> customColumnMappings, BulkCopySettings bulkCopySettings)
             :
-            base(list, tableName, schema, columns, disableIndexList, disableAllIndexes, customColumnMappings, bulkCopySettings)
+            base(list, tableName, schema, columns, customColumnMappings, bulkCopySettings)
         {
             _updatePredicates = new List<PredicateCondition>();
             _parameters = new List<SqlParameter>();
@@ -132,7 +130,6 @@ namespace SqlBulkTools
                 return affectedRows;
             }
 
-            base.IndexCheck();
             base.MatchTargetCheck();
 
             DataTable dt = BulkOperationsHelper.CreateDataTable<T>(_columns, _customColumnMappings, _matchTargetOn, _outputIdentity);
@@ -159,14 +156,6 @@ namespace SqlBulkTools
 
                 //Bulk insert into temp table
                 BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopySettings);
-
-                // Updating destination table, and dropping temp table
-                if (_disableIndexList != null && _disableIndexList.Any())
-                {
-                    command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(Constants.Disable, _tableName,
-                        _schema, connection, _disableIndexList, _disableAllIndexes);
-                    command.ExecuteNonQuery();
-                }
 
                 string comm = BulkOperationsHelper.GetOutputCreateTableCmd(_outputIdentity, Constants.TempOutputTableName,
                 OperationType.InsertOrUpdate, _identityColumn);
@@ -195,13 +184,6 @@ namespace SqlBulkTools
                 }
 
                 affectedRows = command.ExecuteNonQuery();
-
-                if (_disableIndexList != null && _disableIndexList.Any())
-                {
-                    command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(Constants.Rebuild, _tableName, _schema,
-                        connection, _disableIndexList);
-                    command.ExecuteNonQuery();
-                }
 
                 if (_outputIdentity == ColumnDirectionType.InputOutput)
                 {
@@ -243,7 +225,6 @@ namespace SqlBulkTools
                 return affectedRows;
             }
 
-            base.IndexCheck();
             base.MatchTargetCheck();
 
             DataTable dt = BulkOperationsHelper.CreateDataTable<T>(_columns, _customColumnMappings, _matchTargetOn, _outputIdentity);
@@ -270,14 +251,6 @@ namespace SqlBulkTools
 
                 //Bulk insert into temp table
                 BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopySettings);
-
-                // Updating destination table, and dropping temp table
-                if (_disableIndexList != null && _disableIndexList.Any())
-                {
-                    command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(Constants.Disable, _tableName,
-                        _schema, connection, _disableIndexList, _disableAllIndexes);
-                    await command.ExecuteNonQueryAsync();
-                }
 
                 string comm = BulkOperationsHelper.GetOutputCreateTableCmd(_outputIdentity, Constants.TempOutputTableName,
                 OperationType.InsertOrUpdate, _identityColumn);
@@ -306,13 +279,6 @@ namespace SqlBulkTools
                 }
 
                 affectedRows = await command.ExecuteNonQueryAsync();
-
-                if (_disableIndexList != null && _disableIndexList.Any())
-                {
-                    command.CommandText = BulkOperationsHelper.GetIndexManagementCmd(Constants.Rebuild, _tableName, _schema,
-                        connection, _disableIndexList);
-                    await command.ExecuteNonQueryAsync();
-                }
 
                 if (_outputIdentity == ColumnDirectionType.InputOutput)
                 {
