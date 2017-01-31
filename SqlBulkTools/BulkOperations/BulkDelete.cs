@@ -156,15 +156,8 @@ namespace SqlBulkTools
                 command.ExecuteNonQuery();
             }
 
-            comm = "MERGE INTO " + BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema, _tableName) + " WITH (HOLDLOCK) AS Target " +
-                          "USING " + Constants.TempTableName + " AS Source " +
-                          BulkOperationsHelper.BuildJoinConditionsForInsertOrUpdate(_matchTargetOn.ToArray(),
-                          Constants.SourceAlias, Constants.TargetAlias, base._collationColumnDic) +
-                          "WHEN MATCHED " + BulkOperationsHelper.BuildPredicateQuery(_matchTargetOn.ToArray(), _deletePredicates, Constants.TargetAlias, base._collationColumnDic) +
-                          "THEN DELETE " +
-                          BulkOperationsHelper.GetOutputIdentityCmd(_identityColumn, _outputIdentity, Constants.TempOutputTableName,
-                          OperationType.Delete) + "; " +
-                          "DROP TABLE " + Constants.TempTableName + ";";
+            comm = GetCommand(connection);
+
             command.CommandText = comm;
 
             if (_parameters.Count > 0)
@@ -231,15 +224,8 @@ namespace SqlBulkTools
                 await command.ExecuteNonQueryAsync();
             }
 
-            comm = "MERGE INTO " + BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema, _tableName) + " WITH (HOLDLOCK) AS Target " +
-                          "USING " + Constants.TempTableName + " AS Source " +
-                          BulkOperationsHelper.BuildJoinConditionsForInsertOrUpdate(_matchTargetOn.ToArray(),
-                          Constants.SourceAlias, Constants.TargetAlias, base._collationColumnDic) +
-                          "WHEN MATCHED " + BulkOperationsHelper.BuildPredicateQuery(_matchTargetOn.ToArray(), _deletePredicates, Constants.TargetAlias, base._collationColumnDic) +
-                          "THEN DELETE " +
-                          BulkOperationsHelper.GetOutputIdentityCmd(_identityColumn, _outputIdentity, Constants.TempOutputTableName,
-                          OperationType.Delete) + "; " +
-                          "DROP TABLE " + Constants.TempTableName + ";";
+            comm = GetCommand(connection);
+
             command.CommandText = comm;
 
             if (_parameters.Count > 0)
@@ -255,8 +241,21 @@ namespace SqlBulkTools
             }
 
             return affectedRecords;
+        }
 
+        private string GetCommand(SqlConnection connection)
+        {
+            string comm = "MERGE INTO " + BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema, _tableName) + " WITH (HOLDLOCK) AS Target " +
+                          "USING " + Constants.TempTableName + " AS Source " +
+                          BulkOperationsHelper.BuildJoinConditionsForInsertOrUpdate(_matchTargetOn.ToArray(),
+                          Constants.SourceAlias, Constants.TargetAlias, base._collationColumnDic) +
+                          "WHEN MATCHED " + BulkOperationsHelper.BuildPredicateQuery(_matchTargetOn.ToArray(), _deletePredicates, Constants.TargetAlias, base._collationColumnDic) +
+                          "THEN DELETE " +
+                          BulkOperationsHelper.GetOutputIdentityCmd(_identityColumn, _outputIdentity, Constants.TempOutputTableName,
+                          OperationType.Delete) + "; " +
+                          "DROP TABLE " + Constants.TempTableName + ";";
 
+            return comm;
         }
     }
 }

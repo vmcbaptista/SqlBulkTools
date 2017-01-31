@@ -227,23 +227,7 @@ namespace SqlBulkTools
                     command.ExecuteNonQuery();
                 }
 
-                comm =
-                    "MERGE INTO " + BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema, _tableName) +
-                    " WITH (HOLDLOCK) AS Target " +
-                    "USING " + Constants.TempTableName + " AS Source " +
-                    BulkOperationsHelper.BuildJoinConditionsForInsertOrUpdate(_matchTargetOn.ToArray(),
-                        Constants.SourceAlias, Constants.TargetAlias, base._collationColumnDic) +
-                    "WHEN MATCHED " + BulkOperationsHelper.BuildPredicateQuery(_matchTargetOn.ToArray(), _updatePredicates, Constants.TargetAlias, base._collationColumnDic) +
-                    "THEN UPDATE " +
-                    BulkOperationsHelper.BuildUpdateSet(_columns, Constants.SourceAlias, Constants.TargetAlias, _identityColumn, _excludeFromUpdate) +
-                    "WHEN NOT MATCHED BY TARGET THEN " +
-                    BulkOperationsHelper.BuildInsertSet(_columns, Constants.SourceAlias, _identityColumn) +
-                    (_deleteWhenNotMatchedFlag ? " WHEN NOT MATCHED BY SOURCE " + BulkOperationsHelper.BuildPredicateQuery(_matchTargetOn.ToArray(),
-                    _deletePredicates, Constants.TargetAlias, base._collationColumnDic) +
-                    "THEN DELETE " : " ") +
-                    BulkOperationsHelper.GetOutputIdentityCmd(_identityColumn, _outputIdentity, Constants.TempOutputTableName,
-                        OperationType.InsertOrUpdate) + "; " +
-                    "DROP TABLE " + Constants.TempTableName + ";";
+                comm = GetCommand(connection);
 
                 command.CommandText = comm;
 
@@ -337,23 +321,7 @@ namespace SqlBulkTools
                     await command.ExecuteNonQueryAsync();
                 }
 
-                comm =
-                    "MERGE INTO " + BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema, _tableName) +
-                    " WITH (HOLDLOCK) AS Target " +
-                    "USING " + Constants.TempTableName + " AS Source " +
-                    BulkOperationsHelper.BuildJoinConditionsForInsertOrUpdate(_matchTargetOn.ToArray(),
-                        Constants.SourceAlias, Constants.TargetAlias, base._collationColumnDic) +
-                    "WHEN MATCHED " + BulkOperationsHelper.BuildPredicateQuery(_matchTargetOn.ToArray(), _updatePredicates, Constants.TargetAlias, base._collationColumnDic) +
-                    "THEN UPDATE " +
-                    BulkOperationsHelper.BuildUpdateSet(_columns, Constants.SourceAlias, Constants.TargetAlias, _identityColumn, _excludeFromUpdate) +
-                    "WHEN NOT MATCHED BY TARGET THEN " +
-                    BulkOperationsHelper.BuildInsertSet(_columns, Constants.SourceAlias, _identityColumn) +
-                    (_deleteWhenNotMatchedFlag ? " WHEN NOT MATCHED BY SOURCE " + BulkOperationsHelper.BuildPredicateQuery(_matchTargetOn.ToArray(),
-                    _deletePredicates, Constants.TargetAlias, base._collationColumnDic) +
-                    "THEN DELETE " : " ") +
-                    BulkOperationsHelper.GetOutputIdentityCmd(_identityColumn, _outputIdentity, Constants.TempOutputTableName,
-                        OperationType.InsertOrUpdate) + "; " +
-                    "DROP TABLE " + Constants.TempTableName + ";";
+                comm = GetCommand(connection);
 
                 command.CommandText = comm;
 
@@ -388,5 +356,29 @@ namespace SqlBulkTools
             }
 
         }
+
+        private string GetCommand(SqlConnection connection)
+        {
+            string comm =
+                    "MERGE INTO " + BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema, _tableName) +
+                    " WITH (HOLDLOCK) AS Target " +
+                    "USING " + Constants.TempTableName + " AS Source " +
+                    BulkOperationsHelper.BuildJoinConditionsForInsertOrUpdate(_matchTargetOn.ToArray(),
+                        Constants.SourceAlias, Constants.TargetAlias, base._collationColumnDic) +
+                    "WHEN MATCHED " + BulkOperationsHelper.BuildPredicateQuery(_matchTargetOn.ToArray(), _updatePredicates, Constants.TargetAlias, base._collationColumnDic) +
+                    "THEN UPDATE " +
+                    BulkOperationsHelper.BuildUpdateSet(_columns, Constants.SourceAlias, Constants.TargetAlias, _identityColumn, _excludeFromUpdate) +
+                    "WHEN NOT MATCHED BY TARGET THEN " +
+                    BulkOperationsHelper.BuildInsertSet(_columns, Constants.SourceAlias, _identityColumn) +
+                    (_deleteWhenNotMatchedFlag ? " WHEN NOT MATCHED BY SOURCE " + BulkOperationsHelper.BuildPredicateQuery(_matchTargetOn.ToArray(),
+                    _deletePredicates, Constants.TargetAlias, base._collationColumnDic) +
+                    "THEN DELETE " : " ") +
+                    BulkOperationsHelper.GetOutputIdentityCmd(_identityColumn, _outputIdentity, Constants.TempOutputTableName,
+                        OperationType.InsertOrUpdate) + "; " +
+                    "DROP TABLE " + Constants.TempTableName + ";";
+
+            return comm;
+        }
+
     }
 }

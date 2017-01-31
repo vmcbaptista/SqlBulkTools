@@ -179,7 +179,6 @@ namespace SqlBulkTools
             if (_outputIdentity == ColumnDirectionType.InputOutput)
                 dtCols = BulkOperationsHelper.GetDatabaseSchema(connection, _schema, _tableName);
 
-            //Bulk insert into temp table
             using (SqlBulkCopy bulkcopy = new SqlBulkCopy(connection, _bulkCopySettings.SqlBulkCopyOptions, null))
             {
                 bulkcopy.DestinationTableName = BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema, _tableName);
@@ -210,7 +209,6 @@ namespace SqlBulkTools
                     await command.ExecuteNonQueryAsync();
 
                     BulkOperationsHelper.LoadFromTmpOutputTable(command, _identityColumn, _outputIdentityDic, OperationType.Insert, _list);
-
                 }
 
                 else
