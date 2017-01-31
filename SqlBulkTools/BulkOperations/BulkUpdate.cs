@@ -116,6 +116,17 @@ namespace SqlBulkTools
         }
 
         /// <summary>
+        /// Sets the table hint to be used in the merge query. HOLDLOCk is the default that will be used if one is not set. 
+        /// </summary>
+        /// <param name="tableHint"></param>
+        /// <returns></returns>
+        public BulkUpdate<T> SetTableHint(string tableHint)
+        {
+            _tableHint = tableHint;
+            return this;
+        }
+
+        /// <summary>
         /// Commits a transaction to database. A valid setup must exist for the operation to be 
         /// successful.
         /// </summary>
@@ -290,7 +301,7 @@ namespace SqlBulkTools
 
         private string GetCommand(SqlConnection connection)
         {
-            string comm = "MERGE INTO " + BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema, _tableName) + " WITH (HOLDLOCK) AS Target " +
+            string comm = "MERGE INTO " + BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema, _tableName) + $" WITH ({_tableHint}) AS Target " +
                               "USING " + Constants.TempTableName + " AS Source " +
                               BulkOperationsHelper.BuildJoinConditionsForInsertOrUpdate(_matchTargetOn.ToArray(),
                                   Constants.SourceAlias, Constants.TargetAlias, base._collationColumnDic) +
@@ -298,7 +309,7 @@ namespace SqlBulkTools
                               "THEN UPDATE " +
                               BulkOperationsHelper.BuildUpdateSet(_columns, Constants.SourceAlias, Constants.TargetAlias, _identityColumn) +
                               BulkOperationsHelper.GetOutputIdentityCmd(_identityColumn, _outputIdentity, Constants.TempOutputTableName,
-                        OperationType.Update) + "; " +
+                              OperationType.Update) + "; " +
                               "DROP TABLE " + Constants.TempTableName + ";";
 
             return comm;

@@ -32,6 +32,7 @@ namespace SqlBulkTools
         protected Dictionary<string, string> _collationColumnDic;
         protected int _conditionSortOrder;
         protected BulkCopySettings _bulkCopySettings;
+        protected string _tableHint;
         #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         /// <summary>
@@ -58,6 +59,7 @@ namespace SqlBulkTools
             _outputIdentity = ColumnDirectionType.Input;
             _matchTargetOn = new List<string>();
             _bulkCopySettings = bulkCopySettings;
+            _tableHint = "HOLDLOCK";
         }
 
         /// <summary>

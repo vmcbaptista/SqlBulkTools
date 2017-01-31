@@ -145,6 +145,17 @@ namespace SqlBulkTools
         }
 
         /// <summary>
+        /// Sets the table hint to be used in the merge query. HOLDLOCk is the default that will be used if one is not set. 
+        /// </summary>
+        /// <param name="tableHint"></param>
+        /// <returns></returns>
+        public BulkInsertOrUpdate<T> SetTableHint(string tableHint)
+        {
+            _tableHint = tableHint;
+            return this;
+        }
+
+        /// <summary>
         /// Only update records when the target satisfies a speicific requirement. This is used in conjunction with MatchTargetOn.
         /// See help docs for examples.  
         /// </summary>
@@ -361,7 +372,7 @@ namespace SqlBulkTools
         {
             string comm =
                     "MERGE INTO " + BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema, _tableName) +
-                    " WITH (HOLDLOCK) AS Target " +
+                    $" WITH ({_tableHint}) AS Target " +
                     "USING " + Constants.TempTableName + " AS Source " +
                     BulkOperationsHelper.BuildJoinConditionsForInsertOrUpdate(_matchTargetOn.ToArray(),
                         Constants.SourceAlias, Constants.TargetAlias, base._collationColumnDic) +

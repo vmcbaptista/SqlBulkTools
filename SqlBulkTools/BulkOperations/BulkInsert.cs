@@ -29,9 +29,7 @@ namespace SqlBulkTools
             Dictionary<string, string> customColumnMappings, BulkCopySettings bulkCopySettings) :
 
             base(list, tableName, schema, columns, customColumnMappings, bulkCopySettings)
-        {
-            
-        }
+        {}
 
         /// <summary>
         /// Sets the identity column for the table. Required if an Identity column exists in table and one of the two 
