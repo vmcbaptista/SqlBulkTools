@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace SqlBulkTools.BulkOperations
+namespace SqlBulkTools
 {
     /// <summary>
     /// 

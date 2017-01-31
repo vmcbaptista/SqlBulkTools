@@ -1,4 +1,4 @@
-﻿namespace SqlBulkTools.Core
+﻿namespace SqlBulkTools
 {
     /// <summary>
     /// 

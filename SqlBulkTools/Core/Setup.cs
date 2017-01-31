@@ -2,7 +2,7 @@
 using System.Data.SqlClient;
 using SqlBulkTools.QueryOperations;
 
-namespace SqlBulkTools.Core
+namespace SqlBulkTools
 {
     /// <summary>
     /// 

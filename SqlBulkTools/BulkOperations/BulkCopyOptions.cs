@@ -1,6 +1,6 @@
 ﻿using System.Data.SqlClient;
 
-namespace SqlBulkTools.BulkOperations
+namespace SqlBulkTools
 {
     /// <summary>
     /// 

@@ -5,7 +5,6 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using SqlBulkTools.BulkOperations;
 using SqlBulkTools.Enumeration;
 
 // ReSharper disable once CheckNamespace

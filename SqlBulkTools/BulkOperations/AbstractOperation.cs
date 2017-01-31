@@ -4,7 +4,7 @@ using System.Data.SqlClient;
 using System.Linq.Expressions;
 using SqlBulkTools.Enumeration;
 
-namespace SqlBulkTools.BulkOperations
+namespace SqlBulkTools
 {
     /// <summary>
     /// 
