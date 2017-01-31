@@ -13,7 +13,6 @@ namespace SqlBulkTools.BulkCopy
     public class BulkTable<T>
     {
         private readonly IEnumerable<T> _list;
-        private IEnumerable<SqlRowsCopiedEventHandler> _bulkCopyDelegates;
         private HashSet<string> Columns { get; set; }
         private string _schema;
         private readonly string _tableName;
@@ -47,8 +46,7 @@ namespace SqlBulkTools.BulkCopy
         {
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
             Columns.Add(propertyName);
-            return new BulkAddColumn<T>(_list, _tableName, Columns, _schema, 
-                _bulkCopyTimeout, _bulkCopyEnableStreaming, _bulkCopyNotifyAfter, _bulkCopyBatchSize, _sqlBulkCopyOptions, _bulkCopyDelegates, _bulkCopySettings);
+            return new BulkAddColumn<T>(_list, _tableName, Columns, _schema, _bulkCopySettings);
         }
 
         /// <summary>
@@ -58,8 +56,7 @@ namespace SqlBulkTools.BulkCopy
         public BulkAddColumnList<T> AddAllColumns()
         {
             Columns = BulkOperationsHelper.GetAllValueTypeAndStringColumns(typeof(T));
-            return new BulkAddColumnList<T>(_list, _tableName, Columns, _schema, 
-                _bulkCopyTimeout, _bulkCopyEnableStreaming, _bulkCopyNotifyAfter, _bulkCopyBatchSize, _sqlBulkCopyOptions, _bulkCopyDelegates, _bulkCopySettings);
+            return new BulkAddColumnList<T>(_list, _tableName, Columns, _schema, _bulkCopySettings);
         }
 
         /// <summary>

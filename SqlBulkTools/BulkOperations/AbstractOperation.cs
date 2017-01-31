@@ -21,23 +21,18 @@ namespace SqlBulkTools
         protected bool _disableAllIndexes;
         protected int _sqlTimeout;
         protected HashSet<string> _columns;
-        protected int? _bulkCopyBatchSize;
-        protected int? _bulkCopyNotifyAfter;
         protected HashSet<string> _disableIndexList;
-        protected bool _bulkCopyEnableStreaming;
-        protected int _bulkCopyTimeout;
         protected string _schema;
         protected string _tableName;
         protected Dictionary<string, string> _customColumnMappings;
         protected IEnumerable<T> _list;
         protected List<string> _matchTargetOn;
-        protected SqlBulkCopyOptions _sqlBulkCopyOptions;
-        protected IEnumerable<SqlRowsCopiedEventHandler> _bulkCopyDelegates;
         protected List<PredicateCondition> _updatePredicates;
         protected List<PredicateCondition> _deletePredicates;
         protected List<SqlParameter> _parameters;
         protected Dictionary<string, string> _collationColumnDic;
         protected int _conditionSortOrder;
+        protected BulkCopySettings _bulkCopySettings;
         #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         /// <summary>
@@ -50,18 +45,10 @@ namespace SqlBulkTools
         /// <param name="disableIndexList"></param>
         /// <param name="disableAllIndexes"></param>
         /// <param name="customColumnMappings"></param>
-        /// <param name="bulkCopyTimeout"></param>
-        /// <param name="bulkCopyEnableStreaming"></param>
-        /// <param name="bulkCopyNotifyAfter"></param>
-        /// <param name="bulkCopyBatchSize"></param>
-        /// <param name="sqlBulkCopyOptions"></param>
-        /// <param name="bulkCopyDelegates"></param>
+        /// <param name="bulkCopySettings"></param>
         protected AbstractOperation(IEnumerable<T> list, string tableName, string schema, HashSet<string> columns,
             HashSet<string> disableIndexList, bool disableAllIndexes,
-            Dictionary<string, string> customColumnMappings, int bulkCopyTimeout,
-            bool bulkCopyEnableStreaming,
-            int? bulkCopyNotifyAfter, int? bulkCopyBatchSize, SqlBulkCopyOptions sqlBulkCopyOptions, 
-            IEnumerable<SqlRowsCopiedEventHandler> bulkCopyDelegates)
+            Dictionary<string, string> customColumnMappings, BulkCopySettings bulkCopySettings)
         {
             _list = list;
             _tableName = tableName;
@@ -70,17 +57,12 @@ namespace SqlBulkTools
             _disableIndexList = disableIndexList;
             _disableAllIndexes = disableAllIndexes;
             _customColumnMappings = customColumnMappings;
-            _bulkCopyTimeout = bulkCopyTimeout;
-            _bulkCopyEnableStreaming = bulkCopyEnableStreaming;
-            _bulkCopyNotifyAfter = bulkCopyNotifyAfter;
-            _bulkCopyBatchSize = bulkCopyBatchSize;
-            _sqlBulkCopyOptions = sqlBulkCopyOptions;
             _identityColumn = null;
             _collationColumnDic = new Dictionary<string, string>();
             _outputIdentityDic = new Dictionary<int, T>();
             _outputIdentity = ColumnDirectionType.Input;
             _matchTargetOn = new List<string>();
-            _bulkCopyDelegates = bulkCopyDelegates;
+            _bulkCopySettings = bulkCopySettings;
         }
 
         /// <summary>

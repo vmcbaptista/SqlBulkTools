@@ -25,22 +25,12 @@ namespace SqlBulkTools
         /// <param name="columns"></param>
         /// <param name="disableAllIndexes"></param>
         /// <param name="customColumnMappings"></param>
-        /// <param name="sqlTimeout"></param>
-        /// <param name="bulkCopyTimeout"></param>
-        /// <param name="bulkCopyEnableStreaming"></param>
-        /// <param name="bulkCopyNotifyAfter"></param>
-        /// <param name="bulkCopyBatchSize"></param>
-        /// <param name="sqlBulkCopyOptions"></param>
         /// <param name="disableIndexList"></param>
-        /// <param name="bulkCopyDelegates"></param>
+        /// <param name="bulkCopySettings"></param>
         public BulkUpdate(IEnumerable<T> list, string tableName, string schema, HashSet<string> columns, HashSet<string> disableIndexList,
-            bool disableAllIndexes, Dictionary<string, string> customColumnMappings, int bulkCopyTimeout,
-            bool bulkCopyEnableStreaming, int? bulkCopyNotifyAfter, int? bulkCopyBatchSize, SqlBulkCopyOptions sqlBulkCopyOptions,
-            IEnumerable<SqlRowsCopiedEventHandler> bulkCopyDelegates)
+            bool disableAllIndexes, Dictionary<string, string> customColumnMappings, BulkCopySettings bulkCopySettings)
             :
-            base(list, tableName, schema, columns, disableIndexList, disableAllIndexes, customColumnMappings,
-                bulkCopyTimeout, bulkCopyEnableStreaming, bulkCopyNotifyAfter, bulkCopyBatchSize, sqlBulkCopyOptions, 
-                bulkCopyDelegates)
+            base(list, tableName, schema, columns, disableIndexList, disableAllIndexes, customColumnMappings, bulkCopySettings)
         {
             _updatePredicates = new List<PredicateCondition>();
             _parameters = new List<SqlParameter>();
@@ -168,8 +158,7 @@ namespace SqlBulkTools
                 command.ExecuteNonQuery();
 
                 //Bulk insert into temp table
-                BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopyEnableStreaming, _bulkCopyBatchSize,
-                    _bulkCopyNotifyAfter, _bulkCopyTimeout, _sqlBulkCopyOptions, _bulkCopyDelegates);
+                BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopySettings);
 
                 // Updating destination table, and dropping temp table
                 if (_disableIndexList != null && _disableIndexList.Any())
@@ -280,8 +269,7 @@ namespace SqlBulkTools
                 await command.ExecuteNonQueryAsync();
 
                 //Bulk insert into temp table
-                BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopyEnableStreaming, _bulkCopyBatchSize,
-                    _bulkCopyNotifyAfter, _bulkCopyTimeout, _sqlBulkCopyOptions, _bulkCopyDelegates);
+                BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopySettings);
 
                 // Updating destination table, and dropping temp table
                 if (_disableIndexList != null && _disableIndexList.Any())

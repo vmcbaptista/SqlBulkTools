@@ -26,21 +26,12 @@ namespace SqlBulkTools
         /// <param name="disableIndexList"></param>
         /// <param name="disableAllIndexes"></param>
         /// <param name="customColumnMappings"></param>
-        /// <param name="bulkCopyTimeout"></param>
-        /// <param name="bulkCopyEnableStreaming"></param>
-        /// <param name="bulkCopyNotifyAfter"></param>
-        /// <param name="bulkCopyBatchSize"></param>
-        /// <param name="sqlBulkCopyOptions"></param>
-        /// <param name="bulkCopyDelegates"></param>
+        /// <param name="bulkCopySettings"></param>
         public BulkInsert(IEnumerable<T> list, string tableName, string schema, HashSet<string> columns,
             HashSet<string> disableIndexList, bool disableAllIndexes,
-            Dictionary<string, string> customColumnMappings, int bulkCopyTimeout, bool bulkCopyEnableStreaming,
-            int? bulkCopyNotifyAfter, int? bulkCopyBatchSize, SqlBulkCopyOptions sqlBulkCopyOptions, 
-            IEnumerable<SqlRowsCopiedEventHandler> bulkCopyDelegates) :
+            Dictionary<string, string> customColumnMappings, BulkCopySettings bulkCopySettings) :
 
-            base(list, tableName, schema, columns, disableIndexList, disableAllIndexes, customColumnMappings,
-                bulkCopyTimeout, bulkCopyEnableStreaming, bulkCopyNotifyAfter, bulkCopyBatchSize, sqlBulkCopyOptions, 
-                bulkCopyDelegates)
+            base(list, tableName, schema, columns, disableIndexList, disableAllIndexes, customColumnMappings, bulkCopySettings)
         {
             
         }
@@ -102,13 +93,12 @@ namespace SqlBulkTools
                 dtCols = BulkOperationsHelper.GetDatabaseSchema(connection, _schema, _tableName);
 
             //Bulk insert into temp table
-            using (SqlBulkCopy bulkcopy = new SqlBulkCopy(connection, _sqlBulkCopyOptions, null))
+            using (SqlBulkCopy bulkcopy = new SqlBulkCopy(connection, _bulkCopySettings.SqlBulkCopyOptions, null))
             {
                 bulkcopy.DestinationTableName = BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema, _tableName);
                 BulkOperationsHelper.MapColumns(bulkcopy, _columns, _customColumnMappings);
 
-                BulkOperationsHelper.SetSqlBulkCopySettings(bulkcopy, _bulkCopyEnableStreaming, _bulkCopyBatchSize,
-                    _bulkCopyNotifyAfter, _bulkCopyTimeout, _bulkCopyDelegates);
+                BulkOperationsHelper.SetSqlBulkCopySettings(bulkcopy, _bulkCopySettings);
 
                 SqlCommand command = connection.CreateCommand();
                 command.Connection = connection;
@@ -126,8 +116,7 @@ namespace SqlBulkTools
                     command.CommandText = BulkOperationsHelper.BuildCreateTempTable(_columns, dtCols, _outputIdentity);
                     command.ExecuteNonQuery();
 
-                    BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopyEnableStreaming, _bulkCopyBatchSize,
-                        _bulkCopyNotifyAfter, _bulkCopyTimeout, _sqlBulkCopyOptions, _bulkCopyDelegates);
+                    BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopySettings);
 
                     command.CommandText = BulkOperationsHelper.GetInsertIntoStagingTableCmd(command, connection, _schema, _tableName,
                         _columns, _identityColumn, _outputIdentity);
@@ -187,13 +176,12 @@ namespace SqlBulkTools
                 dtCols = BulkOperationsHelper.GetDatabaseSchema(connection, _schema, _tableName);
 
             //Bulk insert into temp table
-            using (SqlBulkCopy bulkcopy = new SqlBulkCopy(connection, _sqlBulkCopyOptions, null))
+            using (SqlBulkCopy bulkcopy = new SqlBulkCopy(connection, _bulkCopySettings.SqlBulkCopyOptions, null))
             {
                 bulkcopy.DestinationTableName = BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema, _tableName);
                 BulkOperationsHelper.MapColumns(bulkcopy, _columns, _customColumnMappings);
 
-                BulkOperationsHelper.SetSqlBulkCopySettings(bulkcopy, _bulkCopyEnableStreaming, _bulkCopyBatchSize,
-                    _bulkCopyNotifyAfter, _bulkCopyTimeout, _bulkCopyDelegates);
+                BulkOperationsHelper.SetSqlBulkCopySettings(bulkcopy, _bulkCopySettings);
 
                 SqlCommand command = connection.CreateCommand();
                 command.Connection = connection;
@@ -211,8 +199,7 @@ namespace SqlBulkTools
                     command.CommandText = BulkOperationsHelper.BuildCreateTempTable(_columns, dtCols, _outputIdentity);
                     await command.ExecuteNonQueryAsync();
 
-                    BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopyEnableStreaming, _bulkCopyBatchSize,
-                        _bulkCopyNotifyAfter, _bulkCopyTimeout, _sqlBulkCopyOptions, _bulkCopyDelegates);
+                    BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopySettings);
 
                     command.CommandText = BulkOperationsHelper.GetInsertIntoStagingTableCmd(command, connection, _schema, _tableName,
                         _columns, _identityColumn, _outputIdentity);

@@ -807,7 +807,10 @@ namespace SqlBulkTools.IntegrationTests
                     bulk.Setup<Book>()
                         .ForCollection(books)
                         .WithTable("Books")
-                        .WithBulkCopyBatchSize(5000)
+                        .WithBulkCopySettings(new BulkCopySettings()
+                        {
+                            BatchSize = 5000
+                        })
                         .AddColumn(x => x.Title)
                         .AddColumn(x => x.Price)
                         .AddColumn(x => x.Description)
@@ -861,7 +864,10 @@ namespace SqlBulkTools.IntegrationTests
                     bulk.Setup<Book>()
                         .ForCollection(books)
                         .WithTable("Books")
-                        .WithBulkCopyBatchSize(5000)
+                        .WithBulkCopySettings(new BulkCopySettings()
+                        {
+                            BatchSize = 5000
+                        })                   
                         .AddColumn(x => x.ISBN)
                         .BulkDelete()
                         .MatchTargetOn(x => x.ISBN)
@@ -1705,7 +1711,10 @@ namespace SqlBulkTools.IntegrationTests
                     bulk.Setup<Book>()
                         .ForCollection(col)
                         .WithTable("Books")
-                        .WithBulkCopyBatchSize(5000)
+                        .WithBulkCopySettings(new BulkCopySettings()
+                        {
+                            BatchSize = 5000
+                        })
                         .AddColumn(x => x.Title)
                         .AddColumn(x => x.Price)
                         .AddColumn(x => x.Description)

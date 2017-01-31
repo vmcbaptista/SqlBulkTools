@@ -4,7 +4,6 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using SqlBulkTools.Enumeration;
 
@@ -18,7 +17,7 @@ namespace SqlBulkTools
     public class BulkInsertOrUpdate<T> : AbstractOperation<T>, ITransaction
     {
         private bool _deleteWhenNotMatchedFlag;
-        private HashSet<string> _excludeFromUpdate;
+        private readonly HashSet<string> _excludeFromUpdate;
 
         /// <summary>
         /// 
@@ -30,19 +29,11 @@ namespace SqlBulkTools
         /// <param name="disableIndexList"></param>
         /// <param name="disableAllIndexes"></param>
         /// <param name="customColumnMappings"></param>
-        /// <param name="sqlTimeout"></param>
-        /// <param name="bulkCopyTimeout"></param>
-        /// <param name="bulkCopyEnableStreaming"></param>
-        /// <param name="bulkCopyNotifyAfter"></param>
-        /// <param name="bulkCopyBatchSize"></param>
-        /// <param name="sqlBulkCopyOptions"></param>
-        /// <param name="bulkCopyDelegates"></param>
+        /// <param name="bulkCopySettings"></param>
         public BulkInsertOrUpdate(IEnumerable<T> list, string tableName, string schema, HashSet<string> columns, HashSet<string> disableIndexList, bool disableAllIndexes,
-            Dictionary<string, string> customColumnMappings, int bulkCopyTimeout, bool bulkCopyEnableStreaming,
-            int? bulkCopyNotifyAfter, int? bulkCopyBatchSize, SqlBulkCopyOptions sqlBulkCopyOptions, IEnumerable<SqlRowsCopiedEventHandler> bulkCopyDelegates) :
+            Dictionary<string, string> customColumnMappings, BulkCopySettings bulkCopySettings) :
 
-            base(list, tableName, schema, columns, disableIndexList, disableAllIndexes, customColumnMappings,
-            bulkCopyTimeout, bulkCopyEnableStreaming, bulkCopyNotifyAfter, bulkCopyBatchSize, sqlBulkCopyOptions, bulkCopyDelegates)
+            base(list, tableName, schema, columns, disableIndexList, disableAllIndexes, customColumnMappings, bulkCopySettings)
         {
             _deleteWhenNotMatchedFlag = false;
             _updatePredicates = new List<PredicateCondition>();
@@ -219,7 +210,6 @@ namespace SqlBulkTools
 
             try
             {
-
                 SqlCommand command = connection.CreateCommand();
 
                 command.Connection = connection;
@@ -229,8 +219,7 @@ namespace SqlBulkTools
                 command.CommandText = BulkOperationsHelper.BuildCreateTempTable(_columns, dtCols, _outputIdentity);
                 command.ExecuteNonQuery();
 
-                BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopyEnableStreaming, _bulkCopyBatchSize,
-                    _bulkCopyNotifyAfter, _bulkCopyTimeout, _sqlBulkCopyOptions, _bulkCopyDelegates);
+                BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopySettings);
 
                 if (_disableIndexList != null && _disableIndexList.Any())
                 {
@@ -355,8 +344,7 @@ namespace SqlBulkTools
                 command.CommandText = BulkOperationsHelper.BuildCreateTempTable(_columns, dtCols, _outputIdentity);
                 await command.ExecuteNonQueryAsync();
 
-                BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopyEnableStreaming, _bulkCopyBatchSize,
-                    _bulkCopyNotifyAfter, _bulkCopyTimeout, _sqlBulkCopyOptions, _bulkCopyDelegates);
+                BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopySettings);
 
                 if (_disableIndexList != null && _disableIndexList.Any())
                 {

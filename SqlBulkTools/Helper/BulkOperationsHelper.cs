@@ -876,31 +876,25 @@ namespace SqlBulkTools
             return dtCols;
         }
 
-        internal static void InsertToTmpTable(SqlConnection conn, DataTable dt, bool bulkCopyEnableStreaming,
-            int? bulkCopyBatchSize, int? bulkCopyNotifyAfter, int bulkCopyTimeout, SqlBulkCopyOptions sqlBulkCopyOptions, IEnumerable<SqlRowsCopiedEventHandler> bulkCopyDelegates)
+        internal static void InsertToTmpTable(SqlConnection conn, DataTable dt, BulkCopySettings bulkCopySettings)
         {
-            using (SqlBulkCopy bulkcopy = new SqlBulkCopy(conn, sqlBulkCopyOptions, null))
+            using (SqlBulkCopy bulkcopy = new SqlBulkCopy(conn, bulkCopySettings.SqlBulkCopyOptions, null))
             {
                 bulkcopy.DestinationTableName = Constants.TempTableName;
 
-                SetSqlBulkCopySettings(bulkcopy, bulkCopyEnableStreaming,
-                    bulkCopyBatchSize,
-                    bulkCopyNotifyAfter, bulkCopyTimeout, bulkCopyDelegates);
+                SetSqlBulkCopySettings(bulkcopy, bulkCopySettings);
 
                 bulkcopy.WriteToServer(dt);
             }
         }
 
-        internal static async Task InsertToTmpTableAsync(SqlConnection conn, SqlTransaction transaction, DataTable dt, bool bulkCopyEnableStreaming,
-            int? bulkCopyBatchSize, int? bulkCopyNotifyAfter, int bulkCopyTimeout, SqlBulkCopyOptions sqlBulkCopyOptions, IEnumerable<SqlRowsCopiedEventHandler> bulkCopyDelegates)
+        internal static async Task InsertToTmpTableAsync(SqlConnection conn, SqlTransaction transaction, DataTable dt, BulkCopySettings bulkCopySettings)
         {
-            using (SqlBulkCopy bulkcopy = new SqlBulkCopy(conn, sqlBulkCopyOptions, transaction))
+            using (SqlBulkCopy bulkcopy = new SqlBulkCopy(conn, bulkCopySettings.SqlBulkCopyOptions, transaction))
             {
                 bulkcopy.DestinationTableName = Constants.TempTableName;
 
-                SetSqlBulkCopySettings(bulkcopy, bulkCopyEnableStreaming,
-                    bulkCopyBatchSize,
-                    bulkCopyNotifyAfter, bulkCopyTimeout, bulkCopyDelegates);
+                SetSqlBulkCopySettings(bulkcopy, bulkCopySettings);
 
                 await bulkcopy.WriteToServerAsync(dt);
             }

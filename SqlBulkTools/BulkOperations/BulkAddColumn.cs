@@ -19,16 +19,9 @@ namespace SqlBulkTools
         /// <param name="tableName"></param>
         /// <param name="columns"></param>
         /// <param name="schema"></param>
-        /// <param name="bulkCopyTimeout"></param>
-        /// <param name="bulkCopyEnableStreaming"></param>
-        /// <param name="bulkCopyNotifyAfter"></param>
-        /// <param name="bulkCopyBatchSize"></param>
-        /// <param name="sqlBulkCopyOptions"></param>
-        /// <param name="bulkCopyDelegates"></param>
-        public BulkAddColumn(IEnumerable<T> list, string tableName, HashSet<string> columns, string schema,
-            int bulkCopyTimeout, bool bulkCopyEnableStreaming, int? bulkCopyNotifyAfter, int? bulkCopyBatchSize, SqlBulkCopyOptions sqlBulkCopyOptions,
-            IEnumerable<SqlRowsCopiedEventHandler> bulkCopyDelegates) :
-            base(list, tableName, columns, schema, bulkCopyTimeout, bulkCopyEnableStreaming, bulkCopyNotifyAfter, bulkCopyBatchSize, sqlBulkCopyOptions, bulkCopyDelegates)
+        /// <param name="bulkCopySettings"></param>
+        public BulkAddColumn(IEnumerable<T> list, string tableName, HashSet<string> columns, string schema, BulkCopySettings bulkCopySettings) :
+            base(list, tableName, columns, schema, bulkCopySettings)
         {
 
         }
