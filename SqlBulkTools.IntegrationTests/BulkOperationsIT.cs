@@ -1745,9 +1745,9 @@ namespace SqlBulkTools.IntegrationTests
                     bulk.Setup<Book>()
                         .ForCollection(col)
                         .WithTable("Books")
-                        .AddAllColumns()
-                        .TmpDisableAllNonClusteredIndexes()
+                        .AddAllColumns()                       
                         .BulkInsert()
+                        .TmpDisableAllNonClusteredIndexes()
                         .Commit(conn);
                 }
 
