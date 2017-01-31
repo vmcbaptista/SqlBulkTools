@@ -739,30 +739,19 @@ namespace SqlBulkTools
         /// Advanced Settings for SQLBulkCopy class. 
         /// </summary>
         /// <param name="bulkcopy"></param>
-        /// <param name="bulkCopyEnableStreaming"></param>
-        /// <param name="bulkCopyBatchSize"></param>
-        /// <param name="bulkCopyNotifyAfter"></param>
-        /// <param name="bulkCopyTimeout"></param>
-        /// <param name="bulkCopyDelegates"></param>
-        internal static void SetSqlBulkCopySettings(SqlBulkCopy bulkcopy, bool bulkCopyEnableStreaming, int? bulkCopyBatchSize,
-            int? bulkCopyNotifyAfter, int bulkCopyTimeout, IEnumerable<SqlRowsCopiedEventHandler> bulkCopyDelegates)
+        /// <param name="options"></param>
+        internal static void SetSqlBulkCopySettings(SqlBulkCopy bulkcopy, BulkCopySettings options)
         {
-            bulkcopy.EnableStreaming = bulkCopyEnableStreaming;
+            bulkcopy.EnableStreaming = options.EnableStreaming;
+            bulkcopy.BatchSize = options.BatchSize;
+            bulkcopy.BulkCopyTimeout = options.BulkCopyTimeout;
 
-            if (bulkCopyBatchSize.HasValue)
+            if (options.BulkCopyNotification != null)
             {
-                bulkcopy.BatchSize = bulkCopyBatchSize.Value;
+                bulkcopy.NotifyAfter = options.BulkCopyNotification.NotifyAfter;
+                bulkcopy.SqlRowsCopied += options.BulkCopyNotification.SqlRowsCopied;
             }
-
-            if (bulkCopyNotifyAfter.HasValue)
-            {
-                bulkcopy.NotifyAfter = bulkCopyNotifyAfter.Value;
-                bulkCopyDelegates?.ToList().ForEach(x => bulkcopy.SqlRowsCopied += x);
-            }
-
-            bulkcopy.BulkCopyTimeout = bulkCopyTimeout;
         }
-
 
         /// <summary>
         /// This is used only for the BulkInsert method at this time.  

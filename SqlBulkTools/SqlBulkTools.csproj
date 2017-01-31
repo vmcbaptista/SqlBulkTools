@@ -49,6 +49,7 @@
   <ItemGroup>
     <Compile Include="BulkOperations\AbstractColumnSelection.cs" />
     <Compile Include="BulkOperations\AbstractOperation.cs" />
+    <Compile Include="BulkOperations\BulkCopyOptions.cs" />
     <Compile Include="Core\BulkOperationsUtility.cs" />
     <Compile Include="Interface\IBulkOperations.cs" />
     <Compile Include="QueryOperations\Delete\DeleteQueryCondition.cs" />
