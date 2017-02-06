@@ -24,12 +24,13 @@ namespace SqlBulkTools
         /// <param name="list"></param>
         /// <param name="tableName"></param>
         /// <param name="columns"></param>
+        /// <param name="customColumnMappings"></param>
         /// <param name="schema"></param>
         /// <param name="bulkCopySettings"></param>
-        protected AbstractColumnSelection(IEnumerable<T> list, string tableName, HashSet<string> columns, string schema, BulkCopySettings bulkCopySettings)
+        protected AbstractColumnSelection(IEnumerable<T> list, string tableName, HashSet<string> columns, Dictionary<string, string> customColumnMappings, string schema, BulkCopySettings bulkCopySettings)
         {
             _disableAllIndexes = false;
-            _customColumnMappings = new Dictionary<string, string>();
+            _customColumnMappings = customColumnMappings;
             _list = list;
             _tableName = tableName;
             _columns = columns;

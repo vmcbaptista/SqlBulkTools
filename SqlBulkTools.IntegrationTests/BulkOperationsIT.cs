@@ -522,7 +522,7 @@ namespace SqlBulkTools.IntegrationTests
                         .WithTable("CustomColumnMappingTests")
                         .AddAllColumns()
                         .CustomColumnMapping(x => x.ColumnXIsDifferent, "ColumnX")
-                        .CustomColumnMapping(x => x.ColumnYIsDifferentInDatabase, "ColumnY")
+                        .CustomColumnMapping(x => x.ColumnYIsDifferentInDatabase, "ColumnY")                       
                         .BulkInsert()
                         .Commit(conn);
                 }
@@ -561,6 +561,45 @@ namespace SqlBulkTools.IntegrationTests
                         .CustomColumnMapping(x => x.ColumnXIsDifferent, "ColumnX")
                         .CustomColumnMapping(x => x.ColumnYIsDifferentInDatabase, "ColumnY")
                         .BulkInsertOrUpdate()
+                        .MatchTargetOn(x => x.NaturalId)
+                        .UpdateWhen(x => x.ColumnXIsDifferent != "me")
+                        .Commit(conn);
+                }
+
+                trans.Complete();
+            }
+
+            // Assert
+            Assert.IsTrue(_db.CustomColumnMappingTest.Any());
+        }
+
+        [Test]
+        public void SqlBulkTools_BulkUpdateWithManualColumnMappings_CorrectlyMapsColumns()
+        {
+            BulkOperations bulk = new BulkOperations();
+
+            List<CustomColumnMappingTest> col = new List<CustomColumnMappingTest>();
+
+            for (int i = 0; i < 30; i++)
+            {
+                col.Add(new CustomColumnMappingTest() { NaturalId = i, ColumnXIsDifferent = "ColumnX " + i, ColumnYIsDifferentInDatabase = i });
+            }
+
+            _db.CustomColumnMappingTest.RemoveRange(_db.CustomColumnMappingTest.ToList());
+            _db.SaveChanges();
+
+            using (TransactionScope trans = new TransactionScope())
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager
+                    .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+                {
+                    bulk.Setup<CustomColumnMappingTest>()
+                        .ForCollection(col)
+                        .WithTable("CustomColumnMappingTests")
+                        .AddColumn(x => x.ColumnXIsDifferent, "ColumnX")
+                        .AddColumn(x => x.ColumnYIsDifferentInDatabase, "ColumnY")                 
+                        .BulkInsertOrUpdate()
+                        
                         .MatchTargetOn(x => x.NaturalId)
                         .UpdateWhen(x => x.ColumnXIsDifferent != "me")
                         .Commit(conn);

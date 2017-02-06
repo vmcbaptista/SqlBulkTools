@@ -16,10 +16,11 @@ namespace SqlBulkTools
         /// <param name="list"></param>
         /// <param name="tableName"></param>
         /// <param name="columns"></param>
+        /// <param name="customColumnMappings"></param>
         /// <param name="schema"></param>
         /// <param name="bulkCopySettings"></param>
-        public BulkAddColumn(IEnumerable<T> list, string tableName, HashSet<string> columns, string schema, BulkCopySettings bulkCopySettings) :
-            base(list, tableName, columns, schema, bulkCopySettings)
+        public BulkAddColumn(IEnumerable<T> list, string tableName, HashSet<string> columns, Dictionary<string, string> customColumnMappings, string schema, BulkCopySettings bulkCopySettings) :
+            base(list, tableName, columns, customColumnMappings, schema, bulkCopySettings)
         {
 
         }
@@ -48,8 +49,13 @@ namespace SqlBulkTools
         /// <returns></returns>
         public BulkAddColumn<T> AddColumn(Expression<Func<T, object>> columnName, string destination)
         {
+            if (destination == null)
+                throw new ArgumentNullException(nameof(destination));
+
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
             _columns.Add(propertyName);
+
+            _customColumnMappings.Add(propertyName, destination);
             return this;
         }
     }

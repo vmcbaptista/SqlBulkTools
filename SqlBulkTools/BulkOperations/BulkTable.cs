@@ -45,7 +45,29 @@ namespace SqlBulkTools.BulkCopy
         {
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
             Columns.Add(propertyName);
-            return new BulkAddColumn<T>(_list, _tableName, Columns, _schema, _bulkCopySettings);
+            return new BulkAddColumn<T>(_list, _tableName, Columns, CustomColumnMappings, _schema, _bulkCopySettings);
+        }
+
+        /// <summary>
+        /// Add each column that you want to include in the query. Only include the columns that are relevant to the 
+        /// procedure for best performance. 
+        /// </summary>
+        /// <param name="columnName">Column name as represented in database</param>
+        /// <param name="destination">The actual name of column as represented in SQL table. By default SqlBulkTools will attempt to match the model property names to SQL column names (case insensitive). 
+        /// If any of your model property names do not match 
+        /// the SQL table column(s) as defined in given table, then use this overload to set up a custom mapping. </param>
+        /// <returns></returns>
+        public BulkAddColumn<T> AddColumn(Expression<Func<T, object>> columnName, string destination)
+        {
+            if (destination == null)
+                throw new ArgumentNullException(nameof(destination));
+
+            var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
+            Columns.Add(propertyName);
+
+            CustomColumnMappings.Add(propertyName, destination);
+
+            return new BulkAddColumn<T>(_list, _tableName, Columns, CustomColumnMappings, _schema, _bulkCopySettings);
         }
 
         /// <summary>
@@ -55,7 +77,7 @@ namespace SqlBulkTools.BulkCopy
         public BulkAddColumnList<T> AddAllColumns()
         {
             Columns = BulkOperationsHelper.GetAllValueTypeAndStringColumns(typeof(T));
-            return new BulkAddColumnList<T>(_list, _tableName, Columns, _schema, _bulkCopySettings);
+            return new BulkAddColumnList<T>(_list, _tableName, Columns, CustomColumnMappings, _schema, _bulkCopySettings);
         }
 
         /// <summary>

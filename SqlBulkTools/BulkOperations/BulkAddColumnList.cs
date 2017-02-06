@@ -16,11 +16,12 @@ namespace SqlBulkTools
         /// <param name="list"></param>
         /// <param name="tableName"></param>
         /// <param name="columns"></param>
+        /// <param name="customColumnMappings"></param>
         /// <param name="schema"></param>
         /// <param name="bulkCopySettings"></param>
-        public BulkAddColumnList(IEnumerable<T> list, string tableName, HashSet<string> columns, string schema, BulkCopySettings bulkCopySettings) 
+        public BulkAddColumnList(IEnumerable<T> list, string tableName, HashSet<string> columns, Dictionary<string, string> customColumnMappings, string schema, BulkCopySettings bulkCopySettings) 
             :
-            base(list, tableName, columns, schema, bulkCopySettings)
+            base(list, tableName, columns, customColumnMappings, schema, bulkCopySettings)
         {
 
         }
