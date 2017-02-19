@@ -1810,7 +1810,7 @@ namespace SqlBulkTools.IntegrationTests
                     FloatTest2 = 43243.34,
                     TextTest = "This is some text.",
                     GuidTest = guid,
-                    CharTest = new char[] {'S', 'o', 'm', 'e' },
+                    CharTest = "Some",
                     XmlTest = "<title>The best SQL Bulk tool</title>",
                     NCharTest = "SomeText",
                     ImageTest = new byte[] {3,3,32,4}
