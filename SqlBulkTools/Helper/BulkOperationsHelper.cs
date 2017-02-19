@@ -176,7 +176,7 @@ namespace SqlBulkTools
                 // Start from index 1 to just append "AND" conditions
                 for (int i = 1; i < updateOn.Length; i++)
                 {
-                    command.Append($"AND ([{targetAlias}].[{updateOn[i]}] = [{sourceAlias}].[{updateOn[i]}]{GetCollation(collationDic, updateOn[i])}{BuildNullCondition(updateOn[0], sourceAlias, targetAlias, nullableColumnDic)}) ");
+                    command.Append($"AND ([{targetAlias}].[{updateOn[i]}] = [{sourceAlias}].[{updateOn[i]}]{GetCollation(collationDic, updateOn[i])}{BuildNullCondition(updateOn[i], sourceAlias, targetAlias, nullableColumnDic)}) ");
                 }
             }
 
