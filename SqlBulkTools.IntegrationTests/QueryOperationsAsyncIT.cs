@@ -28,7 +28,6 @@ namespace SqlBulkTools.IntegrationTests
             _randomizer = new BookRandomizer();
             Database.SetInitializer(new DatabaseInitialiser());
             _db.Database.Initialize(true);
-            FileHelper.DeleteLogFile();
         }
 
         [OneTimeTearDown]

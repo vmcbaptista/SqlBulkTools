@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Data;
 using System.Data.Entity;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Transactions;
 using NUnit.Framework;
@@ -30,7 +31,6 @@ namespace SqlBulkTools.IntegrationTests
             _randomizer = new BookRandomizer();
             Database.SetInitializer(new DatabaseInitialiser());
             _db.Database.Initialize(true);
-            FileHelper.DeleteLogFile();
         }
 
         [OneTimeTearDown]
@@ -47,7 +47,7 @@ namespace SqlBulkTools.IntegrationTests
             _bookCollection.AddRange(_randomizer.GetRandomCollection(rows));
             List<long> results = new List<long>();
 
-            FileHelper.AppendToLogFile("Testing BulkInsert with " + rows + " rows");
+            Trace.WriteLine("Testing BulkInsert with " + rows + " rows");
 
             for (int i = 0; i < RepeatTimes; i++)
             {
@@ -55,7 +55,7 @@ namespace SqlBulkTools.IntegrationTests
                 results.Add(time);
             }
             double avg = results.Average(l => l);
-            FileHelper.AppendToLogFile("Average result (" + RepeatTimes + " iterations): " + avg.ToString("#.##") + " ms\n\n");
+            Trace.WriteLine("Average result (" + RepeatTimes + " iterations): " + avg.ToString("#.##") + " ms\n\n");
 
             Assert.AreEqual(rows * RepeatTimes, _db.Books.Count());
         }
@@ -68,7 +68,7 @@ namespace SqlBulkTools.IntegrationTests
             _bookCollection.AddRange(_randomizer.GetRandomCollection(rows));
             List<long> results = new List<long>();
 
-            FileHelper.AppendToLogFile("Testing BulkInsert with " + rows + " rows");
+            Trace.WriteLine("Testing BulkInsert with " + rows + " rows");
 
             for (int i = 0; i < RepeatTimes; i++)
             {
@@ -76,7 +76,7 @@ namespace SqlBulkTools.IntegrationTests
                 results.Add(time);
             }
             double avg = results.Average(l => l);
-            FileHelper.AppendToLogFile("Average result (" + RepeatTimes + " iterations): " + avg.ToString("#.##") + " ms\n\n");
+            Trace.WriteLine("Average result (" + RepeatTimes + " iterations): " + avg.ToString("#.##") + " ms\n\n");
 
             Assert.AreEqual(rows * RepeatTimes, _db.Books.Count());
         }
@@ -90,7 +90,7 @@ namespace SqlBulkTools.IntegrationTests
 
             List<long> results = new List<long>();
 
-            FileHelper.AppendToLogFile("Testing BulkInsertOrUpdate with " + (rows + newRows) + " rows");
+            Trace.WriteLine("Testing BulkInsertOrUpdate with " + (rows + newRows) + " rows");
 
             for (int i = 0; i < RepeatTimes; i++)
             {
@@ -117,7 +117,7 @@ namespace SqlBulkTools.IntegrationTests
             }
 
             double avg = results.Average(l => l);
-            FileHelper.AppendToLogFile("Average result (" + RepeatTimes + " iterations): " + avg.ToString("#.##") + " ms\n\n");
+            Trace.WriteLine("Average result (" + RepeatTimes + " iterations): " + avg.ToString("#.##") + " ms\n\n");
 
         }
 
@@ -131,7 +131,7 @@ namespace SqlBulkTools.IntegrationTests
 
             List<long> results = new List<long>();
 
-            FileHelper.AppendToLogFile("Testing BulkInsertOrUpdateAllColumns with " + (rows + newRows) + " rows");
+            Trace.WriteLine("Testing BulkInsertOrUpdateAllColumns with " + (rows + newRows) + " rows");
 
             for (int i = 0; i < RepeatTimes; i++)
             {
@@ -158,7 +158,7 @@ namespace SqlBulkTools.IntegrationTests
             }
 
             double avg = results.Average(l => l);
-            FileHelper.AppendToLogFile("Average result (" + RepeatTimes + " iterations): " + avg.ToString("#.##") + " ms\n\n");
+            Trace.WriteLine("Average result (" + RepeatTimes + " iterations): " + avg.ToString("#.##") + " ms\n\n");
 
         }
 
@@ -175,7 +175,7 @@ namespace SqlBulkTools.IntegrationTests
 
             List<long> results = new List<long>();
 
-            FileHelper.AppendToLogFile("Testing BulkUpdate with " + rows + " rows");
+            Trace.WriteLine("Testing BulkUpdate with " + rows + " rows");
 
             for (int i = 0; i < RepeatTimes; i++)
             {
@@ -204,7 +204,7 @@ namespace SqlBulkTools.IntegrationTests
                 BulkDelete(_bookCollection);
             }
             double avg = results.Average(l => l);
-            FileHelper.AppendToLogFile("Average result (" + RepeatTimes + " iterations): " + avg.ToString("#.##") + " ms\n\n");
+            Trace.WriteLine("Average result (" + RepeatTimes + " iterations): " + avg.ToString("#.##") + " ms\n\n");
 
         }
 
@@ -272,7 +272,7 @@ namespace SqlBulkTools.IntegrationTests
 
             List<long> results = new List<long>();
 
-            FileHelper.AppendToLogFile("Testing BulkDelete with " + rows + " rows");
+            Trace.WriteLine("Testing BulkDelete with " + rows + " rows");
 
             for (int i = 0; i < RepeatTimes; i++)
             {
@@ -282,7 +282,7 @@ namespace SqlBulkTools.IntegrationTests
                 Assert.AreEqual(0, _db.Books.Count());
             }
             double avg = results.Average(l => l);
-            FileHelper.AppendToLogFile("Average result (" + RepeatTimes + " iterations): " + avg.ToString("#.##") + " ms\n\n");
+            Trace.WriteLine("Average result (" + RepeatTimes + " iterations): " + avg.ToString("#.##") + " ms\n\n");
 
         }
 
@@ -782,6 +782,44 @@ namespace SqlBulkTools.IntegrationTests
             var expected = books.Single(x => x.ISBN == test.ISBN);
 
             Assert.AreEqual(expected.Id, test.Id);
+
+        }
+
+        [Test]
+        public void SqlBulkTools_BulkInsertOrUpdate_TestNullComparisonWithMatchTargetOn()
+        {
+            _db.Books.RemoveRange(_db.Books.ToList());
+            _db.SaveChanges();
+            BulkOperations bulk = new BulkOperations();
+
+            List<Book> books = _randomizer.GetRandomCollection(30);
+
+            books.ElementAt(0).Title = "Test_Null_Comparison";
+            books.ElementAt(0).ISBN = null;
+            BulkInsert(books);
+
+            using (TransactionScope trans = new TransactionScope())
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager
+                    .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+                {
+                    bulk.Setup<Book>()
+                        .ForCollection(books)
+                        .WithTable("Books")
+                        .AddAllColumns()
+                        .BulkInsertOrUpdate()
+                        .MatchTargetOn(x => x.ISBN)
+                        .SetIdentityColumn(x => x.Id)
+                        .Commit(conn);
+                }
+
+                trans.Complete();
+            }
+
+            var test = _db.Books.Single(x => x.Title == "Test_Null_Comparison");
+
+            Assert.AreEqual(30, _db.Books.Count());
+            Assert.AreEqual(null, test.ISBN);
 
         }
 
@@ -1961,7 +1999,7 @@ namespace SqlBulkTools.IntegrationTests
         private long BulkUpdate(IEnumerable<Book> col)
         {
             BulkOperations bulk = new BulkOperations();
-            var watch = System.Diagnostics.Stopwatch.StartNew();
+            var watch = Stopwatch.StartNew();
             using (TransactionScope trans = new TransactionScope())
             {
                 using (SqlConnection conn = new SqlConnection(ConfigurationManager

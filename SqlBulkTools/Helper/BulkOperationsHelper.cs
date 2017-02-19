@@ -33,7 +33,6 @@ namespace SqlBulkTools
             Dictionary<string, PrecisionType> actualColumnsNumericPrecision = new Dictionary<string, PrecisionType>();
             Dictionary<string, string> actualColumnsDateTimePrecision = new Dictionary<string, string>();
 
-
             foreach (DataRow row in schema.Rows)
             {
                 string columnType = row["DATA_TYPE"].ToString();
@@ -101,6 +100,22 @@ namespace SqlBulkTools
             return command.ToString();
         }
 
+        internal static Dictionary<string, bool> GetNullableColumnDic(DataTable schema)
+        {
+            Dictionary<string, bool> nullableDic = new Dictionary<string, bool>();
+
+            foreach (DataRow row in schema.Rows)
+            {
+
+                bool isColumnNullable = row["IS_NULLABLE"].ToString()
+                    .Equals("YES", StringComparison.OrdinalIgnoreCase);
+
+                nullableDic.Add(row["COLUMN_NAME"].ToString(), isColumnNullable);
+            }
+
+            return nullableDic;
+        }
+
         private static string GetVariableCharType(string column, string columnType, Dictionary<string, string> actualColumnsMaxCharLength)
         {
             if (columnType == "varchar" || columnType == "nvarchar" ||
@@ -150,22 +165,34 @@ namespace SqlBulkTools
             return columnType;
         }
 
-        internal static string BuildJoinConditionsForInsertOrUpdate(string[] updateOn, string sourceAlias, string targetAlias, Dictionary<string, string> collationDic)
+        internal static string BuildJoinConditionsForInsertOrUpdate(string[] updateOn, string sourceAlias, string targetAlias, Dictionary<string, string> collationDic, Dictionary<string, bool> nullableColumnDic)
         {
             StringBuilder command = new StringBuilder();
 
-            command.Append($"ON [{targetAlias}].[{updateOn[0]}] = [{sourceAlias}].[{updateOn[0]}]{GetCollation(collationDic, updateOn[0])} ");
+            command.Append($"ON ([{targetAlias}].[{updateOn[0]}] = [{sourceAlias}].[{updateOn[0]}]{GetCollation(collationDic, updateOn[0])}{BuildNullCondition(updateOn[0], sourceAlias, targetAlias, nullableColumnDic)}) ");
 
             if (updateOn.Length > 1)
             {
                 // Start from index 1 to just append "AND" conditions
                 for (int i = 1; i < updateOn.Length; i++)
                 {
-                    command.Append($"AND [{targetAlias}].[{updateOn[i]}] = [{sourceAlias}].[{updateOn[i]}]{GetCollation(collationDic, updateOn[i])} ");
+                    command.Append($"AND ([{targetAlias}].[{updateOn[i]}] = [{sourceAlias}].[{updateOn[i]}]{GetCollation(collationDic, updateOn[i])}{BuildNullCondition(updateOn[0], sourceAlias, targetAlias, nullableColumnDic)}) ");
                 }
             }
 
             return command.ToString();
+        }
+
+        internal static string BuildNullCondition(string updateOn, string sourceAlias, string targetAlias, Dictionary<string, bool> nullableColumnDic)
+        {
+            bool isColumnNullable;
+
+            if (nullableColumnDic.TryGetValue(updateOn, out isColumnNullable) && isColumnNullable)
+            {
+                return $" OR ([{targetAlias}].[{updateOn}] IS NULL AND [{sourceAlias}].[{updateOn}] IS NULL)";
+            }
+
+            return string.Empty;
         }
 
         internal static string GetCollation(Dictionary<string, string> collationDic, string column)

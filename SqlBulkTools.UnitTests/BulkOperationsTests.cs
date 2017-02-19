@@ -21,10 +21,10 @@ namespace SqlBulkTools.UnitTests
             List<string> joinOnList = new List<string>() { "MarketPlaceId", "FK_BusinessId", "AddressId" };
 
             // Act
-            var result = BulkOperationsHelper.BuildJoinConditionsForInsertOrUpdate(joinOnList.ToArray(), "Source", "Target", new Dictionary<string, string>());
+            var result = BulkOperationsHelper.BuildJoinConditionsForInsertOrUpdate(joinOnList.ToArray(), "Source", "Target", new Dictionary<string, string>(), new Dictionary<string, bool>());
 
             // Assert
-            Assert.AreEqual("ON [Target].[MarketPlaceId] = [Source].[MarketPlaceId] AND [Target].[FK_BusinessId] = [Source].[FK_BusinessId] AND [Target].[AddressId] = [Source].[AddressId] ", result);
+            Assert.AreEqual("ON ([Target].[MarketPlaceId] = [Source].[MarketPlaceId]) AND ([Target].[FK_BusinessId] = [Source].[FK_BusinessId]) AND ([Target].[AddressId] = [Source].[AddressId]) ", result);
         }
 
         [Test]
@@ -34,10 +34,10 @@ namespace SqlBulkTools.UnitTests
             List<string> joinOnList = new List<string>() { "MarketPlaceId", "FK_BusinessId" };
 
             // Act
-            var result = BulkOperationsHelper.BuildJoinConditionsForInsertOrUpdate(joinOnList.ToArray(), "Source", "Target", new Dictionary<string, string>() { { "FK_BusinessId", "DEFAULT_COLLATION" } });
+            var result = BulkOperationsHelper.BuildJoinConditionsForInsertOrUpdate(joinOnList.ToArray(), "Source", "Target", new Dictionary<string, string>() { { "FK_BusinessId", "DEFAULT_COLLATION" } }, new Dictionary<string, bool>());
 
             // Assert
-            Assert.AreEqual("ON [Target].[MarketPlaceId] = [Source].[MarketPlaceId] AND [Target].[FK_BusinessId] = [Source].[FK_BusinessId] COLLATE DEFAULT_COLLATION ", result);
+            Assert.AreEqual("ON ([Target].[MarketPlaceId] = [Source].[MarketPlaceId]) AND ([Target].[FK_BusinessId] = [Source].[FK_BusinessId] COLLATE DEFAULT_COLLATION) ", result);
         }
 
         [Test]
@@ -47,10 +47,10 @@ namespace SqlBulkTools.UnitTests
             List<string> joinOnList = new List<string>() { "MarketPlaceId" };
 
             // Act
-            var result = BulkOperationsHelper.BuildJoinConditionsForInsertOrUpdate(joinOnList.ToArray(), "Source", "Target", new Dictionary<string, string>());
+            var result = BulkOperationsHelper.BuildJoinConditionsForInsertOrUpdate(joinOnList.ToArray(), "Source", "Target", new Dictionary<string, string>(), new Dictionary<string, bool>());
 
             // Assert
-            Assert.AreEqual("ON [Target].[MarketPlaceId] = [Source].[MarketPlaceId] ", result);
+            Assert.AreEqual("ON ([Target].[MarketPlaceId] = [Source].[MarketPlaceId]) ", result);
         }
 
         [Test]

@@ -16,6 +16,7 @@ namespace SqlBulkTools
     /// <typeparam name="T"></typeparam>
     public class BulkDelete<T> : AbstractOperation<T>, ITransaction
     {
+        private Dictionary<string, bool> _nullableColumnDic;
         /// <summary>
         /// 
         /// </summary>
@@ -33,6 +34,7 @@ namespace SqlBulkTools
             _deletePredicates = new List<PredicateCondition>();
             _parameters = new List<SqlParameter>();
             _conditionSortOrder = 1;
+            _nullableColumnDic = new Dictionary<string, bool>();
         }
 
         /// <summary>
@@ -152,6 +154,8 @@ namespace SqlBulkTools
             command.Connection = connection;
             command.CommandTimeout = _sqlTimeout;
 
+            _nullableColumnDic = BulkOperationsHelper.GetNullableColumnDic(dtCols);
+
             //Creating temp table on database
             command.CommandText = BulkOperationsHelper.BuildCreateTempTable(_columns, dtCols, _outputIdentity);
             command.ExecuteNonQuery();
@@ -220,6 +224,8 @@ namespace SqlBulkTools
             command.Connection = connection;
             command.CommandTimeout = _sqlTimeout;
 
+            _nullableColumnDic = BulkOperationsHelper.GetNullableColumnDic(dtCols);
+
             //Creating temp table on database
             command.CommandText = BulkOperationsHelper.BuildCreateTempTable(_columns, dtCols, _outputIdentity);
             await command.ExecuteNonQueryAsync();
@@ -259,7 +265,7 @@ namespace SqlBulkTools
             string comm = "MERGE INTO " + BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema, _tableName) + $" WITH ({_tableHint}) AS Target " +
                           "USING " + Constants.TempTableName + " AS Source " +
                           BulkOperationsHelper.BuildJoinConditionsForInsertOrUpdate(_matchTargetOn.ToArray(),
-                          Constants.SourceAlias, Constants.TargetAlias, base._collationColumnDic) +
+                          Constants.SourceAlias, Constants.TargetAlias, base._collationColumnDic, _nullableColumnDic) +
                           "WHEN MATCHED " + BulkOperationsHelper.BuildPredicateQuery(_matchTargetOn.ToArray(), _deletePredicates, Constants.TargetAlias, base._collationColumnDic) +
                           "THEN DELETE " +
                           BulkOperationsHelper.GetOutputIdentityCmd(_identityColumn, _outputIdentity, Constants.TempOutputTableName,

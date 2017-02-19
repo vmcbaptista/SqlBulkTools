@@ -68,7 +68,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BulkOperationsAsyncIT.cs" />
-    <Compile Include="Helper\FileHelper.cs" />
     <Compile Include="Data\DatabaseInitialiser.cs" />
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Model\BookWithPrivateIdentity.cs" />

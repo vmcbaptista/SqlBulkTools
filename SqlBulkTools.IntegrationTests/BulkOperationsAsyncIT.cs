@@ -3,6 +3,7 @@ using System.Configuration;
 using System.Data;
 using System.Data.Entity;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Transactions;
@@ -18,7 +19,6 @@ namespace SqlBulkTools.IntegrationTests
     [TestFixture]
     public class BulkOperationsAsyncIT
     {
-        private const string LogResultsLocation = @"C:\SqlBulkTools_Log.txt";
         private const int RepeatTimes = 1;
 
         private BookRandomizer _randomizer;
@@ -31,7 +31,6 @@ namespace SqlBulkTools.IntegrationTests
             _randomizer = new BookRandomizer();
             Database.SetInitializer(new DatabaseInitialiser());
             _db.Database.Initialize(true);
-            FileHelper.DeleteLogFile();
         }
 
         [OneTimeTearDown]
@@ -101,7 +100,7 @@ namespace SqlBulkTools.IntegrationTests
             _bookCollection.AddRange(_randomizer.GetRandomCollection(rows));
             List<long> results = new List<long>();
 
-            FileHelper.AppendToLogFile("Testing BulkInsertAsync with " + rows + " rows");
+            Trace.WriteLine("Testing BulkInsertAsync with " + rows + " rows");
 
             for (int i = 0; i < RepeatTimes; i++)
             {
@@ -109,7 +108,7 @@ namespace SqlBulkTools.IntegrationTests
                 results.Add(time);
             }
             double avg = results.Average(l => l);
-            FileHelper.AppendToLogFile("Average result (" + RepeatTimes + " iterations): " + avg.ToString("#.##") + " ms\n\n");
+            Trace.WriteLine("Average result (" + RepeatTimes + " iterations): " + avg.ToString("#.##") + " ms\n\n");
 
             Assert.AreEqual(rows * RepeatTimes, _db.Books.Count());
         }
@@ -123,7 +122,7 @@ namespace SqlBulkTools.IntegrationTests
 
             List<long> results = new List<long>();
 
-            FileHelper.AppendToLogFile("Testing BulkInsertOrUpdateAsync with " + (rows + newRows) + " rows");
+            Trace.WriteLine("Testing BulkInsertOrUpdateAsync with " + (rows + newRows) + " rows");
 
             for (int i = 0; i < RepeatTimes; i++)
             {
@@ -150,7 +149,7 @@ namespace SqlBulkTools.IntegrationTests
             }
 
             double avg = results.Average(l => l);
-            FileHelper.AppendToLogFile("Average result (" + RepeatTimes + " iterations): " + avg.ToString("#.##") + " ms\n\n");
+            Trace.WriteLine("Average result (" + RepeatTimes + " iterations): " + avg.ToString("#.##") + " ms\n\n");
 
 
         }
@@ -168,7 +167,7 @@ namespace SqlBulkTools.IntegrationTests
 
             List<long> results = new List<long>();
 
-            FileHelper.AppendToLogFile("Testing BulkUpdateAsync with " + rows + " rows");
+            Trace.WriteLine("Testing BulkUpdateAsync with " + rows + " rows");
 
             for (int i = 0; i < RepeatTimes; i++)
             {
@@ -197,7 +196,7 @@ namespace SqlBulkTools.IntegrationTests
                 await BulkDeleteAsync(_bookCollection);
             }
             double avg = results.Average(l => l);
-            FileHelper.AppendToLogFile("Average result (" + RepeatTimes + " iterations): " + avg.ToString("#.##") + " ms\n\n");
+            Trace.WriteLine("Average result (" + RepeatTimes + " iterations): " + avg.ToString("#.##") + " ms\n\n");
 
         }
 
@@ -210,7 +209,7 @@ namespace SqlBulkTools.IntegrationTests
 
             List<long> results = new List<long>();
 
-            FileHelper.AppendToLogFile("Testing BulkDeleteAsync with " + rows + " rows");
+            Trace.WriteLine("Testing BulkDeleteAsync with " + rows + " rows");
 
             for (int i = 0; i < RepeatTimes; i++)
             {
@@ -220,7 +219,7 @@ namespace SqlBulkTools.IntegrationTests
                 Assert.AreEqual(0, _db.Books.Count());
             }
             double avg = results.Average(l => l);
-            FileHelper.AppendToLogFile("Average result (" + RepeatTimes + " iterations): " + avg.ToString("#.##") + " ms\n\n");
+            Trace.WriteLine("Average result (" + RepeatTimes + " iterations): " + avg.ToString("#.##") + " ms\n\n");
 
         }
 

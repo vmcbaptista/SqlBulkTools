@@ -18,6 +18,7 @@ namespace SqlBulkTools
     {
         private bool _deleteWhenNotMatchedFlag;
         private readonly HashSet<string> _excludeFromUpdate;
+        private Dictionary<string, bool> _nullableColumnDic;
 
         /// <summary>
         /// 
@@ -39,6 +40,7 @@ namespace SqlBulkTools
             _parameters = new List<SqlParameter>();
             _conditionSortOrder = 1;
             _excludeFromUpdate = new HashSet<string>();
+            _nullableColumnDic = new Dictionary<string, bool>();
         }
 
         /// <summary>
@@ -223,14 +225,18 @@ namespace SqlBulkTools
                 command.Connection = connection;
                 command.CommandTimeout = _sqlTimeout;
 
+                _nullableColumnDic = BulkOperationsHelper.GetNullableColumnDic(dtCols);
+
                 //Creating temp table on database
-                command.CommandText = BulkOperationsHelper.BuildCreateTempTable(_columns, dtCols, _outputIdentity);
+                command.CommandText = BulkOperationsHelper.BuildCreateTempTable(_columns, dtCols, _outputIdentity);            
                 command.ExecuteNonQuery();
 
                 BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopySettings);
 
                 string comm = BulkOperationsHelper.GetOutputCreateTableCmd(_outputIdentity, Constants.TempOutputTableName,
                 OperationType.InsertOrUpdate, _identityColumn);
+
+
 
                 if (!string.IsNullOrWhiteSpace(comm))
                 {
@@ -317,6 +323,8 @@ namespace SqlBulkTools
                 command.Connection = connection;
                 command.CommandTimeout = _sqlTimeout;
 
+                _nullableColumnDic = BulkOperationsHelper.GetNullableColumnDic(dtCols);
+
                 //Creating temp table on database
                 command.CommandText = BulkOperationsHelper.BuildCreateTempTable(_columns, dtCols, _outputIdentity);
                 await command.ExecuteNonQueryAsync();
@@ -375,7 +383,7 @@ namespace SqlBulkTools
                     $" WITH ({_tableHint}) AS Target " +
                     "USING " + Constants.TempTableName + " AS Source " +
                     BulkOperationsHelper.BuildJoinConditionsForInsertOrUpdate(_matchTargetOn.ToArray(),
-                        Constants.SourceAlias, Constants.TargetAlias, base._collationColumnDic) +
+                        Constants.SourceAlias, Constants.TargetAlias, base._collationColumnDic, _nullableColumnDic) +
                     "WHEN MATCHED " + BulkOperationsHelper.BuildPredicateQuery(_matchTargetOn.ToArray(), _updatePredicates, Constants.TargetAlias, base._collationColumnDic) +
                     "THEN UPDATE " +
                     BulkOperationsHelper.BuildUpdateSet(_columns, Constants.SourceAlias, Constants.TargetAlias, _identityColumn, _excludeFromUpdate) +
