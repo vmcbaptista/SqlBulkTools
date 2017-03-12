@@ -1,4 +1,7 @@
-﻿namespace SqlBulkTools
+﻿using System;
+using System.Dynamic;
+
+namespace SqlBulkTools
 {
     /// <summary>
     /// 
@@ -12,6 +15,9 @@
         /// <returns></returns>
         public Setup<T> Setup<T>() where T : class
         {
+            if (typeof(T) == typeof(ExpandoObject))
+                throw new ArgumentException("ExpandoObject is currently not supported.");
+
             return new Setup<T>(this);
         }
 
