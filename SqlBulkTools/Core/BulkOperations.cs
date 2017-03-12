@@ -10,7 +10,7 @@
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public Setup<T> Setup<T>()
+        public Setup<T> Setup<T>() where T : class
         {
             return new Setup<T>(this);
         }

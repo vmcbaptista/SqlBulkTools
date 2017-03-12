@@ -60,7 +60,7 @@ namespace SqlBulkTools
 
             return new QueryUpdateReady<T>(_singleEntity, _tableName, _schema, _columns, _customColumnMappings, 
                 _conditionSortOrder, _whereConditions, _sqlParams, _collationColumnDic);
-        }
+        }       
 
         /// <summary>
         /// Specify a condition.

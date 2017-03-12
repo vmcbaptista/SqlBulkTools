@@ -19,6 +19,6 @@ namespace SqlBulkTools
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        Setup<T> Setup<T>();
+        Setup<T> Setup<T>() where T : class;
     }
 }
