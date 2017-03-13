@@ -13,6 +13,7 @@ using SqlBulkTools.Enumeration;
 using SqlBulkTools.IntegrationTests.Data;
 using SqlBulkTools.IntegrationTests.Model;
 using TestContext = SqlBulkTools.IntegrationTests.Data.TestContext;
+using Microsoft.SqlServer.Types;
 
 namespace SqlBulkTools.IntegrationTests
 {
@@ -55,6 +56,7 @@ namespace SqlBulkTools.IntegrationTests
                 results.Add(time);
             }
             double avg = results.Average(l => l);
+            
             Trace.WriteLine("Average result (" + RepeatTimes + " iterations): " + avg.ToString("#.##") + " ms\n\n");
 
             Assert.AreEqual(rows * RepeatTimes, _db.Books.Count());

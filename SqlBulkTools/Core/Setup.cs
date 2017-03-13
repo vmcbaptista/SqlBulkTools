@@ -24,7 +24,7 @@ namespace SqlBulkTools
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
-        public BulkForCollection<T> ForCollection<T>(IEnumerable<T> list)
+        public BulkForCollection<T> ForCollection<T>(IEnumerable<T> list) where T : class
         {
             return new BulkForCollection<T>(list);
         }
@@ -35,7 +35,7 @@ namespace SqlBulkTools
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class Setup<T>
+    public class Setup<T> where T : class
     {
         private readonly List<SqlParameter> _sqlParams;
         /// <summary>

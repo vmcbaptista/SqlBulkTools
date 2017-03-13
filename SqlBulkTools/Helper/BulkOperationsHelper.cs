@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.SqlServer.Types;
 using SqlBulkTools.Core;
 using SqlBulkTools.Enumeration;
 
@@ -642,6 +643,8 @@ namespace SqlBulkTools
                 type == typeof(string) ||
                 type == typeof(byte[]) ||
                 type == typeof(char[]) ||
+                type == typeof(SqlGeometry) ||
+                type == typeof(SqlGeography) ||
                 type == typeof(SqlXml)
                 )
                 return true;
