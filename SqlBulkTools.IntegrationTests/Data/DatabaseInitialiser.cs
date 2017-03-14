@@ -45,7 +45,8 @@ namespace SqlBulkTools.IntegrationTests.Data
                         ImageTest image,
                         NTextTest ntext,
                         NCharTest nchar(10),
-                        XmlTest xml
+                        XmlTest xml,
+                        TestSqlGeometry geometry
                     );
                  END";
                 command.ExecuteNonQuery();

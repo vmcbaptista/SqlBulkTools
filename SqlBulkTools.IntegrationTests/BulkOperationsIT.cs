@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Data;
 using System.Data.Entity;
 using System.Data.SqlClient;
+using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Linq;
 using System.Transactions;
@@ -1815,7 +1816,9 @@ namespace SqlBulkTools.IntegrationTests
                     CharTest = "Some",
                     XmlTest = "<title>The best SQL Bulk tool</title>",
                     NCharTest = "SomeText",
-                    ImageTest = new byte[] {3,3,32,4}
+                    ImageTest = new byte[] {3,3,32,4},
+                    TestSqlGeometry = SqlGeometry.Point(-2.74612, 53.881238, 4326)
+                    //TestSqlGeometry = SqlGeometry.STGeomFromText(new SqlChars("POLYGON((3 -6, 8 -3, 8 2, 2 5, -2 0, 3 -6))"), 4326)
                 }
             };
 

@@ -22,5 +22,6 @@ CharTest char(17),
 ImageTest image,
 NTextTest ntext,
 NCharTest nchar(10),
-XmlTest xml
+XmlTest xml,
+TestSqlGeometry geometry
 );
