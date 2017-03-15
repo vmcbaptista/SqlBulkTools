@@ -59,7 +59,7 @@ namespace SqlBulkTools.UnitTests
             // Arrange
             var updateOrInsertColumns = GetTestColumns();
             var expected =
-                "SET [Target].[id] = [Source].[id], [Target].[Name] = [Source].[Name], [Target].[Town] = [Source].[Town], [Target].[Email] = [Source].[Email], [Target].[IsCool] = [Source].[IsCool] ";
+                "SET [Target].[Email] = [Source].[Email], [Target].[id] = [Source].[id], [Target].[IsCool] = [Source].[IsCool], [Target].[Name] = [Source].[Name], [Target].[Town] = [Source].[Town] ";
 
             // Act
             var result = BulkOperationsHelper.BuildUpdateSet(updateOrInsertColumns, "Source", "Target", null);
@@ -93,7 +93,7 @@ namespace SqlBulkTools.UnitTests
             // Arrange
             var updateOrInsertColumns = GetTestColumns();
             var expected =
-                "INSERT ([Name], [Town], [Email], [IsCool]) values ([Source].[Name], [Source].[Town], [Source].[Email], [Source].[IsCool])";
+                "INSERT ([Email], [IsCool], [Name], [Town]) values ([Source].[Email], [Source].[IsCool], [Source].[Name], [Source].[Town])";
 
             // Act
             var result = BulkOperationsHelper.BuildInsertSet(updateOrInsertColumns, "Source", "id");
@@ -157,7 +157,7 @@ namespace SqlBulkTools.UnitTests
         public void BulkOperationsHelpers_GetAllValueTypeAndStringColumns_ReturnsCorrectSet()
         {
             // Arrange
-            HashSet<string> expected = new HashSet<string>() {"Title", "CreatedTime", "BoolTest", "IntegerTest", "Price"};
+            HashSet<string> expected = new HashSet<string>() {"BoolTest", "CreatedTime", "IntegerTest", "Price", "Title" };
 
             // Act
             var result = BulkOperationsHelper.GetAllValueTypeAndStringColumns(typeof (ModelWithMixedTypes));
