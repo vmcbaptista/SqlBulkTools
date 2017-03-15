@@ -636,7 +636,7 @@ namespace SqlBulkTools
 
                 }
                 counter++;
-                dataTable.Rows.Add(values.ToArray());
+                dataTable.Rows.Add(values);
 
             }
             return dataTable;
