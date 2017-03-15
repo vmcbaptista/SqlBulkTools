@@ -34,7 +34,15 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="FastMember, Version=1.0.0.9, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\FastMember.1.1.0\lib\net40\FastMember.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.SqlServer.Types, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL" />
+    <Reference Include="nunit.framework, Version=3.6.1.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\NUnit.3.6.1\lib\net45\nunit.framework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
@@ -52,21 +60,6 @@
     <Compile Include="BulkOperations\AbstractOperation.cs" />
     <Compile Include="BulkOperations\BulkCopyOptions.cs" />
     <Compile Include="Core\BulkOperationsUtility.cs" />
-    <Compile Include="fast-member\FastMember.Tests\Anons.cs" />
-    <Compile Include="fast-member\FastMember.Tests\BasicTests.cs" />
-    <Compile Include="fast-member\FastMember.Tests\ChainingPropertyDescriptor.cs" />
-    <Compile Include="fast-member\FastMember.Tests\DynamicTests.cs" />
-    <Compile Include="fast-member\FastMember.Tests\HyperTypeDescriptionProvider.cs" />
-    <Compile Include="fast-member\FastMember.Tests\HyperTypeDescriptor.cs" />
-    <Compile Include="fast-member\FastMember.Tests\Program.cs" />
-    <Compile Include="fast-member\FastMember.Tests\Properties\AssemblyInfo.cs" />
-    <Compile Include="fast-member\FastMember\CallSiteCache.cs" />
-    <Compile Include="fast-member\FastMember\MemberSet.cs" />
-    <Compile Include="fast-member\FastMember\ObjectAccessor.cs" />
-    <Compile Include="fast-member\FastMember\ObjectReader.cs" />
-    <Compile Include="fast-member\FastMember\Properties\AssemblyInfo.cs" />
-    <Compile Include="fast-member\FastMember\TypeAccessor.cs" />
-    <Compile Include="fast-member\FastMember\TypeHelpers.cs" />
     <Compile Include="Interface\IBulkOperations.cs" />
     <Compile Include="QueryOperations\Delete\DeleteQueryCondition.cs" />
     <Compile Include="QueryOperations\Delete\DeleteQueryReady.cs" />
@@ -137,6 +130,7 @@
     <None Include="fast-member\Nuget\FastMember.nuspec" />
     <None Include="fast-member\pack.cmd" />
     <None Include="fast-member\Readme.md" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

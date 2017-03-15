@@ -967,11 +967,11 @@ namespace SqlBulkTools
                             /*p.SetValue(item, reader.GetInt32(1), null);*/
                             //  }
 
-                            if (identityMember.CanWrite)
+                            //if (identityMember.Type.CanWrite)
                                 typeAccessor[reader.GetInt32(1), identityColumn] = item;
                             
-                            else
-                                throw new SqlBulkToolsException(GetPrivateSetterExceptionMessage(identityColumn));
+                           // else
+                               // throw new SqlBulkToolsException(GetPrivateSetterExceptionMessage(identityColumn));
                                  
                         }
 
@@ -1002,11 +1002,11 @@ namespace SqlBulkTools
                         //else
                         //    throw new SqlBulkToolsException(GetPrivateSetterExceptionMessage(identityColumn));
 
-                        if (identityMember.CanWrite)
+                        //if (identityMember.CanWrite)
                             typeAccessor[reader.GetInt32(0), identityColumn] = items[counter];
 
-                        else
-                            throw new SqlBulkToolsException(GetPrivateSetterExceptionMessage(identityColumn));
+                        //else
+                            //throw new SqlBulkToolsException(GetPrivateSetterExceptionMessage(identityColumn));
 
                         counter++;
                     }
@@ -1051,10 +1051,10 @@ namespace SqlBulkTools
                             //else
                             //    throw new SqlBulkToolsException(GetPrivateSetterExceptionMessage(identityColumn));
 
-                            if (identityMember.CanWrite)
+                            //if (identityMember.CanWrite)
                                 typeAccessor[reader.GetInt32(1), identityColumn] = item;
 
-                            else
+                            //else
                                 throw new SqlBulkToolsException(GetPrivateSetterExceptionMessage(identityColumn));
                         }
 
@@ -1085,11 +1085,11 @@ namespace SqlBulkTools
                         //else
                         //    throw new SqlBulkToolsException(GetPrivateSetterExceptionMessage(identityColumn));
 
-                        if (identityMember.CanWrite)
+                        //if (identityMember.CanWrite)
                             typeAccessor[reader.GetInt32(0), identityColumn] = items[counter];
 
-                        else
-                            throw new SqlBulkToolsException(GetPrivateSetterExceptionMessage(identityColumn));
+                        //else
+                           // throw new SqlBulkToolsException(GetPrivateSetterExceptionMessage(identityColumn));
 
                         counter++;
                     }
