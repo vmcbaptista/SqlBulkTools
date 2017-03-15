@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using FastMember;
 using Microsoft.SqlServer.Types;
 using SqlBulkTools.Core;
 using SqlBulkTools.Enumeration;
@@ -531,16 +532,29 @@ namespace SqlBulkTools
             //Get all the properties
             PropertyInfo[] props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
-            foreach (var column in columns.ToList())
+            var props1 = TypeAccessor.Create(typeof(T));
+
+            foreach (var column in props1.GetMembers())
             {
-                if (columnMappings != null && columnMappings.ContainsKey(column))
+                if (columnMappings != null && columnMappings.ContainsKey(column.Name))
                 {
-                    dataTable.Columns.Add(columnMappings[column]);
+                    dataTable.Columns.Add(columnMappings[column.Name]);
                 }
 
                 else
-                    dataTable.Columns.Add(column);
+                    dataTable.Columns.Add(column.Name);
             }
+
+            //foreach (var column in columns.ToList())
+            //{
+            //    if (columnMappings != null && columnMappings.ContainsKey(column))
+            //    {
+            //        dataTable.Columns.Add(columnMappings[column]);
+            //    }
+
+            //    else
+            //        dataTable.Columns.Add(column);
+            //}
 
             AssignTypes(props, columns, dataTable);
 
