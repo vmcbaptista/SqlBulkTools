@@ -528,13 +528,13 @@ namespace SqlBulkTools
             {
                 columns.Add(Constants.InternalId);
             }
+       
+            var typeAccessor = TypeAccessor.Create(typeof(T), allowNonPublicAccessors: false);
 
             //Get all the properties
-            PropertyInfo[] props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            MemberSet memberSet = typeAccessor.GetMembers();
 
-            var props1 = TypeAccessor.Create(typeof(T));
-
-            foreach (var column in props1.GetMembers())
+            foreach (var column in memberSet)
             {
                 if (columnMappings != null && columnMappings.ContainsKey(column.Name))
                 {
@@ -556,7 +556,7 @@ namespace SqlBulkTools
             //        dataTable.Columns.Add(column);
             //}
 
-            AssignTypes(props, columns, dataTable);
+            AssignTypes(memberSet, columns, dataTable);
 
             return dataTable;
         }
@@ -565,7 +565,8 @@ namespace SqlBulkTools
             Dictionary<int, T> outputIdentityDic = null)
         {
 
-            PropertyInfo[] props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            var typeAccessor = TypeAccessor.Create(typeof(T), allowNonPublicAccessors: false);
+            MemberSet memberSet = typeAccessor.GetMembers();
 
             int counter = 0;
 
@@ -582,13 +583,11 @@ namespace SqlBulkTools
                         outputIdentityDic?.Add(counter, item);
                     }
                     else
-                        for (int i = 0; i < props.Length; i++)
+                        for (int i = 0; i < memberSet.Count; i++)
                         {
-                            if (props[i].Name == column && item != null
-                                && CheckForValidDataType(props[i].PropertyType, throwIfInvalid: true))
-                                values.Add(props[i].GetValue(item, null));
-
-
+                            if (memberSet[i].Name == column && item != null
+                                && CheckForValidDataType(memberSet[i].Type, throwIfInvalid: true))
+                                 values.Add(typeAccessor[item, memberSet[i].Name]);
                         }
 
                 }
@@ -604,15 +603,16 @@ namespace SqlBulkTools
         public static void AddSqlParamsForQuery<T>(List<SqlParameter> sqlParameters, HashSet<string> columns, T item,
             string identityColumn = null, ColumnDirectionType direction = ColumnDirectionType.Input, Dictionary<string, string> customColumns = null)
         {
-            PropertyInfo[] props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            var typeAccessor = TypeAccessor.Create(typeof(T), allowNonPublicAccessors: false);
+            MemberSet memberSet = typeAccessor.GetMembers();
 
             foreach (var column in columns.ToList())
             {
-                for (int i = 0; i < props.Length; i++)
+                for (int i = 0; i < memberSet.Count; i++)
                 {
-                    if (props[i].Name == column && item != null && CheckForValidDataType(props[i].PropertyType, throwIfInvalid: true))
+                    if (memberSet[i].Name == column && item != null && CheckForValidDataType(memberSet[i].Type, throwIfInvalid: true))
                     {
-                        DbType sqlType = BulkOperationsUtility.GetSqlTypeFromDotNetType(props[i].PropertyType);
+                        DbType sqlType = BulkOperationsUtility.GetSqlTypeFromDotNetType(memberSet[i].Type);
 
                         string actualColumnName;
                         SqlParameter param;
@@ -624,15 +624,9 @@ namespace SqlBulkTools
                         else
                             param = new SqlParameter($"@{column}", sqlType);
 
-                        object propValue = props[i].GetValue(item, null);
+                        object propValue = typeAccessor[item, memberSet[i].Name];
 
-                        if (propValue == null)
-                        {
-                            param.Value = DBNull.Value;
-                        }
-
-                        else
-                            param.Value = propValue;
+                        param.Value = propValue ?? DBNull.Value;
 
                         if (column == identityColumn && direction == ColumnDirectionType.InputOutput)
                             param.Direction = ParameterDirection.InputOutput;
@@ -671,7 +665,7 @@ namespace SqlBulkTools
             return false;
         }
 
-        private static void AssignTypes(PropertyInfo[] props, HashSet<string> columns, DataTable dataTable)
+        private static void AssignTypes(MemberSet memberSet, HashSet<string> columns, DataTable dataTable)
         {
             int count = 0;
 
@@ -682,12 +676,12 @@ namespace SqlBulkTools
                     dataTable.Columns[count].DataType = typeof(int);
                 }
                 else
-                    for (int i = 0; i < props.Length; i++)
+                    for (int i = 0; i < memberSet.Count; i++)
                     {
-                        if (props[i].Name == column)
+                        if (memberSet[i].Name == column)
                         {
-                            dataTable.Columns[count].DataType = Nullable.GetUnderlyingType(props[i].PropertyType) ??
-                                                                props[i].PropertyType;
+                            dataTable.Columns[count].DataType = Nullable.GetUnderlyingType(memberSet[i].Type) ??
+                                                                memberSet[i].Type;
                         }
                     }
                 count++;
@@ -826,14 +820,16 @@ namespace SqlBulkTools
         {
             HashSet<string> columns = new HashSet<string>();
 
-            //Get all the properties
-            PropertyInfo[] props = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            var typeAccessor = TypeAccessor.Create(type, allowNonPublicAccessors: false);
 
-            for (int i = 0; i < props.Length; i++)
+            //Get all the properties
+            MemberSet memberSet = typeAccessor.GetMembers();
+
+            for (int i = 0; i < memberSet.Count; i++)
             {
-                if (CheckForValidDataType(props[i].PropertyType))
+                if (CheckForValidDataType(memberSet[i].Type))
                 {
-                    columns.Add(props[i].Name);
+                    columns.Add(memberSet[i].Name);
                 }
             }
 
@@ -938,6 +934,12 @@ namespace SqlBulkTools
         internal static void LoadFromTmpOutputTable<T>(SqlCommand command, string identityColumn, Dictionary<int, T> outputIdentityDic,
             OperationType operationType, IEnumerable<T> list)
         {
+            var typeAccessor = TypeAccessor.Create(typeof(T), allowNonPublicAccessors: false);
+
+            //Get all the properties
+            MemberSet memberSet = typeAccessor.GetMembers();
+            var identityMember = memberSet.Single(x => x.Name == identityColumn);
+
             if (operationType == OperationType.InsertOrUpdate
                 || operationType == OperationType.Update
                 || operationType == OperationType.Delete)
@@ -954,13 +956,23 @@ namespace SqlBulkTools
 
                         if (outputIdentityDic.TryGetValue(reader.GetInt32(0), out item))
                         {
-                            PropertyInfo p = item.GetType().GetProperty(identityColumn);
+                            //PropertyInfo p = item.GetType().GetProperty(identityColumn);
 
-                            if (p.CanWrite)
-                                p.SetValue(item, reader.GetInt32(1), null);
+                            //var typeAccessor = TypeAccessor.Create(item.GetType(), allowNonPublicAccessors: false);
 
+                            //var typeAccessor = TypeAccessor.Create(typeof(T), allowNonPublicAccessors: false);
+
+                            // if (p.CanWrite)
+                            // {
+                            /*p.SetValue(item, reader.GetInt32(1), null);*/
+                            //  }
+
+                            if (identityMember.CanWrite)
+                                typeAccessor[reader.GetInt32(1), identityColumn] = item;
+                            
                             else
                                 throw new SqlBulkToolsException(GetPrivateSetterExceptionMessage(identityColumn));
+                                 
                         }
 
                     }
@@ -982,10 +994,16 @@ namespace SqlBulkTools
 
                     while (reader.Read())
                     {
-                        PropertyInfo p = items[counter].GetType().GetProperty(identityColumn);
+                        //PropertyInfo p = items[counter].GetType().GetProperty(identityColumn);
 
-                        if (p.CanWrite)
-                            p.SetValue(items[counter], reader.GetInt32(0), null);
+                        //if (p.CanWrite)
+                        //   p.SetValue(items[counter], reader.GetInt32(0), null);
+
+                        //else
+                        //    throw new SqlBulkToolsException(GetPrivateSetterExceptionMessage(identityColumn));
+
+                        if (identityMember.CanWrite)
+                            typeAccessor[reader.GetInt32(0), identityColumn] = items[counter];
 
                         else
                             throw new SqlBulkToolsException(GetPrivateSetterExceptionMessage(identityColumn));
@@ -1002,6 +1020,13 @@ namespace SqlBulkTools
         internal static async Task LoadFromTmpOutputTableAsync<T>(SqlCommand command, string identityColumn,
             Dictionary<int, T> outputIdentityDic, OperationType operationType, IEnumerable<T> list)
         {
+            var typeAccessor = TypeAccessor.Create(typeof(T), allowNonPublicAccessors: false);
+
+            //Get all the properties
+            MemberSet memberSet = typeAccessor.GetMembers();
+            var identityMember = memberSet.Single(x => x.Name == identityColumn);
+
+
             if (operationType == OperationType.InsertOrUpdate
                 || operationType == OperationType.Update
                 || operationType == OperationType.Delete)
@@ -1018,10 +1043,16 @@ namespace SqlBulkTools
 
                         if (outputIdentityDic.TryGetValue(reader.GetInt32(0), out item))
                         {
-                            PropertyInfo p = item.GetType().GetProperty(identityColumn);
+                            //PropertyInfo p = item.GetType().GetProperty(identityColumn);
 
-                            if (p.CanWrite)
-                                p.SetValue(item, reader.GetInt32(1), null);
+                            //if (p.CanWrite)
+                            //    p.SetValue(item, reader.GetInt32(1), null);
+
+                            //else
+                            //    throw new SqlBulkToolsException(GetPrivateSetterExceptionMessage(identityColumn));
+
+                            if (identityMember.CanWrite)
+                                typeAccessor[reader.GetInt32(1), identityColumn] = item;
 
                             else
                                 throw new SqlBulkToolsException(GetPrivateSetterExceptionMessage(identityColumn));
@@ -1046,10 +1077,16 @@ namespace SqlBulkTools
 
                     while (reader.Read())
                     {
-                        PropertyInfo p = items[counter].GetType().GetProperty(identityColumn);
+                        //PropertyInfo p = items[counter].GetType().GetProperty(identityColumn);
 
-                        if (p.CanWrite)
-                            p.SetValue(items[counter], reader.GetInt32(0), null);
+                        //if (p.CanWrite)
+                        //    p.SetValue(items[counter], reader.GetInt32(0), null);
+
+                        //else
+                        //    throw new SqlBulkToolsException(GetPrivateSetterExceptionMessage(identityColumn));
+
+                        if (identityMember.CanWrite)
+                            typeAccessor[reader.GetInt32(0), identityColumn] = items[counter];
 
                         else
                             throw new SqlBulkToolsException(GetPrivateSetterExceptionMessage(identityColumn));
