@@ -74,7 +74,7 @@ namespace SqlBulkTools
 
             List<string> paramList = new List<string>();
 
-            foreach (var column in columns.ToList())
+            foreach (var column in columns.ToList().OrderBy(x => x))
             {
                 if (column == Constants.InternalId)
                     continue;
@@ -358,7 +358,7 @@ namespace SqlBulkTools
 
             command.Append("SET ");
 
-            foreach (var column in columns.ToList())
+            foreach (var column in columns.ToList().OrderBy(x => x))
             {
                 if ((column != identityColumn || identityColumn == null) && !excludeFromUpdate.Contains(column))
                 {
@@ -392,7 +392,7 @@ namespace SqlBulkTools
 
             command.Append("SET ");
 
-            foreach (var column in columns.ToList())
+            foreach (var column in columns.ToList().OrderBy(x => x))
             {
                 if (column != identityColumn && !excludeFromUpdate.Contains(column))
                     paramsSeparated.Add($"[{column}] = @{column}");
@@ -411,7 +411,7 @@ namespace SqlBulkTools
 
             command.Append("INSERT (");
 
-            foreach (var column in columns.ToList())
+            foreach (var column in columns.ToList().OrderBy(x => x))
             {
 
                 if (column != Constants.InternalId && column != identityColumn)
@@ -470,7 +470,7 @@ namespace SqlBulkTools
 
             command.Append("SELECT ");
 
-            foreach (var column in columns.ToList())
+            foreach (var column in columns.ToList().OrderBy(x => x))
             {
                 if (identityColumn != null && column != identityColumn || identityColumn == null)
                 {
@@ -541,7 +541,7 @@ namespace SqlBulkTools
                     dataTable.Columns.Add(columnMappings[column.Name]);
                 }
 
-                else
+                else if (columns.Contains(column.Name))
                     dataTable.Columns.Add(column.Name);
             }
 
@@ -575,7 +575,7 @@ namespace SqlBulkTools
 
                 var values = new List<object>();
 
-                foreach (var column in columns.ToList())
+                foreach (var column in columns.ToList().OrderBy(x => x))
                 {
                     if (column == Constants.InternalId)
                     {
@@ -606,7 +606,7 @@ namespace SqlBulkTools
             var typeAccessor = TypeAccessor.Create(typeof(T), allowNonPublicAccessors: false);
             MemberSet memberSet = typeAccessor.GetMembers();
 
-            foreach (var column in columns.ToList())
+            foreach (var column in columns.ToList().OrderBy(x => x))
             {
                 for (int i = 0; i < memberSet.Count; i++)
                 {
@@ -669,7 +669,7 @@ namespace SqlBulkTools
         {
             int count = 0;
 
-            foreach (var column in columns.ToList())
+            foreach (var column in columns.ToList().OrderBy(x => x))
             {
                 if (column == Constants.InternalId)
                 {
@@ -678,7 +678,7 @@ namespace SqlBulkTools
                 else
                     for (int i = 0; i < memberSet.Count; i++)
                     {
-                        if (memberSet[i].Name == column)
+                        if (memberSet[i].Name == column && columns.Contains(memberSet[i].Name))
                         {
                             dataTable.Columns[count].DataType = Nullable.GetUnderlyingType(memberSet[i].Type) ??
                                                                 memberSet[i].Type;
@@ -686,6 +686,23 @@ namespace SqlBulkTools
                     }
                 count++;
             }
+        }
+
+        public static object GetDefaultValue(Member member, Dictionary<string, object> defaultValueDic)
+        {
+            if (member.Type.IsValueType)
+            {
+                object obj;
+                if (defaultValueDic.TryGetValue(member.Name, out obj))
+                {
+                    return obj;
+                }
+                obj = Activator.CreateInstance(member.Type);
+                defaultValueDic.Add(member.Name, obj);
+                return obj;
+            }
+
+            return null;
         }
 
         internal static string GetFullQualifyingTableName(string databaseName, string schemaName, string tableName)
@@ -801,7 +818,7 @@ namespace SqlBulkTools
         internal static void MapColumns(SqlBulkCopy bulkCopy, HashSet<string> columns, Dictionary<string, string> customColumnMappings)
         {
 
-            foreach (var column in columns.ToList())
+            foreach (var column in columns.ToList().OrderBy(x => x))
             {
                 string mapping;
 
