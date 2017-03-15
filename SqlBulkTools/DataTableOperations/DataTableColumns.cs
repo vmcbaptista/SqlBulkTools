@@ -13,6 +13,7 @@ namespace SqlBulkTools
         private HashSet<string> Columns { get; set; }
         private readonly IEnumerable<T> _list;
         private readonly DataTableOperations _ext;
+        private readonly Dictionary<string, int> _ordinalDic;
 
         /// <summary>
         /// 
@@ -22,6 +23,7 @@ namespace SqlBulkTools
             _list = list;
             _ext = ext;
             Columns = new HashSet<string>();
+            _ordinalDic = new Dictionary<string, int>();
         }
 
         /// <summary>
@@ -33,7 +35,7 @@ namespace SqlBulkTools
         {
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
             Columns.Add(propertyName);
-            return new DataTableSingularColumnSelect<T>(_ext, _list, Columns);
+            return new DataTableSingularColumnSelect<T>(_ext, _list, Columns, _ordinalDic);
         }
 
         /// <summary>
@@ -43,7 +45,7 @@ namespace SqlBulkTools
         public DataTableAllColumnSelect<T> AddAllColumns()
         {
             Columns = BulkOperationsHelper.GetAllValueTypeAndStringColumns(typeof(T));
-            return new DataTableAllColumnSelect<T>(_ext, _list, Columns);
+            return new DataTableAllColumnSelect<T>(_ext, _list, Columns, _ordinalDic);
         }
 
     }

@@ -13,15 +13,17 @@ namespace SqlBulkTools
     public class DataTableAllColumnSelect<T> : DataTableAbstractColumnSelect<T>, IDataTableTransaction
     {
         private readonly HashSet<string> _removedColumns;
+        private readonly Dictionary<string, int> _ordinalDic;
         /// <summary>
         /// 
         /// </summary>
         /// <param name="ext"></param>
         /// <param name="list"></param>
         /// <param name="columns"></param>
-        public DataTableAllColumnSelect(DataTableOperations ext, IEnumerable<T> list, HashSet<string> columns) : base(ext, list, columns)
+        public DataTableAllColumnSelect(DataTableOperations ext, IEnumerable<T> list, HashSet<string> columns, Dictionary<string, int> ordinalDic) : base(ext, list, columns)
         {
             _removedColumns = new HashSet<string>();
+            _ordinalDic = ordinalDic;
         }
 
         /// <summary>
@@ -68,13 +70,13 @@ namespace SqlBulkTools
         public DataTable PrepareDataTable()
         {
             _ext.SetBulkExt(this, _columns, CustomColumnMappings, typeof(T), _removedColumns);
-            _dt = BulkOperationsHelper.CreateDataTable<T>(_columns, CustomColumnMappings);
+            _dt = BulkOperationsHelper.CreateDataTable<T>(_columns, CustomColumnMappings, _ordinalDic);
             return _dt;
         }
 
         DataTable IDataTableTransaction.BuildDataTable()
         {
-            return BulkOperationsHelper.ConvertListToDataTable(_dt, _list, _columns);
+            return BulkOperationsHelper.ConvertListToDataTable(_dt, _list, _columns, _ordinalDic);
         }
 
     }

@@ -138,8 +138,8 @@ namespace SqlBulkTools
 
             base.MatchTargetCheck();
 
-            DataTable dt = BulkOperationsHelper.CreateDataTable<T>(_columns, _customColumnMappings, _matchTargetOn, _outputIdentity);
-            dt = BulkOperationsHelper.ConvertListToDataTable(dt, _list, _columns, _outputIdentityDic);
+            DataTable dt = BulkOperationsHelper.CreateDataTable<T>(_columns, _customColumnMappings, _ordinalDic, _matchTargetOn, _outputIdentity);
+            dt = BulkOperationsHelper.ConvertListToDataTable(dt, _list, _columns, _ordinalDic, _outputIdentityDic);
 
             // Must be after ToDataTable is called. 
             BulkOperationsHelper.DoColumnMappings(_customColumnMappings, _columns);
@@ -208,8 +208,8 @@ namespace SqlBulkTools
 
             base.MatchTargetCheck();
 
-            DataTable dt = BulkOperationsHelper.CreateDataTable<T>(_columns, _customColumnMappings, _matchTargetOn, _outputIdentity);
-            dt = BulkOperationsHelper.ConvertListToDataTable(dt, _list, _columns, _outputIdentityDic);
+            DataTable dt = BulkOperationsHelper.CreateDataTable<T>(_columns, _customColumnMappings, _ordinalDic, _matchTargetOn, _outputIdentity);
+            dt = BulkOperationsHelper.ConvertListToDataTable(dt, _list, _columns, _ordinalDic, _outputIdentityDic);
 
             // Must be after ToDataTable is called. 
             BulkOperationsHelper.DoColumnMappings(_customColumnMappings, _columns);

@@ -31,6 +31,7 @@ namespace SqlBulkTools
         protected int _conditionSortOrder;
         protected BulkCopySettings _bulkCopySettings;
         protected string _tableHint;
+        protected Dictionary<string, int> _ordinalDic;
         #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         /// <summary>
@@ -58,6 +59,7 @@ namespace SqlBulkTools
             _matchTargetOn = new List<string>();
             _bulkCopySettings = bulkCopySettings;
             _tableHint = "HOLDLOCK";
+            _ordinalDic = new Dictionary<string, int>();
         }
 
         /// <summary>
