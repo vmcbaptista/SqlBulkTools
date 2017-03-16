@@ -517,14 +517,17 @@ namespace SqlBulkTools
             if (columns == null)
                 return null;
 
+            var outputIdentityCol = outputIdentity.HasValue && outputIdentity.Value == ColumnDirectionType.InputOutput;
+
             DataTable dataTable = new DataTable(typeof(T).Name);
+            
 
             if (matchOnColumns != null)
             {
                 columns = CheckForAdditionalColumns(columns, matchOnColumns);
             }
 
-            if (outputIdentity.HasValue && outputIdentity.Value == ColumnDirectionType.InputOutput)
+            if (outputIdentityCol)
             {
                 columns.Add(Constants.InternalId);
             }
@@ -557,7 +560,7 @@ namespace SqlBulkTools
                 }          
             }
 
-            if (outputIdentity.HasValue && outputIdentity.Value == ColumnDirectionType.InputOutput)
+            if (outputIdentityCol)
             {
                 dataTable.Columns.Add(Constants.InternalId, typeof(int));
                 var ordinal = dataTable.Columns[Constants.InternalId].Ordinal;
