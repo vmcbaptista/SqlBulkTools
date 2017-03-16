@@ -24,6 +24,7 @@ namespace SqlBulkTools.QueryOperations
         private string _identityColumn;
         private ColumnDirectionType _outputIdentity;
         private readonly List<SqlParameter> _sqlParams;
+        private readonly List<PropertyInfo> _propertyInfoList;
 
         /// <summary>
         /// 
@@ -35,7 +36,7 @@ namespace SqlBulkTools.QueryOperations
         /// <param name="customColumnMappings"></param>
         /// <param name="sqlParams"></param>
         public QueryInsertReady(T singleEntity, string tableName, string schema, HashSet<string> columns, Dictionary<string, string> customColumnMappings,
-            List<SqlParameter> sqlParams)
+            List<SqlParameter> sqlParams, List<PropertyInfo> propertyInfoList)
         {
             _singleEntity = singleEntity;
             _tableName = tableName;
@@ -44,6 +45,7 @@ namespace SqlBulkTools.QueryOperations
             _customColumnMappings = customColumnMappings;
             _sqlParams = sqlParams;
             _outputIdentity = ColumnDirectionType.Input;
+            _propertyInfoList = propertyInfoList;
         }
 
         /// <summary>
@@ -119,7 +121,7 @@ namespace SqlBulkTools.QueryOperations
 
             try
             {
-                BulkOperationsHelper.AddSqlParamsForQuery(_sqlParams, _columns, _singleEntity, _identityColumn, _outputIdentity, _customColumnMappings);
+                BulkOperationsHelper.AddSqlParamsForQuery(_propertyInfoList, _sqlParams, _columns, _singleEntity, _identityColumn, _outputIdentity, _customColumnMappings);
                 BulkOperationsHelper.DoColumnMappings(_customColumnMappings, _columns);
 
                 SqlCommand command = connection.CreateCommand();
@@ -157,7 +159,7 @@ namespace SqlBulkTools.QueryOperations
                             && x.ParameterName == $"@{_identityColumn}")
                         {
                             PropertyInfo propertyInfo = _singleEntity.GetType().GetProperty(_identityColumn);
-                            propertyInfo.SetValue(_singleEntity, x.Value);
+                            propertyInfo.SetValue(_singleEntity, x.Value);                           
                             break;
                         }
                     }
@@ -202,7 +204,7 @@ namespace SqlBulkTools.QueryOperations
 
             try
             {
-                BulkOperationsHelper.AddSqlParamsForQuery(_sqlParams, _columns, _singleEntity, _identityColumn, _outputIdentity, _customColumnMappings);
+                BulkOperationsHelper.AddSqlParamsForQuery(_propertyInfoList, _sqlParams, _columns, _singleEntity, _identityColumn, _outputIdentity, _customColumnMappings);
                 BulkOperationsHelper.DoColumnMappings(_customColumnMappings, _columns);
 
                 SqlCommand command = connection.CreateCommand();

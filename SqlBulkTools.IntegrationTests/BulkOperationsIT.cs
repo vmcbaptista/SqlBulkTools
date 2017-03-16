@@ -5,7 +5,6 @@ using System.Data;
 using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Transactions;
 using NUnit.Framework;
@@ -14,8 +13,6 @@ using SqlBulkTools.Enumeration;
 using SqlBulkTools.IntegrationTests.Data;
 using SqlBulkTools.IntegrationTests.Model;
 using TestContext = SqlBulkTools.IntegrationTests.Data.TestContext;
-using Microsoft.SqlServer.Types;
-using System.Threading;
 
 namespace SqlBulkTools.IntegrationTests
 {

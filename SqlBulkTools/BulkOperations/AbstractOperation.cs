@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq.Expressions;
+using System.Reflection;
 using SqlBulkTools.Enumeration;
 
 namespace SqlBulkTools
@@ -32,6 +33,7 @@ namespace SqlBulkTools
         protected BulkCopySettings _bulkCopySettings;
         protected string _tableHint;
         protected Dictionary<string, int> _ordinalDic;
+        protected List<PropertyInfo> _propertyInfoList;
         #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         /// <summary>
@@ -44,7 +46,7 @@ namespace SqlBulkTools
         /// <param name="customColumnMappings"></param>
         /// <param name="bulkCopySettings"></param>
         protected AbstractOperation(IEnumerable<T> list, string tableName, string schema, HashSet<string> columns,
-            Dictionary<string, string> customColumnMappings, BulkCopySettings bulkCopySettings)
+            Dictionary<string, string> customColumnMappings, BulkCopySettings bulkCopySettings, List<PropertyInfo> propertyInfoList)
         {
             _list = list;
             _tableName = tableName;
@@ -60,6 +62,7 @@ namespace SqlBulkTools
             _bulkCopySettings = bulkCopySettings;
             _tableHint = "HOLDLOCK";
             _ordinalDic = new Dictionary<string, int>();
+            _propertyInfoList = propertyInfoList;
         }
 
         /// <summary>

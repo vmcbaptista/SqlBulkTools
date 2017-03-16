@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq.Expressions;
+using System.Reflection;
 
 // ReSharper disable once CheckNamespace
 namespace SqlBulkTools
@@ -13,6 +14,7 @@ namespace SqlBulkTools
     public class DataTableSingularColumnSelect<T> : DataTableAbstractColumnSelect<T>, IDataTableTransaction
     {
         private Dictionary<string, int> _ordinalDic;
+        private List<PropertyInfo> _propertyInfoList;  
 
         /// <summary>
         /// 
@@ -21,9 +23,10 @@ namespace SqlBulkTools
         /// <param name="list"></param>
         /// <param name="columns"></param>
         /// <param name="ordinalDic"></param>
-        public DataTableSingularColumnSelect(DataTableOperations ext, IEnumerable<T> list, HashSet<string> columns, Dictionary<string, int> ordinalDic) : base(ext, list, columns)
+        public DataTableSingularColumnSelect(DataTableOperations ext, IEnumerable<T> list, HashSet<string> columns, Dictionary<string, int> ordinalDic, List<PropertyInfo> propertyInfoList) : base(ext, list, columns)
         {
             _ordinalDic = ordinalDic;
+            _propertyInfoList = propertyInfoList;
         }
 
         /// <summary>
@@ -58,14 +61,14 @@ namespace SqlBulkTools
         /// <returns></returns>
         public DataTable PrepareDataTable()
         {
-            _dt = BulkOperationsHelper.CreateDataTable<T>(_columns, CustomColumnMappings, _ordinalDic);
+            _dt = BulkOperationsHelper.CreateDataTable<T>(_propertyInfoList, _columns, CustomColumnMappings, _ordinalDic);
             _ext.SetBulkExt(this, _columns, CustomColumnMappings, typeof(T));
             return _dt;
         }
 
         DataTable IDataTableTransaction.BuildDataTable()
         {
-            return BulkOperationsHelper.ConvertListToDataTable(_dt, _list, _columns, _ordinalDic);
+            return BulkOperationsHelper.ConvertListToDataTable(_propertyInfoList, _dt, _list, _columns, _ordinalDic);
         }
 
     }

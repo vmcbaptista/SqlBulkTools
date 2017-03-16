@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace SqlBulkTools.QueryOperations
 {
@@ -17,6 +19,7 @@ namespace SqlBulkTools.QueryOperations
         private readonly string _tableName;
         private Dictionary<string, string> CustomColumnMappings { get; set; }
         private readonly List<SqlParameter> _sqlParams;
+        private readonly List<PropertyInfo> _propertyInfoList;
 
         /// <summary>
         /// 
@@ -34,6 +37,7 @@ namespace SqlBulkTools.QueryOperations
             Columns = new HashSet<string>();
             CustomColumnMappings = new Dictionary<string, string>();
             _sqlParams = sqlParams;
+            _propertyInfoList = typeof(T).GetProperties().OrderBy(x => x.Name).ToList();
         }
 
         /// <summary>
@@ -45,7 +49,7 @@ namespace SqlBulkTools.QueryOperations
         {
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
             Columns.Add(propertyName);
-            return new QueryAddColumn<T>(_singleEntity, _tableName, Columns, _schema, _sqlParams);
+            return new QueryAddColumn<T>(_singleEntity, _tableName, Columns, _schema, _sqlParams, _propertyInfoList);
         }
 
         /// <summary>
@@ -54,9 +58,9 @@ namespace SqlBulkTools.QueryOperations
         /// <returns></returns>
         public QueryAddColumnList<T> AddAllColumns()
         {
-            Columns = BulkOperationsHelper.GetAllValueTypeAndStringColumns(typeof(T));
+            Columns = BulkOperationsHelper.GetAllValueTypeAndStringColumns(_propertyInfoList, typeof(T));
 
-            return new QueryAddColumnList<T>(_singleEntity, _tableName, Columns, _schema, _sqlParams);
+            return new QueryAddColumnList<T>(_singleEntity, _tableName, Columns, _schema, _sqlParams, _propertyInfoList);
         }
 
         /// <summary>

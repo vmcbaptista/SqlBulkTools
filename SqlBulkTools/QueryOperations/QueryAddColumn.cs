@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace SqlBulkTools.QueryOperations
 {
@@ -17,6 +18,7 @@ namespace SqlBulkTools.QueryOperations
         private readonly HashSet<string> _columns;
         private readonly string _schema;
         private readonly List<SqlParameter> _sqlParams;
+        private readonly List<PropertyInfo> _propertyInfoList;
 
         /// <summary>
         /// 
@@ -26,7 +28,7 @@ namespace SqlBulkTools.QueryOperations
         /// <param name="columns"></param>
         /// <param name="schema"></param>
         /// <param name="sqlParams"></param>
-        public QueryAddColumn(T singleEntity, string tableName, HashSet<string> columns, string schema, List<SqlParameter> sqlParams)
+        public QueryAddColumn(T singleEntity, string tableName, HashSet<string> columns, string schema, List<SqlParameter> sqlParams, List<PropertyInfo> propertyInfoList)
         {
             _singleEntity = singleEntity;
             _tableName = tableName;
@@ -34,6 +36,7 @@ namespace SqlBulkTools.QueryOperations
             _schema = schema;
             CustomColumnMappings = new Dictionary<string, string>();
             _sqlParams = sqlParams;
+            _propertyInfoList = propertyInfoList;
         }
 
         /// <summary>
@@ -71,7 +74,7 @@ namespace SqlBulkTools.QueryOperations
         /// <returns></returns>
         public QueryInsertReady<T> Insert()
         {
-            return new QueryInsertReady<T>(_singleEntity, _tableName, _schema, _columns, CustomColumnMappings, _sqlParams);
+            return new QueryInsertReady<T>(_singleEntity, _tableName, _schema, _columns, CustomColumnMappings, _sqlParams, _propertyInfoList);
         }
 
         /// <summary>
@@ -81,7 +84,7 @@ namespace SqlBulkTools.QueryOperations
         /// <returns></returns>
         public QueryUpsertReady<T> Upsert()
         {
-            return new QueryUpsertReady<T>(_singleEntity, _tableName, _schema, _columns, CustomColumnMappings, _sqlParams);
+            return new QueryUpsertReady<T>(_singleEntity, _tableName, _schema, _columns, CustomColumnMappings, _sqlParams, _propertyInfoList);
         }
 
 
@@ -93,7 +96,7 @@ namespace SqlBulkTools.QueryOperations
         /// <returns></returns>
         public QueryUpdateCondition<T> Update()
         {
-            return new QueryUpdateCondition<T>(_singleEntity, _tableName, _schema, _columns, CustomColumnMappings, _sqlParams);
+            return new QueryUpdateCondition<T>(_singleEntity, _tableName, _schema, _columns, CustomColumnMappings, _sqlParams, _propertyInfoList);
         }
     }
 }

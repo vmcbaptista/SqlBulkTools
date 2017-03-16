@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 // ReSharper disable once CheckNamespace
 namespace SqlBulkTools
@@ -14,6 +16,7 @@ namespace SqlBulkTools
         private readonly IEnumerable<T> _list;
         private readonly DataTableOperations _ext;
         private readonly Dictionary<string, int> _ordinalDic;
+        private List<PropertyInfo> _propertyInfoList;
 
         /// <summary>
         /// 
@@ -24,6 +27,7 @@ namespace SqlBulkTools
             _ext = ext;
             Columns = new HashSet<string>();
             _ordinalDic = new Dictionary<string, int>();
+            _propertyInfoList = typeof(T).GetProperties().OrderBy(x => x.Name).ToList();
         }
 
         /// <summary>
@@ -35,7 +39,7 @@ namespace SqlBulkTools
         {
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
             Columns.Add(propertyName);
-            return new DataTableSingularColumnSelect<T>(_ext, _list, Columns, _ordinalDic);
+            return new DataTableSingularColumnSelect<T>(_ext, _list, Columns, _ordinalDic, _propertyInfoList);
         }
 
         /// <summary>
@@ -44,8 +48,8 @@ namespace SqlBulkTools
         /// <returns></returns>
         public DataTableAllColumnSelect<T> AddAllColumns()
         {
-            Columns = BulkOperationsHelper.GetAllValueTypeAndStringColumns(typeof(T));
-            return new DataTableAllColumnSelect<T>(_ext, _list, Columns, _ordinalDic);
+            Columns = BulkOperationsHelper.GetAllValueTypeAndStringColumns(_propertyInfoList, typeof(T));
+            return new DataTableAllColumnSelect<T>(_ext, _list, Columns, _ordinalDic, _propertyInfoList);
         }
 
     }

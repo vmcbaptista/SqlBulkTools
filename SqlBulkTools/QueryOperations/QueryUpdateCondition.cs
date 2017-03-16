@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq.Expressions;
+using System.Reflection;
 using SqlBulkTools.Enumeration;
 
 // ReSharper disable once CheckNamespace
@@ -22,6 +23,7 @@ namespace SqlBulkTools
         private int _conditionSortOrder;
         private readonly List<SqlParameter> _sqlParams;
         private readonly Dictionary<string, string> _collationColumnDic;
+        private readonly List<PropertyInfo> _propertyInfoList;
 
         /// <summary>
         /// 
@@ -33,7 +35,7 @@ namespace SqlBulkTools
         /// <param name="customColumnMappings"></param>
         /// <param name="sqlParams"></param>
         public QueryUpdateCondition(T singleEntity, string tableName, string schema, HashSet<string> columns, 
-            Dictionary<string, string> customColumnMappings, List<SqlParameter> sqlParams)
+            Dictionary<string, string> customColumnMappings, List<SqlParameter> sqlParams, List<PropertyInfo> propertyInfoList)
         {
             _singleEntity = singleEntity;
             _tableName = tableName;
@@ -44,6 +46,7 @@ namespace SqlBulkTools
             _collationColumnDic = new Dictionary<string, string>();
             _sqlParams = sqlParams;
             _conditionSortOrder = 1;
+            _propertyInfoList = propertyInfoList;
         }
 
         /// <summary>
@@ -59,7 +62,7 @@ namespace SqlBulkTools
             _conditionSortOrder++;
 
             return new QueryUpdateReady<T>(_singleEntity, _tableName, _schema, _columns, _customColumnMappings, 
-                _conditionSortOrder, _whereConditions, _sqlParams, _collationColumnDic);
+                _conditionSortOrder, _whereConditions, _sqlParams, _collationColumnDic, _propertyInfoList);
         }       
 
         /// <summary>
@@ -81,7 +84,7 @@ namespace SqlBulkTools
             _collationColumnDic.Add(leftName, collation);
 
             return new QueryUpdateReady<T>(_singleEntity, _tableName, _schema, _columns, _customColumnMappings,
-                _conditionSortOrder, _whereConditions, _sqlParams, _collationColumnDic);
+                _conditionSortOrder, _whereConditions, _sqlParams, _collationColumnDic, _propertyInfoList);
         }
 
     }

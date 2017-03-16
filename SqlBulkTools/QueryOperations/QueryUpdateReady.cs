@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading.Tasks;
 using SqlBulkTools.Enumeration;
 
@@ -29,6 +30,7 @@ namespace SqlBulkTools
         private string _identityColumn;
         private readonly Dictionary<string, string> _collationColumnDic;
         private int? _batchQuantity;
+        private List<PropertyInfo> _propertyInfoList;
 
         /// <summary>
         /// 
@@ -43,7 +45,7 @@ namespace SqlBulkTools
         /// <param name="sqlParams"></param>
         /// <param name="collationColumnDic"></param>
         public QueryUpdateReady(T singleEntity, string tableName, string schema, HashSet<string> columns, Dictionary<string, string> customColumnMappings,
-            int conditionSortOrder, List<PredicateCondition> whereConditions, List<SqlParameter> sqlParams, Dictionary<string, string> collationColumnDic)
+            int conditionSortOrder, List<PredicateCondition> whereConditions, List<SqlParameter> sqlParams, Dictionary<string, string> collationColumnDic, List<PropertyInfo> propertyInfoList)
         {
             _singleEntity = singleEntity;
             _tableName = tableName;
@@ -58,6 +60,7 @@ namespace SqlBulkTools
             _identityColumn = null;
             _collationColumnDic = collationColumnDic;
             _batchQuantity = null;
+            _propertyInfoList = propertyInfoList;
         }
 
         /// <summary>
@@ -227,7 +230,7 @@ namespace SqlBulkTools
             string fullQualifiedTableName = BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema,
                 _tableName);
 
-            BulkOperationsHelper.AddSqlParamsForQuery(_sqlParams, _columns, _singleEntity, customColumns: _customColumnMappings);
+            BulkOperationsHelper.AddSqlParamsForQuery(_propertyInfoList, _sqlParams, _columns, _singleEntity, customColumns: _customColumnMappings);
             var concatenatedQuery = _whereConditions.Concat(_andConditions).Concat(_orConditions).OrderBy(x => x.SortOrder);
             BulkOperationsHelper.DoColumnMappings(_customColumnMappings, _columns);
 

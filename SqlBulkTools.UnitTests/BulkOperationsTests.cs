@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using Moq;
 using NUnit.Framework;
 using SqlBulkTools.IntegrationTests.Model;
@@ -158,9 +160,10 @@ namespace SqlBulkTools.UnitTests
         {
             // Arrange
             HashSet<string> expected = new HashSet<string>() {"BoolTest", "CreatedTime", "IntegerTest", "Price", "Title" };
+            List<PropertyInfo> propertyInfoList = typeof(ModelWithMixedTypes).GetProperties().OrderBy(x => x.Name).ToList();
 
             // Act
-            var result = BulkOperationsHelper.GetAllValueTypeAndStringColumns(typeof (ModelWithMixedTypes));
+            var result = BulkOperationsHelper.GetAllValueTypeAndStringColumns(propertyInfoList, typeof (ModelWithMixedTypes));
 
             // Assert
             CollectionAssert.AreEqual(expected, result);
@@ -547,8 +550,10 @@ namespace SqlBulkTools.UnitTests
             columns.Add("BestSeller");
 
             List<SqlParameter> sqlParams = new List<SqlParameter>();
+            List<PropertyInfo> propertyInfoList = typeof(Book).GetProperties().OrderBy(x => x.Name).ToList();
 
-            BulkOperationsHelper.AddSqlParamsForQuery(sqlParams, columns, book);
+
+            BulkOperationsHelper.AddSqlParamsForQuery(propertyInfoList, sqlParams, columns, book);
 
             Assert.AreEqual(3, sqlParams.Count);
         }

@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading.Tasks;
 using SqlBulkTools.Enumeration;
 
@@ -26,9 +27,9 @@ namespace SqlBulkTools
         /// <param name="customColumnMappings"></param>
         /// <param name="bulkCopySettings"></param>
         public BulkInsert(IEnumerable<T> list, string tableName, string schema, HashSet<string> columns,
-            Dictionary<string, string> customColumnMappings, BulkCopySettings bulkCopySettings) :
+            Dictionary<string, string> customColumnMappings, BulkCopySettings bulkCopySettings, List<PropertyInfo> propertyInfoList) :
 
-            base(list, tableName, schema, columns, customColumnMappings, bulkCopySettings)
+            base(list, tableName, schema, columns, customColumnMappings, bulkCopySettings, propertyInfoList)
         {}
 
         /// <summary>
@@ -81,9 +82,9 @@ namespace SqlBulkTools
             {
                 return affectedRows;
             }
-
-            DataTable dt = BulkOperationsHelper.CreateDataTable<T>(_columns, _customColumnMappings, _ordinalDic, _matchTargetOn, _outputIdentity);
-            dt = BulkOperationsHelper.ConvertListToDataTable(dt, _list, _columns, _ordinalDic);
+            
+            DataTable dt = BulkOperationsHelper.CreateDataTable<T>(_propertyInfoList, _columns, _customColumnMappings, _ordinalDic, _matchTargetOn, _outputIdentity);
+            dt = BulkOperationsHelper.ConvertListToDataTable(_propertyInfoList, dt, _list, _columns, _ordinalDic);
 
             // Must be after ToDataTable is called. 
             BulkOperationsHelper.DoColumnMappings(_customColumnMappings, _columns, _matchTargetOn);
@@ -163,8 +164,8 @@ namespace SqlBulkTools
                 return affectedRows;
             }
 
-            DataTable dt = BulkOperationsHelper.CreateDataTable<T>(_columns, _customColumnMappings, _ordinalDic, _matchTargetOn, _outputIdentity);
-            dt = BulkOperationsHelper.ConvertListToDataTable(dt, _list, _columns, _ordinalDic);
+            DataTable dt = BulkOperationsHelper.CreateDataTable<T>(_propertyInfoList, _columns, _customColumnMappings, _ordinalDic, _matchTargetOn, _outputIdentity);
+            dt = BulkOperationsHelper.ConvertListToDataTable(_propertyInfoList, dt, _list, _columns, _ordinalDic);
 
             // Must be after ToDataTable is called. 
             BulkOperationsHelper.DoColumnMappings(_customColumnMappings, _columns, _matchTargetOn);
