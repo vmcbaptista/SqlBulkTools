@@ -434,7 +434,7 @@ namespace SqlBulkTools
 
             command.Append($"INSERT INTO {fullQualifiedTableName} (");
 
-            foreach (var column in columns)
+            foreach (var column in columns.OrderBy(x => x))
             {
                 if (column != Constants.InternalId && column != identityColumn)
                     insertColumns.Add("[" + column + "]");
@@ -451,7 +451,7 @@ namespace SqlBulkTools
             List<string> valueList = new List<string>();
 
             command.Append("(");
-            foreach (var column in columns)
+            foreach (var column in columns.OrderBy(x => x))
             {
                 if (column != identityColumn)
                     valueList.Add($"@{column}");

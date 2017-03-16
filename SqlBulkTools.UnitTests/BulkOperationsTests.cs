@@ -126,7 +126,7 @@ namespace SqlBulkTools.UnitTests
             var columns = GetTestColumns();
             var tableName = "TableName";
             var expected =
-                "INSERT INTO TableName ([Name], [Town], [Email], [IsCool]) ";
+                "INSERT INTO TableName ([Email], [IsCool], [Name], [Town]) ";
 
             // Act
             var result = BulkOperationsHelper.BuildInsertIntoSet(columns, "id", tableName);
