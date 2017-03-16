@@ -22,7 +22,7 @@ namespace SqlBulkTools.IntegrationTests
     [TestFixture]
     class BulkOperationsIT
     {
-        private const int RepeatTimes = 3;
+        private const int RepeatTimes = 1;
 
         private BookRandomizer _randomizer;
         private TestContext _db;
@@ -65,19 +65,27 @@ namespace SqlBulkTools.IntegrationTests
             Assert.AreEqual(rows * RepeatTimes, _db.Books.Count());
         }
 
-        [TestCase(100000)]
+        [TestCase(1000)]
         public void SqlBulkTools_BulkInsert_WithAllColumns(int rows)
         {
             BulkDelete(_db.Books.ToList());
             _bookCollection = new List<Book>();
-            _bookCollection.AddRange(_randomizer.GetRandomCollection(rows));
+
+            List<Book> randomCollection = _randomizer.GetRandomCollection(1000);
+
+            while (randomCollection.Count <= 1000000)
+            {
+                randomCollection = randomCollection.Concat(randomCollection).ToList();
+            }
+
+            _bookCollection.AddRange(_randomizer.GetRandomCollection(10));
             List<long> results = new List<long>();
 
             Trace.WriteLine("Testing BulkInsert with " + rows + " rows");
 
             for (int i = 0; i < RepeatTimes; i++)
             {
-                long time = BulkInsertAllColumns(_bookCollection);
+                long time = BulkInsertAllColumns(randomCollection);
                 results.Add(time);
 
 
@@ -102,7 +110,7 @@ namespace SqlBulkTools.IntegrationTests
 
             File.AppendAllLines("C:/test.txt", new List<string> {message});
 
-            Assert.AreEqual(rows * RepeatTimes, _db.Books.Count());
+            Assert.AreEqual(rows * RepeatTimes, 1024000);
         }
 
         [TestCase(500, 500)]
@@ -1944,14 +1952,22 @@ namespace SqlBulkTools.IntegrationTests
         {
             BulkOperations bulk = new BulkOperations();
             var watch = System.Diagnostics.Stopwatch.StartNew();
-            using (TransactionScope trans = new TransactionScope())
+            using (TransactionScope trans = new TransactionScope(
+                                TransactionScopeOption.RequiresNew,
+                                new TimeSpan(0, 5, 0)))
             {
                 using (SqlConnection conn = new SqlConnection(ConfigurationManager
                     .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
                 {
                     bulk.Setup<Book>()
-                        .ForCollection(col)
-                        .WithTable("Books")
+                        
+                        .ForCollection(col)                                              
+                        .WithTable("Books")  
+                        .WithBulkCopySettings(new BulkCopySettings()
+                        {
+                            BatchSize = 8000,
+                            BulkCopyTimeout = 500
+                        })                      
                         .AddAllColumns()                       
                         .BulkInsert()
                         .TmpDisableAllNonClusteredIndexes()
