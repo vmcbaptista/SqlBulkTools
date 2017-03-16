@@ -189,7 +189,6 @@ namespace SqlBulkTools
 
             if (_matchTargetOnSet.Count == 0)
                 throw new NullReferenceException("MatchTargetOn is a mandatory for upsert operation");
-
                       
             try
             {
@@ -314,6 +313,7 @@ namespace SqlBulkTools
                             {
                                 break;
                             }
+
                             PropertyInfo propertyInfo = _singleEntity.GetType().GetProperty(_identityColumn);
                             propertyInfo.SetValue(_singleEntity, x.Value);
                             break;

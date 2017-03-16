@@ -102,36 +102,6 @@
     <Compile Include="Exception\SqlBulkToolsException.cs" />
     <Compile Include="BulkOperations\BulkForCollection.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="fast-member\.gitignore" />
-    <Content Include="fast-member\FastMember.Core.sln" />
-    <Content Include="fast-member\FastMember.Signed.Tests\FastMember.Signed.Tests.csproj" />
-    <Content Include="fast-member\FastMember.Signed\FastMember.Signed.csproj" />
-    <Content Include="fast-member\FastMember.sln" />
-    <Content Include="fast-member\FastMember.Tests\FastMember.Tests.csproj" />
-    <Content Include="fast-member\FastMember\FastMember.csproj" />
-    <Content Include="fast-member\FastMember_Net20\FastMember_Net20.csproj" />
-    <Content Include="fast-member\FastMember_Net35\FastMember_Net35.csproj" />
-    <Content Include="fast-member\FastMember_Net40.Signed.Tests\FastMember_Net40.Signed.Tests.csproj" />
-    <Content Include="fast-member\FastMember_Net40.Signed\FastMember_Net40.Signed.csproj" />
-    <Content Include="fast-member\FastMember_Net40.Tests\FastMember_Net40.Tests.csproj" />
-    <Content Include="fast-member\FastMember_Net40\FastMember_Net40.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="fast-member\.hgignore" />
-    <None Include="fast-member\.nuget\packages.config" />
-    <None Include="fast-member\FastMember.Signed.Tests\packages.config" />
-    <None Include="fast-member\FastMember.snk" />
-    <None Include="fast-member\FastMember_Net40.Signed.Tests\packages.config" />
-    <None Include="fast-member\FastMember_Net40.Tests\packages.config" />
-    <None Include="fast-member\FastMember_Net40\packages.config" />
-    <None Include="fast-member\Nuget.config" />
-    <None Include="fast-member\NugetSigned\FastMember.Signed.nuspec" />
-    <None Include="fast-member\Nuget\FastMember.nuspec" />
-    <None Include="fast-member\pack.cmd" />
-    <None Include="fast-member\Readme.md" />
-    <None Include="packages.config" />
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
