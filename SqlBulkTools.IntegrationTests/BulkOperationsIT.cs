@@ -5,6 +5,7 @@ using System.Data;
 using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Transactions;
 using NUnit.Framework;
@@ -14,13 +15,14 @@ using SqlBulkTools.IntegrationTests.Data;
 using SqlBulkTools.IntegrationTests.Model;
 using TestContext = SqlBulkTools.IntegrationTests.Data.TestContext;
 using Microsoft.SqlServer.Types;
+using System.Threading;
 
 namespace SqlBulkTools.IntegrationTests
 {
     [TestFixture]
     class BulkOperationsIT
     {
-        private const int RepeatTimes = 1;
+        private const int RepeatTimes = 3;
 
         private BookRandomizer _randomizer;
         private TestContext _db;
@@ -53,6 +55,7 @@ namespace SqlBulkTools.IntegrationTests
             for (int i = 0; i < RepeatTimes; i++)
             {
                 long time = BulkInsert(_bookCollection);
+
                 results.Add(time);
             }
             double avg = results.Average(l => l);
@@ -62,7 +65,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.AreEqual(rows * RepeatTimes, _db.Books.Count());
         }
 
-        [TestCase(1000)]
+        [TestCase(100000)]
         public void SqlBulkTools_BulkInsert_WithAllColumns(int rows)
         {
             BulkDelete(_db.Books.ToList());
@@ -76,9 +79,28 @@ namespace SqlBulkTools.IntegrationTests
             {
                 long time = BulkInsertAllColumns(_bookCollection);
                 results.Add(time);
+
+
+                //var expected = _bookCollection.First();
+                //var actual = _db.Books.Single(x => x.ISBN == expected.ISBN);
+
+                //Assert.AreEqual(expected.Title, actual.Title);
+                //Assert.AreEqual(expected.Description, actual.Description);
+                //Assert.AreEqual(expected.Price, actual.Price);
+                //Assert.AreEqual(expected.WarehouseId, actual.WarehouseId);
+                //Assert.AreEqual(expected.BestSeller, actual.BestSeller);
+
+                Thread.Sleep(500);
             }
             double avg = results.Average(l => l);
-            Trace.WriteLine("Average result (" + RepeatTimes + " iterations): " + avg.ToString("#.##") + " ms\n\n");
+            string message = ("Average result (" + RepeatTimes + " iterations): " + avg.ToString("#.##") + " ms\n\n");
+
+            if (!File.Exists("C:/test.txt"))
+            {
+                File.Create("C:/test.txt");
+            }
+
+            File.AppendAllLines("C:/test.txt", new List<string> {message});
 
             Assert.AreEqual(rows * RepeatTimes, _db.Books.Count());
         }
@@ -1007,10 +1029,14 @@ namespace SqlBulkTools.IntegrationTests
                 trans.Complete();
             }
 
-            var test = _db.Books.ToList().ElementAt(15); // Random book within the 30 elements
-            var expected = books.Single(x => x.ISBN == test.ISBN);
+            var actual = _db.Books.ToList().ElementAt(15); // Random book within the 30 elements
+            var expected = books.Single(x => x.ISBN == actual.ISBN);
 
-            Assert.AreEqual(expected.Id, test.Id);
+            Assert.AreEqual(expected.Id, actual.Id);
+            Assert.AreEqual(expected.Title, actual.Title);
+            Assert.AreEqual(expected.Price, actual.Price);
+            Assert.AreEqual(expected.Description, actual.Description);
+            Assert.AreEqual(expected.ISBN, actual.ISBN);
         }
 
         [Test]
