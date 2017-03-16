@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.SqlServer.Types;
 
 namespace SqlBulkTools.IntegrationTests.Model
 {
@@ -27,5 +28,6 @@ namespace SqlBulkTools.IntegrationTests.Model
         public string NTextTest { get; set; }
         public string NCharTest { get; set; }
         public string XmlTest { get; set; }
+        public SqlGeometry TestSqlGeometry { get; set; }
     }
 }
