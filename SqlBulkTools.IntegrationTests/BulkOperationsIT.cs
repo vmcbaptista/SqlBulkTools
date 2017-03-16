@@ -69,48 +69,21 @@ namespace SqlBulkTools.IntegrationTests
         public void SqlBulkTools_BulkInsert_WithAllColumns(int rows)
         {
             BulkDelete(_db.Books.ToList());
-            _bookCollection = new List<Book>();
 
-            List<Book> randomCollection = _randomizer.GetRandomCollection(1000);
+            List<Book> randomCollection = _randomizer.GetRandomCollection(rows);
 
-            while (randomCollection.Count <= 1000000)
-            {
-                randomCollection = randomCollection.Concat(randomCollection).ToList();
-            }
+            BulkInsertAllColumns(randomCollection);
 
-            _bookCollection.AddRange(_randomizer.GetRandomCollection(10));
-            List<long> results = new List<long>();
+            var expected = randomCollection.First();
+            var actual = _db.Books.Single(x => x.ISBN == expected.ISBN);
 
-            Trace.WriteLine("Testing BulkInsert with " + rows + " rows");
+            Assert.AreEqual(expected.Title, actual.Title);
+            Assert.AreEqual(expected.Description, actual.Description);
+            Assert.AreEqual(expected.Price, actual.Price);
+            Assert.AreEqual(expected.WarehouseId, actual.WarehouseId);
+            Assert.AreEqual(expected.BestSeller, actual.BestSeller);
 
-            for (int i = 0; i < RepeatTimes; i++)
-            {
-                long time = BulkInsertAllColumns(randomCollection);
-                results.Add(time);
-
-
-                //var expected = _bookCollection.First();
-                //var actual = _db.Books.Single(x => x.ISBN == expected.ISBN);
-
-                //Assert.AreEqual(expected.Title, actual.Title);
-                //Assert.AreEqual(expected.Description, actual.Description);
-                //Assert.AreEqual(expected.Price, actual.Price);
-                //Assert.AreEqual(expected.WarehouseId, actual.WarehouseId);
-                //Assert.AreEqual(expected.BestSeller, actual.BestSeller);
-
-                Thread.Sleep(500);
-            }
-            double avg = results.Average(l => l);
-            string message = ("Average result (" + RepeatTimes + " iterations): " + avg.ToString("#.##") + " ms\n\n");
-
-            if (!File.Exists("C:/test.txt"))
-            {
-                File.Create("C:/test.txt");
-            }
-
-            File.AppendAllLines("C:/test.txt", new List<string> {message});
-
-            Assert.AreEqual(rows * RepeatTimes, 1024000);
+            Assert.AreEqual(rows * RepeatTimes, _db.Books.Count());
         }
 
         [TestCase(500, 500)]
