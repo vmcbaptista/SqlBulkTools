@@ -43,9 +43,17 @@
       <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="FastMember, Version=1.0.0.9, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SprocMapper.1.1.2\lib\net45\FastMember.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.SqlServer.Types, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL" />
     <Reference Include="Ploeh.AutoFixture, Version=3.50.2.0, Culture=neutral, PublicKeyToken=b24654c590009d4f, processorArchitecture=MSIL">
       <HintPath>..\packages\AutoFixture.3.50.2\lib\net40\Ploeh.AutoFixture.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="SprocMapperLibrary, Version=1.0.9.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SprocMapper.1.1.2\lib\net45\SprocMapperLibrary.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -73,10 +81,8 @@
   <ItemGroup>
     <Compile Include="BulkOperationsAsyncIT.cs" />
     <Compile Include="BulkOperationsIT.cs" />
-    <Compile Include="Data\DatabaseInitialiser.cs" />
-    <Compile Include="Data\TestContext.cs" />
     <Compile Include="Helper\BookRandomizer.cs" />
-    <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Helper\DataAccess.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueryOperationsAsyncIT.cs" />
     <Compile Include="QueryOperationsIT.cs" />
@@ -88,7 +94,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Data\Scripts\TestDataTypesTable.sql" />
+    <Content Include="SQLScripts\Seed.sql" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SqlBulkTools.TestCommon\SqlBulkTools.TestCommon.csproj">
@@ -100,6 +106,7 @@
       <Name>SqlBulkTools</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>
