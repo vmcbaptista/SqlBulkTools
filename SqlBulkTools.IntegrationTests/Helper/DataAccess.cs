@@ -70,11 +70,28 @@ namespace SqlBulkTools.IntegrationTests.Helper
             using (SqlConnection conn = new SqlConnection(ConfigurationManager
                 .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
             {
-                var customColumnMappingTests = conn
-                    .Select().ExecuteReader<CustomColumnMappingTest>(conn, "dbo.GetCustomColumnMappingTests")
+                var customColumnMappingTests = conn                  
+                    .Select()
+                    .CustomColumnMapping<CustomColumnMappingTest>(x => x.ColumnXIsDifferent, "ColumnX")
+                    .CustomColumnMapping<CustomColumnMappingTest>(x => x.ColumnYIsDifferentInDatabase, "ColumnY")
+                    .ExecuteReader<CustomColumnMappingTest>(conn, "dbo.GetCustomColumnMappingTests")                                        
                     .ToList();
 
                 return customColumnMappingTests;
+            }
+        }
+
+        public List<ReservedColumnNameTest> GetReservedColumnNameTests()
+        {
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager
+                .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+            {
+                var reservedColumnNameTests = conn
+                    .Select()
+                    .ExecuteReader<ReservedColumnNameTest>(conn, "dbo.GetReservedColumnNameTests")
+                    .ToList();
+
+                return reservedColumnNameTests;
             }
         }
     }

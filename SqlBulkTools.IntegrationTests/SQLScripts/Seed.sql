@@ -58,6 +58,17 @@ IF EXISTS (
 
 GO
 
+IF EXISTS (
+		SELECT * 
+		FROM INFORMATION_SCHEMA.ROUTINES
+		WHERE SPECIFIC_CATALOG = 'SqlBulkTools'
+		AND SPECIFIC_NAME = 'GetReservedColumnNameTests'
+		)
+		BEGIN
+			DROP PROCEDURE dbo.GetReservedColumnNameTests
+		END
+
+GO
 
 -- DROP TABLES IF EXISTS
 
@@ -304,5 +315,19 @@ BEGIN
 
     SELECT *
 	FROM CustomColumnMappingTests
+END
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE GetReservedColumnNameTests
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT *
+	FROM dbo.ReservedColumnNameTests
 END
 GO
