@@ -79,7 +79,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="BulkOperationsAsyncIT.cs" />
+    <Compile Include="BulkOperationsAsyncIt.cs" />
     <Compile Include="BulkOperationsIt.cs" />
     <Compile Include="Helper\BookRandomizer.cs" />
     <Compile Include="Helper\DataAccess.cs" />
