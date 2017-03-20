@@ -1,4 +1,9 @@
 ﻿// ReSharper disable once CheckNamespace
+
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("SqlBulkTools.UnitTests")]
+[assembly: InternalsVisibleTo("SqlBulkTools.IntegrationTests")]
 namespace SqlBulkTools
 {
     internal class IdentityException : SqlBulkToolsException

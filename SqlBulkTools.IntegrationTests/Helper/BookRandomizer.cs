@@ -3,7 +3,7 @@ using System.Linq;
 using System.Reflection;
 using Ploeh.AutoFixture;
 using Ploeh.AutoFixture.Kernel;
-using SqlBulkTools.IntegrationTests.Model;
+using SqlBulkTools.TestCommon.Model;
 
 // ReSharper disable once CheckNamespace
 namespace SqlBulkTools.IntegrationTests

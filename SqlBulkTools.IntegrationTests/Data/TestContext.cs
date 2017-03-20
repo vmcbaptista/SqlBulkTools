@@ -1,8 +1,8 @@
 ﻿using System.Data.Entity;
 using System.Data.SqlClient;
-using SqlBulkTools.IntegrationTests.Model;
+using SqlBulkTools.TestCommon.Model;
 
-namespace SqlBulkTools.IntegrationTests.Data
+namespace SqlBulkTools.IntegrationTests2.Data
 {
     public class TestContext : DbContext 
     {

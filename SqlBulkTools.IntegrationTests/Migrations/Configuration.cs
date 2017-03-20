@@ -1,9 +1,8 @@
-using SqlBulkTools.IntegrationTests.Data;
+using System.Data.Entity.Migrations;
+using SqlBulkTools.IntegrationTests2.Data;
 
-namespace SqlBulkTools.IntegrationTests.Migrations
+namespace SqlBulkTools.IntegrationTests2.Migrations
 {
-    using System.Data.Entity.Migrations;
-
     internal sealed class Configuration : DbMigrationsConfiguration<TestContext>
     {
         public Configuration()

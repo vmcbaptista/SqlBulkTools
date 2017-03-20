@@ -3,7 +3,7 @@ using System.Data;
 using System.Data.Entity;
 using System.Data.SqlClient;
 
-namespace SqlBulkTools.IntegrationTests.Data
+namespace SqlBulkTools.IntegrationTests2.Data
 {
     public class DatabaseInitialiser : /*CreateDatabaseIfNotExists<TestContext>*/DropCreateDatabaseAlways<TestContext>
     {

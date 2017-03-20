@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SqlBulkTools.IntegrationTests.Model
+namespace SqlBulkTools.TestCommon.Model
 {
     public class Transaction
     {

@@ -5,23 +5,22 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Transactions;
-using NUnit.Framework;
-using SqlBulkTools.Core;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBulkTools.Enumeration;
-using SqlBulkTools.IntegrationTests.Data;
-using SqlBulkTools.IntegrationTests.Model;
-using TestContext = SqlBulkTools.IntegrationTests.Data.TestContext;
+using SqlBulkTools.IntegrationTests2.Data;
+using SqlBulkTools.TestCommon.Model;
+using TestContext = SqlBulkTools.IntegrationTests2.Data.TestContext;
 
 namespace SqlBulkTools.IntegrationTests
 {
-    [TestFixture]
-    class QueryOperationsAsyncIT
+    [TestClass]
+    public class QueryOperationsAsyncIT
     {
 
         private BookRandomizer _randomizer;
         private TestContext _db;
 
-        [OneTimeSetUp]
+        [TestInitialize]
         public void Setup()
         {
             _db = new TestContext();
@@ -30,13 +29,13 @@ namespace SqlBulkTools.IntegrationTests
             _db.Database.Initialize(true);
         }
 
-        [OneTimeTearDown]
+        [TestCleanup]
         public void TearDown()
         {
             _db.Dispose();
         }
 
-        [Test]
+        [TestMethod]
         public async Task SqlBulkTools_UpdateQuery_SetPriceOnSingleEntity()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -82,7 +81,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.AreEqual(100, _db.Books.Single(x => x.ISBN == isbn).Price);
         }
 
-        [Test]
+        [TestMethod]
         public async Task SqlBulkTools_UpdateQuery_SetPriceAndDescriptionOnSingleEntity()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -136,7 +135,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.AreEqual("Somebody will want me now! Yay", _db.Books.Single(x => x.ISBN == isbn).Description);
         }
 
-        [Test]
+        [TestMethod]
         public async Task SqlBulkTools_UpdateQuery_MultipleConditionsTrue()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -190,7 +189,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.AreEqual(5, _db.Books.Single(x => x.ISBN == isbn).WarehouseId);
         }
 
-        [Test]
+        [TestMethod]
         public async Task SqlBulkTools_UpdateQuery_MultipleConditionsFalse()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -244,7 +243,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.IsTrue(updatedRecords == 0);
         }
 
-        [Test]
+        [TestMethod]
         public async Task SqlBulkTools_DeleteQuery_DeleteSingleEntity()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -285,7 +284,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.AreEqual(29, _db.Books.Count());
         }
 
-        [Test]
+        [TestMethod]
         public async Task SqlBulkTools_DeleteQuery_DeleteWhenNotNullWithSchema()
         {
             _db.SchemaTest2.RemoveRange(_db.SchemaTest2.ToList());
@@ -331,7 +330,7 @@ namespace SqlBulkTools.IntegrationTests
 
 
 
-        [Test]
+        [TestMethod]
         public async Task SqlBulkTools_DeleteQuery_DeleteWhenNullWithWithSchema()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -372,7 +371,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.AreEqual(0, _db.SchemaTest2.Count());
         }
 
-        [Test]
+        [TestMethod]
         public async Task SqlBulkTools_DeleteQuery_DeleteWithMultipleConditions()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -424,7 +423,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.AreEqual(25, _db.Books.Count());
         }
 
-        [Test]
+        [TestMethod]
         public async Task SqlBulkTools_Insert_ManualAddColumn()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -456,7 +455,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.IsNotNull(_db.Books.SingleOrDefault(x => x.ISBN == "1234567"));
         }
 
-        [Test]
+        [TestMethod]
         public async Task SqlBulkTools_Insert_AddAllColumns()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -492,7 +491,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.IsNotNull(_db.Books.SingleOrDefault(x => x.ISBN == "1234567"));
         }
 
-        [Test]
+        [TestMethod]
         public async Task SqlBulkTools_Upsert_AddAllColumns()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -527,7 +526,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.IsNotNull(_db.Books.SingleOrDefault(x => x.ISBN == "1234567"));
         }
 
-        [Test]
+        [TestMethod]
         public async Task SqlBulkTools_Upsert_AddAllColumnsWithExistingRecord()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -582,7 +581,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.IsNotNull(_db.Books.SingleOrDefault(x => x.Title == "Hello Greggo"));
         }
 
-        [Test]
+        [TestMethod]
         public async Task SqlBulkTools_Insert_CustomColumnMapping()
         {
             BulkOperations bulk = new BulkOperations();
@@ -626,7 +625,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.IsTrue(_db.CustomColumnMappingTest.First().ColumnXIsDifferent == "ColumnX 1");
         }
 
-        [Test]
+        [TestMethod]
         public async Task SqlBulkTools_Upsert_CustomColumnMapping()
         {
             BulkOperations bulk = new BulkOperations();
@@ -664,7 +663,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.IsTrue(_db.CustomColumnMappingTest.First().ColumnYIsDifferentInDatabase == 3);
         }
 
-        [Test]
+        [TestMethod]
         public async Task SqlBulkTools_Update_CustomColumnMapping()
         {
             BulkOperations bulk = new BulkOperations();

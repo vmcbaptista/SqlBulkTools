@@ -4,28 +4,29 @@ using System.Configuration;
 using System.Data;
 using System.Data.Entity;
 using System.Data.SqlClient;
-using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Linq;
 using System.Transactions;
-using NUnit.Framework;
+using Microsoft.SqlServer.Types;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Ploeh.AutoFixture;
 using SqlBulkTools.Enumeration;
-using SqlBulkTools.IntegrationTests.Data;
-using SqlBulkTools.IntegrationTests.Model;
-using TestContext = SqlBulkTools.IntegrationTests.Data.TestContext;
+using SqlBulkTools.IntegrationTests2.Data;
+using SqlBulkTools.TestCommon.Model;
+using TestContext = SqlBulkTools.IntegrationTests2.Data.TestContext;
 
 namespace SqlBulkTools.IntegrationTests
 {
-    [TestFixture]
-    class BulkOperationsIT
+    [TestClass]
+    public class BulkOperationsIT
     {
         private const int RepeatTimes = 1;
 
         private BookRandomizer _randomizer;
         private TestContext _db;
         private List<Book> _bookCollection;
-        [OneTimeSetUp]
+
+        [TestInitialize]
         public void Setup()
         {
             _db = new TestContext();
@@ -34,15 +35,17 @@ namespace SqlBulkTools.IntegrationTests
             _db.Database.Initialize(true);
         }
 
-        [OneTimeTearDown]
+        [TestCleanup]
         public void TearDown()
         {
             _db.Dispose();
         }
 
-        [TestCase(1000)]
-        public void SqlBulkTools_BulkInsert(int rows)
+        [TestMethod]
+        public void SqlBulkTools_BulkInsert()
         {
+            const int rows = 1000;
+
             BulkDelete(_db.Books.ToList());
             _bookCollection = new List<Book>();
             _bookCollection.AddRange(_randomizer.GetRandomCollection(rows));
@@ -57,15 +60,17 @@ namespace SqlBulkTools.IntegrationTests
                 results.Add(time);
             }
             double avg = results.Average(l => l);
-            
+
             Trace.WriteLine("Average result (" + RepeatTimes + " iterations): " + avg.ToString("#.##") + " ms\n\n");
 
             Assert.AreEqual(rows * RepeatTimes, _db.Books.Count());
         }
 
-        [TestCase(1000)]
-        public void SqlBulkTools_BulkInsert_WithAllColumns(int rows)
+        [TestMethod]
+        public void SqlBulkTools_BulkInsert_WithAllColumns()
         {
+            const int rows = 1000;
+
             BulkDelete(_db.Books.ToList());
 
             List<Book> randomCollection = _randomizer.GetRandomCollection(rows);
@@ -84,9 +89,11 @@ namespace SqlBulkTools.IntegrationTests
             Assert.AreEqual(rows * RepeatTimes, _db.Books.Count());
         }
 
-        [TestCase(500, 500)]
-        public void SqlBulkTools_BulkInsertOrUpdate(int rows, int newRows)
+        [TestMethod]
+        public void SqlBulkTools_BulkInsertOrUpdate()
         {
+            const int rows = 500, newRows = 500;
+
             BulkDelete(_db.Books.ToList());
             var fixture = new Fixture();
             _bookCollection = _randomizer.GetRandomCollection(rows);
@@ -125,9 +132,11 @@ namespace SqlBulkTools.IntegrationTests
         }
 
 
-        [TestCase(500, 500)]
-        public void SqlBulkTools_BulkInsertOrUpdateAllColumns(int rows, int newRows)
+        [TestMethod]
+        public void SqlBulkTools_BulkInsertOrUpdateAllColumns()
         {
+            const int rows = 1000, newRows = 500;
+
             BulkDelete(_db.Books.ToList());
             var fixture = new Fixture();
             _bookCollection = _randomizer.GetRandomCollection(rows);
@@ -166,9 +175,11 @@ namespace SqlBulkTools.IntegrationTests
         }
 
 
-        [TestCase(1000)]
-        public void SqlBulkTools_BulkUpdate(int rows)
+        [TestMethod]
+        public void SqlBulkTools_BulkUpdate()
         {
+            const int rows = 500;
+
             var fixture = new Fixture();
             fixture.Customizations.Add(new PriceBuilder());
             fixture.Customizations.Add(new IsbnBuilder());
@@ -212,9 +223,11 @@ namespace SqlBulkTools.IntegrationTests
         }
 
 
-        [TestCase(1000)]
-        public void SqlBulkTools_BulkUpdateOnIdentityColumn(int rows)
+        [TestMethod]
+        public void SqlBulkTools_BulkUpdateOnIdentityColumn()
         {
+            const int rows = 500;
+
             var fixture = new Fixture();
             fixture.Customizations.Add(new PriceBuilder());
             fixture.Customizations.Add(new IsbnBuilder());
@@ -267,9 +280,11 @@ namespace SqlBulkTools.IntegrationTests
             Assert.AreEqual(_db.Books.Count(), _bookCollection.Count);
         }
 
-        [TestCase(1000)]
-        public void SqlBulkTools_BulkDelete(int rows)
+        [TestMethod]
+        public void SqlBulkTools_BulkDelete()
         {
+            const int rows = 500;
+
             _bookCollection = _randomizer.GetRandomCollection(rows);
             BulkDelete(_db.Books.ToList());
 
@@ -289,41 +304,32 @@ namespace SqlBulkTools.IntegrationTests
 
         }
 
-        [Test]
+        [TestMethod]
+        [ExpectedException(typeof(IdentityException), "Cannot update identity column 'Id'. SQLBulkTools requires the SetIdentityColumn method to be configured if an identity column is being used. Please reconfigure your setup and try again.")]
         public void SqlBulkTools_IdentityColumnWhenNotSet_ThrowsIdentityException()
         {
             // Arrange
             var books = _db.Books.ToList();
 
-
             BulkDelete(books);
+            _bookCollection = _randomizer.GetRandomCollection(20);
 
-                
-         _bookCollection = _randomizer.GetRandomCollection(20);
-                
-            
             BulkOperations bulk = new BulkOperations();
 
             using (SqlConnection conn = new SqlConnection(ConfigurationManager
                 .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
             {
-                Assert.Throws<IdentityException>(() => bulk.Setup<Book>()
-                            .ForCollection(_bookCollection)
-                            .WithTable("Books")
-                            .AddAllColumns()
-                            .BulkUpdate()
-                            .MatchTargetOn(x => x.Id)
-                            .Commit(conn), "Cannot update identity " +
-                             "column 'Id'. SQLBulkTools requires the SetIdentityColumn" +
-                             " method to be configured if an identity column is being used. Please" +
-                             " reconfigure your setup and try again.");
+                bulk.Setup<Book>()
+                    .ForCollection(_bookCollection)
+                    .WithTable("Books")
+                    .AddAllColumns()
+                    .BulkUpdate()
+                    .MatchTargetOn(x => x.Id)
+                    .Commit(conn);
             }
-
-
-
         }
 
-        [Test]
+        [TestMethod]
         public void SqlBulkTools_IdentityColumnSet_UpdatesTargetWhenSetIdentityColumn()
         {
             // Arrange
@@ -359,7 +365,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.AreEqual(testDesc, _db.Books.First().Description);
         }
 
-        [Test]
+        [TestMethod]
         public void SqlBulkTools_WithConflictingTableName_DeletesAndInsertsToCorrectTable()
         {
             // Arrange           
@@ -404,7 +410,7 @@ namespace SqlBulkTools.IntegrationTests
 
         }
 
-        [Test]
+        [TestMethod]
         public void SqlBulkTools_BulkDeleteOnId_AddItemsThenRemovesAllItems()
         {
             // Arrange           
@@ -455,7 +461,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.IsFalse(_db.SchemaTest1.Any());
         }
 
-        [Test]
+        [TestMethod]
         public void SqlBulkTools_BulkUpdate_PartialUpdateOnlyUpdatesSelectedColumns()
         {
             // Arrange
@@ -500,7 +506,7 @@ namespace SqlBulkTools.IntegrationTests
 
         }
 
-        [Test]
+        [TestMethod]
         public void SqlBulkTools_BulkInsertWithColumnMappings_CorrectlyMapsColumns()
         {
             BulkOperations bulk = new BulkOperations();
@@ -525,7 +531,7 @@ namespace SqlBulkTools.IntegrationTests
                         .WithTable("CustomColumnMappingTests")
                         .AddAllColumns()
                         .CustomColumnMapping(x => x.ColumnXIsDifferent, "ColumnX")
-                        .CustomColumnMapping(x => x.ColumnYIsDifferentInDatabase, "ColumnY")                       
+                        .CustomColumnMapping(x => x.ColumnYIsDifferentInDatabase, "ColumnY")
                         .BulkInsert()
                         .Commit(conn);
                 }
@@ -537,7 +543,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.IsTrue(_db.CustomColumnMappingTest.Any());
         }
 
-        [Test]
+        [TestMethod]
         public void SqlBulkTools_BulkInsertOrUpdateWithColumnMappings_CorrectlyMapsColumns()
         {
             BulkOperations bulk = new BulkOperations();
@@ -576,7 +582,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.IsTrue(_db.CustomColumnMappingTest.Any());
         }
 
-        [Test]
+        [TestMethod]
         public void SqlBulkTools_BulkInsertOrUpdateWithManualColumnMappings_CorrectlyMapsColumns()
         {
             BulkOperations bulk = new BulkOperations();
@@ -600,8 +606,8 @@ namespace SqlBulkTools.IntegrationTests
                         .ForCollection(col)
                         .WithTable("CustomColumnMappingTests")
                         .AddColumn(x => x.ColumnXIsDifferent, "ColumnX")
-                        .AddColumn(x => x.ColumnYIsDifferentInDatabase, "ColumnY")              
-                        .BulkInsertOrUpdate()                    
+                        .AddColumn(x => x.ColumnYIsDifferentInDatabase, "ColumnY")
+                        .BulkInsertOrUpdate()
                         .MatchTargetOn(x => x.NaturalId)
                         .UpdateWhen(x => x.ColumnXIsDifferent != "me")
                         .Commit(conn);
@@ -614,7 +620,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.IsTrue(_db.CustomColumnMappingTest.Any());
         }
 
-        [Test]
+        [TestMethod]
         public void SqlBulkTools_BulkUpdateWithManualColumnMappings_CorrectlyMapsColumns()
         {
             BulkOperations bulk = new BulkOperations();
@@ -624,7 +630,7 @@ namespace SqlBulkTools.IntegrationTests
             for (int i = 0; i < 30; i++)
             {
                 col.Add(new CustomColumnMappingTest() { NaturalId = i, ColumnXIsDifferent = "ColumnX " + i, ColumnYIsDifferentInDatabase = i });
-            }            
+            }
 
             _db.CustomColumnMappingTest.RemoveRange(_db.CustomColumnMappingTest.ToList());
             _db.SaveChanges();
@@ -665,7 +671,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.IsTrue(_db.CustomColumnMappingTest.First().ColumnXIsDifferent == "Updated");
         }
 
-        [Test]
+        [TestMethod]
         public void SqlBulkTools_BulkUpdateWithColumnMappings_CorrectlyMapsColumns()
         {
             BulkOperations bulk = new BulkOperations();
@@ -704,7 +710,7 @@ namespace SqlBulkTools.IntegrationTests
                         .WithTable("CustomColumnMappingTests")
                         .AddAllColumns()
                         .CustomColumnMapping(x => x.ColumnXIsDifferent, "ColumnX")
-                        .CustomColumnMapping(x => x.ColumnYIsDifferentInDatabase, "ColumnY")                      
+                        .CustomColumnMapping(x => x.ColumnYIsDifferentInDatabase, "ColumnY")
                         .BulkUpdate()
                         .MatchTargetOn(x => x.NaturalId)
                         .UpdateWhen(x => x.ColumnXIsDifferent != "me")
@@ -718,7 +724,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.IsTrue(_db.CustomColumnMappingTest.First().ColumnXIsDifferent == "Updated");
         }
 
-        [Test]
+        [TestMethod]
         public void SqlBulkTools_WhenUsingReservedSqlKeywords()
         {
             _db.ReservedColumnNameTest.RemoveRange(_db.ReservedColumnNameTest.ToList());
@@ -754,7 +760,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.IsTrue(_db.ReservedColumnNameTest.Any());
         }
 
-        [Test]
+        [TestMethod]
         public void SqlBulkTools_BulkInsertOrUpdate_TestIdentityOutput()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -788,7 +794,7 @@ namespace SqlBulkTools.IntegrationTests
 
         }
 
-        [Test]
+        [TestMethod]
         public void SqlBulkTools_BulkInsertOrUpdate_TestNullComparisonWithMatchTargetOn()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -826,7 +832,7 @@ namespace SqlBulkTools.IntegrationTests
 
         }
 
-        [Test]
+        [TestMethod]
         public void SqlBulkTools_BulkInsertOrUpdate_ExcludeColumnTest()
         {
             // Remove existing records for a fresh test
@@ -840,7 +846,7 @@ namespace SqlBulkTools.IntegrationTests
             originalDate = new DateTime(2016, 11, 9);
             // Set the new date as the date Trump's presidency will end
             updatedDate = new DateTime(2020, 11, 9);
-            
+
             // Add dates to initial list
             books.ForEach(x =>
             {
@@ -871,8 +877,8 @@ namespace SqlBulkTools.IntegrationTests
                     });
 
                     // Insert a random record
-                    books.Add(new Book(){CreatedAt   = updatedDate, ModifiedAt = updatedDate, Price = 29.99M, Title="Trump likes woman", ISBN = "1234567891011"});
-                    
+                    books.Add(new Book() { CreatedAt = updatedDate, ModifiedAt = updatedDate, Price = 29.99M, Title = "Trump likes woman", ISBN = "1234567891011" });
+
                     bulk.Setup<Book>()
                         .ForCollection(books)
                         .WithTable("Books")
@@ -896,7 +902,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.AreEqual(updatedDate, createdBookUnderTest.CreatedAt); // CreatedAt should be new date because it was an insert
         }
 
-        [Test]
+        [TestMethod]
         public void SqlBulkTools_BulkInsertOrUpdateWithSelectedColumns_TestIdentityOutput()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -933,7 +939,7 @@ namespace SqlBulkTools.IntegrationTests
 
         }
 
-        [Test]
+        [TestMethod]
         public void SqlBulkTools_BulkInsert_TestIdentityOutput()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -971,7 +977,7 @@ namespace SqlBulkTools.IntegrationTests
 
 
 
-        [Test]
+        [TestMethod]
         public void SqlBulkTools_BulkInsertWithSelectedColumns_TestIdentityOutput()
         {
 
@@ -997,7 +1003,7 @@ namespace SqlBulkTools.IntegrationTests
                         .AddColumn(x => x.Price)
                         .AddColumn(x => x.Description)
                         .AddColumn(x => x.ISBN)
-                        .AddColumn(x => x.PublishDate)                      
+                        .AddColumn(x => x.PublishDate)
                         .BulkInsert()
                         .TmpDisableAllNonClusteredIndexes()
                         .SetIdentityColumn(x => x.Id, ColumnDirectionType.InputOutput)
@@ -1018,7 +1024,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.AreEqual(expected.ISBN, actual.ISBN);
         }
 
-        [Test]
+        [TestMethod]
         public void SqlBulkTools_BulkDeleteWithSelectedColumns_TestIdentityOutput()
         {
 
@@ -1053,7 +1059,7 @@ namespace SqlBulkTools.IntegrationTests
                         .WithBulkCopySettings(new BulkCopySettings()
                         {
                             BatchSize = 5000
-                        })                   
+                        })
                         .AddColumn(x => x.ISBN)
                         .BulkDelete()
                         .MatchTargetOn(x => x.ISBN)
@@ -1070,7 +1076,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.AreEqual(expected, test.Id);
         }
 
-        [Test]
+        [TestMethod]
         public void SqlBulkTools_BulkUpdateWithSelectedColumns_TestIdentityOutput()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -1107,7 +1113,8 @@ namespace SqlBulkTools.IntegrationTests
             Assert.AreEqual(expected.Id, test.Id);
         }
 
-        [Test]
+        [TestMethod]
+        [ExpectedException(typeof(SqlBulkToolsException), "Only value, string, char[], byte[] and SqlXml types can be used with SqlBulkTools. Refer to https://msdn.microsoft.com/en-us/library/cc716729(v=vs.110).aspx for more details.")]
         public void SqlBulkTools_BulkInsertAddInvalidDataType_ThrowsSqlBulkToolsExceptionException()
         {
             BulkOperations bulk = new BulkOperations();
@@ -1120,25 +1127,20 @@ namespace SqlBulkTools.IntegrationTests
                 using (SqlConnection conn = new SqlConnection(ConfigurationManager
                     .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
                 {
-                    Assert.Throws<SqlBulkToolsException>(() => bulk.Setup<Book>()
-                                .ForCollection(books)
-                                .WithTable("Books")
-                                .AddColumn(x => x.ISBN)
-                                .AddColumn(x => x.InvalidType)
-                                .BulkInsert()
-                                .Commit(conn), "Only value, string, char[], byte[] and SqlXml " +
-                                               "types can be used with SqlBulkTools. Refer to " +
-                                               "https://msdn.microsoft.com/en-us/library/cc716729(v=vs.110).aspx for" +
-                                               " more details.");
+                    bulk.Setup<Book>()
+                        .ForCollection(books)
+                        .WithTable("Books")
+                        .AddColumn(x => x.ISBN)
+                        .AddColumn(x => x.InvalidType)
+                        .BulkInsert()
+                        .Commit(conn);
                 }
 
                 trans.Complete();
             }
-
-
         }
 
-        [Test]
+        [TestMethod]
         public void SqlBulkTools_BulkInsertWithGenericType()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -1153,9 +1155,7 @@ namespace SqlBulkTools.IntegrationTests
                     .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
                 {
                     bulk.Setup()
-                    .ForCollection(
-                        _bookCollection.Select(
-                            x => new { x.Description, x.ISBN, x.Id, x.Price }))
+                    .ForCollection(_bookCollection.Select(x => new { x.Description, x.ISBN, x.Id, x.Price }))
                     .WithTable("Books")
                     .AddColumn(x => x.Id)
                     .AddColumn(x => x.Description)
@@ -1173,7 +1173,8 @@ namespace SqlBulkTools.IntegrationTests
             Assert.IsTrue(_db.Books.Any());
         }
 
-        [Test]
+        [TestMethod]
+        [ExpectedException(typeof(SqlBulkToolsException), "No setter method available on property 'Id'. Could not write output back to property.")]
         public void SqlBulkTools_BulkInsertWithoutSetter_ThrowsMeaningfulException()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -1188,8 +1189,7 @@ namespace SqlBulkTools.IntegrationTests
                     .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
                 {
 
-                    Assert.Throws<SqlBulkToolsException>(() =>
-                        bulk.Setup()
+                    bulk.Setup()
                             .ForCollection(
                                 _bookCollection.Select(
                                     x => new { x.Description, x.ISBN, x.Id, x.Price }))
@@ -1199,9 +1199,7 @@ namespace SqlBulkTools.IntegrationTests
                             .AddColumn(x => x.ISBN)
                             .AddColumn(x => x.Price)
                             .BulkInsert()
-                            .SetIdentityColumn(x => x.Id, ColumnDirectionType.InputOutput)
-                            .Commit(conn),
-                        "No setter method available on property 'Id'. Could not write output back to property.");
+                            .SetIdentityColumn(x => x.Id, ColumnDirectionType.InputOutput);
                 }
 
                 trans.Complete();
@@ -1209,7 +1207,8 @@ namespace SqlBulkTools.IntegrationTests
 
         }
 
-        [Test]
+        [TestMethod]
+        [ExpectedException(typeof(SqlBulkToolsException), "No setter method available on property 'Id'. Could not write output back to property.")]
         public void SqlBulkTools_BulkInsertOrUpdateWithPrivateIdentityField_ThrowsMeaningfulException()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -1232,7 +1231,7 @@ namespace SqlBulkTools.IntegrationTests
                 using (SqlConnection conn = new SqlConnection(ConfigurationManager
                     .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
                 {
-                    Assert.Throws<SqlBulkToolsException>(() => bulk.Setup<BookWithPrivateIdentity>()
+                    bulk.Setup<BookWithPrivateIdentity>()
                             .ForCollection(booksWithPrivateIdentity)
                             .WithTable("Books")
                             .AddColumn(x => x.Id)
@@ -1242,15 +1241,14 @@ namespace SqlBulkTools.IntegrationTests
                             .BulkInsertOrUpdate()
                             .MatchTargetOn(x => x.ISBN)
                             .SetIdentityColumn(x => x.Id, ColumnDirectionType.InputOutput)
-                            .Commit(conn),
-                        "No setter method available on property 'Id'. Could not write output back to property.");
+                            .Commit(conn);
                 }
 
                 trans.Complete();
             }
         }
 
-        [Test]
+        [TestMethod]
         public void SqlBulkTools_BulkInsertOrUpdateWithDeletePredicate_OnlyDeletesRecordsFromSpecifiedWarehouse()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -1321,7 +1319,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.AreEqual(15, _db.Books.Count(x => x.WarehouseId == 1));
         }
 
-        [Test]
+        [TestMethod]
         public void SqlBulkTools_BulkUpdateWithPredicate_OnlyUpdateWhenWarehouseIs1()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -1382,7 +1380,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.AreNotEqual(99999999, _db.Books.First(x => x.WarehouseId == 2).Price);
         }
 
-        [Test]
+        [TestMethod]
         public void SqlBulkTools_BulkUpdateWithPredicate_WhenBestSellerTrue()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -1427,7 +1425,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.AreEqual(1234567, _db.Books.Single(x => x.ISBN.Equals(isbn)).Price);
         }
 
-        [Test]
+        [TestMethod]
         public void SqlBulkTools_BulkUpdateWithPredicate_WhenBestSellerFalse()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -1477,7 +1475,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.AreEqual(1234567, _db.Books.Single(x => x.ISBN.Equals(isbn)).Price);
         }
 
-        [Test]
+        [TestMethod]
         public void SqlBulkTools_BulkUpdateWithPredicate_OnlyUpdateWhenPriceLessThanOrEqualTo20()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -1529,7 +1527,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.AreEqual(17, _db.Books.Single(x => x.ISBN.Equals(isbn)).Price);
         }
 
-        [Test]
+        [TestMethod]
         public void SqlBulkTools_BulkUpdateWithPredicate_OnlyDeleteWhenWarehouseIs1()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -1581,7 +1579,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.IsFalse(_db.Books.Any(x => x.WarehouseId == 1));
         }
 
-        [Test]
+        [TestMethod]
         public void SqlBulkTools_BulkDeleteWithMultiplePredicate_WhenDescriptionIsNullAndPriceMoreThan10()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -1635,7 +1633,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.AreEqual(25, _db.Books.Count());
         }
 
-        [Test]
+        [TestMethod]
         public void SqlBulkTools_BulkDeleteWithMultiplePredicate_WhenDescriptionIsNotNullAndPriceLessThan10()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -1686,7 +1684,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.AreEqual(5, _db.Books.Count());
         }
 
-        [Test]
+        [TestMethod]
         public void SqlBulkTools_BulkUpdateWithPredicate_OnlyDeleteWhenPriceMoreThan50()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -1734,7 +1732,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.AreEqual(2, _db.Books.Count());
         }
 
-        [Test]
+        [TestMethod]
         public void SqlBulkTools_BulkUpdateWithNullablePredicate()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -1785,7 +1783,7 @@ namespace SqlBulkTools.IntegrationTests
             }
         }
 
-        [Test]
+        [TestMethod]
         public void SqlBulkTools_BulkInsertOrUpdae_TestDataTypes()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -1907,7 +1905,7 @@ namespace SqlBulkTools.IntegrationTests
                         .AddColumn(x => x.Price)
                         .AddColumn(x => x.Description)
                         .AddColumn(x => x.ISBN)
-                        .AddColumn(x => x.PublishDate)                      
+                        .AddColumn(x => x.PublishDate)
                         .BulkInsert()
                         .TmpDisableAllNonClusteredIndexes()
                         .Commit(conn);
@@ -1933,15 +1931,15 @@ namespace SqlBulkTools.IntegrationTests
                     .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
                 {
                     bulk.Setup<Book>()
-                        
-                        .ForCollection(col)                                              
-                        .WithTable("Books")  
+
+                        .ForCollection(col)
+                        .WithTable("Books")
                         .WithBulkCopySettings(new BulkCopySettings()
                         {
                             BatchSize = 8000,
                             BulkCopyTimeout = 500
-                        })                      
-                        .AddAllColumns()                       
+                        })
+                        .AddAllColumns()
                         .BulkInsert()
                         .TmpDisableAllNonClusteredIndexes()
                         .Commit(conn);

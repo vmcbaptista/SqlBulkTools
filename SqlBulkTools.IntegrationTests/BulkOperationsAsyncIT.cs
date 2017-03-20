@@ -7,24 +7,25 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Transactions;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Ploeh.AutoFixture;
 using SqlBulkTools.Enumeration;
-using SqlBulkTools.IntegrationTests.Data;
-using SqlBulkTools.IntegrationTests.Model;
-using TestContext = SqlBulkTools.IntegrationTests.Data.TestContext;
+using SqlBulkTools.IntegrationTests2.Data;
+using SqlBulkTools.TestCommon.Model;
+using TestContext = SqlBulkTools.IntegrationTests2.Data.TestContext;
 
 namespace SqlBulkTools.IntegrationTests
 {
-    [TestFixture]
+    [TestClass]
     public class BulkOperationsAsyncIT
     {
         private const int RepeatTimes = 1;
 
         private BookRandomizer _randomizer;
-        private Data.TestContext _db;
+        private TestContext _db;
         private List<Book> _bookCollection;
-        [OneTimeSetUp]
+
+        [TestInitialize]
         public void Setup()
         {
             _db = new TestContext();
@@ -33,13 +34,13 @@ namespace SqlBulkTools.IntegrationTests
             _db.Database.Initialize(true);
         }
 
-        [OneTimeTearDown]
+        [TestCleanup]
         public void TearDown()
         {
             _db.Dispose();
         }
 
-        [Test]
+        [TestMethod]
         public async Task SqlBulkTools_BulkDeleteWithSelectedColumns_TestIdentityOutput()
         {
 
@@ -92,9 +93,10 @@ namespace SqlBulkTools.IntegrationTests
             Assert.AreEqual(expected, test.Id);
         }
 
-        [TestCase(1000)]
-        public async Task SqlBulkTools_BulkInsertAsync(int rows)
+        public async Task SqlBulkTools_BulkInsertAsync()
         {
+            const int rows = 1000;
+
             await BulkDeleteAsync(_db.Books.ToList());
             _bookCollection = new List<Book>();
             _bookCollection.AddRange(_randomizer.GetRandomCollection(rows));
@@ -113,9 +115,10 @@ namespace SqlBulkTools.IntegrationTests
             Assert.AreEqual(rows * RepeatTimes, _db.Books.Count());
         }
 
-        [TestCase(500, 500)]
-        public async Task SqlBulkTools_BulkInsertOrUpdateAsync(int rows, int newRows)
+        public async Task SqlBulkTools_BulkInsertOrUpdateAsync()
         {
+            const int rows = 500, newRows = 500;
+
             await BulkDeleteAsync(_db.Books.ToList());
             var fixture = new Fixture();
             _bookCollection = _randomizer.GetRandomCollection(rows);
@@ -154,10 +157,10 @@ namespace SqlBulkTools.IntegrationTests
 
         }
 
-        [TestCase(500)]
-        [TestCase(1000)]
-        public async Task SqlBulkTools_BulkUpdateAsync(int rows)
+        public async Task SqlBulkTools_BulkUpdateAsync()
         {
+            const int rows = 1000;
+
             var fixture = new Fixture();
             fixture.Customizations.Add(new PriceBuilder());
             fixture.Customizations.Add(new IsbnBuilder());
@@ -200,10 +203,10 @@ namespace SqlBulkTools.IntegrationTests
 
         }
 
-        [TestCase(500)]
-        [TestCase(1000)]
-        public async Task SqlBulkTools_BulkDeleteAsync(int rows)
+        public async Task SqlBulkTools_BulkDeleteAsync()
         {
+            const int rows = 500;
+
             _bookCollection = _randomizer.GetRandomCollection(rows);
             await BulkDeleteAsync(_db.Books.ToList());
 
@@ -223,7 +226,7 @@ namespace SqlBulkTools.IntegrationTests
 
         }
 
-        [Test]
+        [TestMethod]
         public async Task SqlBulkTools_BulkInsertOrUpdateAsync_TestIdentityOutput()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -257,7 +260,7 @@ namespace SqlBulkTools.IntegrationTests
 
         }
 
-        [Test]
+        [TestMethod]
         public async Task SqlBulkTools_BulkInsertOrUpdateAsyncWithSelectedColumns_TestIdentityOutput()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -294,7 +297,7 @@ namespace SqlBulkTools.IntegrationTests
 
         }
 
-        [Test]
+        [TestMethod]
         public async Task SqlBulkTools_BulkInsertAsync_TestIdentityOutput()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -331,7 +334,7 @@ namespace SqlBulkTools.IntegrationTests
 
         }
 
-        [Test]
+        [TestMethod]
         public async Task SqlBulkTools_BulkInsertAsyncWithSelectedColumns_TestIdentityOutput()
         {
 
@@ -374,7 +377,7 @@ namespace SqlBulkTools.IntegrationTests
             Assert.AreEqual(expected.Id, test.Id);
         }
 
-        [Test]
+        [TestMethod]
         public async Task SqlBulkTools_BulkUpdateAsyncWithSelectedColumns_TestIdentityOutput()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
@@ -411,8 +414,9 @@ namespace SqlBulkTools.IntegrationTests
             Assert.AreEqual(expected.Id, test.Id);
         }
 
-        [Test]
-        public void SqlBulkTools_BulkInsertAsyncWithoutSetter_ThrowsMeaningfulException()
+        [TestMethod]
+        [ExpectedException(typeof(SqlBulkToolsException), "No setter method available on property 'Id'. Could not write output back to property.")]
+        public async Task SqlBulkTools_BulkInsertAsyncWithoutSetter_ThrowsMeaningfulException()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
             _db.SaveChanges();
@@ -425,7 +429,7 @@ namespace SqlBulkTools.IntegrationTests
                 using (SqlConnection conn = new SqlConnection(ConfigurationManager
                     .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
                 {
-                    Assert.ThrowsAsync<SqlBulkToolsException>(() => bulk.Setup()
+                    await bulk.Setup()
                     .ForCollection(
                         _bookCollection.Select(
                             x => new { x.Description, x.ISBN, x.Id, x.Price }))
@@ -436,16 +440,16 @@ namespace SqlBulkTools.IntegrationTests
                     .AddColumn(x => x.Price)
                     .BulkInsert()
                     .SetIdentityColumn(x => x.Id, ColumnDirectionType.InputOutput)
-                    .CommitAsync(conn),
-                        "No setter method available on property 'Id'. Could not write output back to property.");
+                    .CommitAsync(conn);
                 }
 
                 trans.Complete();
             }     
         }
 
-        [Test]
-        public void SqlBulkTools_BulkInsertOrUpdateAsyncWithPrivateIdentityField_ThrowsMeaningfulException()
+        [TestMethod]
+        [ExpectedException(typeof(SqlBulkToolsException), "No setter method available on property 'Id'. Could not write output back to property.")]
+        public async Task SqlBulkTools_BulkInsertOrUpdateAsyncWithPrivateIdentityField_ThrowsMeaningfulException()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
             _db.SaveChanges();
@@ -467,7 +471,7 @@ namespace SqlBulkTools.IntegrationTests
                 using (SqlConnection conn = new SqlConnection(ConfigurationManager
                     .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
                 {
-                    Assert.ThrowsAsync<SqlBulkToolsException>(() => bulk.Setup<BookWithPrivateIdentity>()
+                    await bulk.Setup<BookWithPrivateIdentity>()
                                 .ForCollection(booksWithPrivateIdentity)
                                 .WithTable("Books")
                                 .AddColumn(x => x.Id)
@@ -477,8 +481,7 @@ namespace SqlBulkTools.IntegrationTests
                                 .BulkInsertOrUpdate()
                                 .MatchTargetOn(x => x.ISBN)
                                 .SetIdentityColumn(x => x.Id, ColumnDirectionType.InputOutput)
-                                .CommitAsync(conn),
-                "No setter method available on property 'Id'. Could not write output back to property.");
+                                .CommitAsync(conn);
                 }
 
                 trans.Complete();
