@@ -307,11 +307,7 @@ namespace SqlBulkTools.IntegrationTests
                         .AddAllColumns()
                         .BulkInsert()
                         .CommitAsync(conn);
-                }
 
-                using (SqlConnection conn = new SqlConnection(ConfigurationManager
-                    .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
-                {
                     await bulk.Setup<Book>()
                         .ForCollection(books)
                         .WithTable("Books")
