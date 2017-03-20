@@ -94,5 +94,16 @@ namespace SqlBulkTools.IntegrationTests.Helper
                 return reservedColumnNameTests;
             }
         }
+
+        public void ReseedBookIdentity(int idStart)
+        {
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager
+                .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+            {
+                conn.Procedure()
+                    .AddSqlParameter("@IdStart", idStart)
+                    .ExecuteNonQuery(conn, "dbo.ReseedBookIdentity");
+            }
+        }
     }
 }

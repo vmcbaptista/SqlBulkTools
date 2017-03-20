@@ -70,6 +70,18 @@ IF EXISTS (
 
 GO
 
+IF EXISTS (
+		SELECT * 
+		FROM INFORMATION_SCHEMA.ROUTINES
+		WHERE SPECIFIC_CATALOG = 'SqlBulkTools'
+		AND SPECIFIC_NAME = 'ReseedBookIdentity'
+		)
+		BEGIN
+			DROP PROCEDURE dbo.ReseedBookIdentity
+		END
+
+GO
+
 -- DROP TABLES IF EXISTS
 
 IF EXISTS(
@@ -244,7 +256,9 @@ CREATE TABLE [dbo].[TestDataTypes](
 	[ImageTest] [image] NULL,
 	[NTextTest] [ntext] NULL,
 	[NCharTest] [nchar](10) NULL,
-	[XmlTest] [xml] NULL
+	[XmlTest] [xml] NULL,
+	[TestSqlGeometry] [geometry] NULL,
+	[TestSqlGeography] [geography] NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 
 GO
@@ -329,5 +343,17 @@ BEGIN
 
 	SELECT *
 	FROM dbo.ReservedColumnNameTests
+END
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE ReseedBookIdentity
+	@IdStart int
+AS
+BEGIN
+	DBCC CHECKIDENT ('[dbo].[Books]', RESEED, @IdStart);
 END
 GO

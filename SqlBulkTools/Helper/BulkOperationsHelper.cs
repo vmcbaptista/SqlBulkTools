@@ -663,7 +663,7 @@ namespace SqlBulkTools
                 return true;
 
             if (throwIfInvalid)
-                throw new SqlBulkToolsException($"Only value, string, char[], byte[] and SqlXml types can be used " +
+                throw new SqlBulkToolsException($"Only value, string, char[], byte[], SqlGeometry, SqlGeography and SqlXml types can be used " +
                                                 $"with SqlBulkTools. Refer to https://msdn.microsoft.com/en-us/library/cc716729(v=vs.110).aspx for " +
                                                 $"more details.");
 

@@ -29,5 +29,6 @@ namespace SqlBulkTools.TestCommon.Model
         public string NCharTest { get; set; }
         public string XmlTest { get; set; }
         public SqlGeometry TestSqlGeometry { get; set; }
+        public SqlGeography TestSqlGeography { get; set; }
     }
 }

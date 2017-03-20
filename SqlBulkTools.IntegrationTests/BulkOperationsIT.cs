@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Ploeh.AutoFixture;
 using SqlBulkTools.Enumeration;
 using SqlBulkTools.IntegrationTests.Helper;
+using SqlBulkTools.TestCommon;
 using SqlBulkTools.TestCommon.Model;
 
 namespace SqlBulkTools.IntegrationTests
@@ -294,7 +295,7 @@ namespace SqlBulkTools.IntegrationTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(IdentityException), "Cannot update identity column 'Id'. SQLBulkTools requires the SetIdentityColumn method to be configured if an identity column is being used. Please reconfigure your setup and try again.")]
+        [MyExpectedException(typeof(IdentityException), "Cannot update identity column 'Id'. SQLBulkTools requires the SetIdentityColumn method to be configured if an identity column is being used. Please reconfigure your setup and try again.")]
         public void SqlBulkTools_IdentityColumnWhenNotSet_ThrowsIdentityException()
         {
             // Arrange
@@ -1034,18 +1035,20 @@ namespace SqlBulkTools.IntegrationTests
 
             BulkDelete(_dataAccess.GetBookList());
 
-            using (
-                var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["SqlBulkToolsTest"].ConnectionString)
-                )
-            using (var command = new SqlCommand(
-                "DBCC CHECKIDENT ('[dbo].[Books]', RESEED, 10);", conn)
-            {
-                CommandType = CommandType.Text
-            })
-            {
-                conn.Open();
-                command.ExecuteNonQuery();
-            }
+            //using (
+            //    var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["SqlBulkToolsTest"].ConnectionString)
+            //    )
+            //using (var command = new SqlCommand(
+            //    "DBCC CHECKIDENT ('[dbo].[Books]', RESEED, 10);", conn)
+            //{
+            //    CommandType = CommandType.Text
+            //})
+            //{
+            //    conn.Open();
+            //    command.ExecuteNonQuery();
+            //}
+
+            _dataAccess.ReseedBookIdentity(10);
 
             List<Book> books = _randomizer.GetRandomCollection(30);
             BulkInsert(books);
@@ -1074,9 +1077,12 @@ namespace SqlBulkTools.IntegrationTests
             }
 
             var test = books.First();
-            var expected = 10;
+            var expected = 11;
 
             Assert.AreEqual(expected, test.Id);
+
+            // Reset identity seed back to default
+            _dataAccess.ReseedBookIdentity(0);
         }
 
         [TestMethod]
@@ -1117,7 +1123,7 @@ namespace SqlBulkTools.IntegrationTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(SqlBulkToolsException), "Only value, string, char[], byte[] and SqlXml types can be used with SqlBulkTools. Refer to https://msdn.microsoft.com/en-us/library/cc716729(v=vs.110).aspx for more details.")]
+        [MyExpectedException(typeof(SqlBulkToolsException), "Only value, string, char[], byte[], SqlGeometry, SqlGeography and SqlXml types can be used with SqlBulkTools. Refer to https://msdn.microsoft.com/en-us/library/cc716729(v=vs.110).aspx for more details.")]
         public void SqlBulkTools_BulkInsertAddInvalidDataType_ThrowsSqlBulkToolsExceptionException()
         {
             BulkOperations bulk = new BulkOperations();
@@ -1176,7 +1182,7 @@ namespace SqlBulkTools.IntegrationTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(SqlBulkToolsException), "No setter method available on property 'Id'. Could not write output back to property.")]
+        [MyExpectedException(typeof(SqlBulkToolsException), "No setter method available on property 'Id'. Could not write output back to property.")]
         public void SqlBulkTools_BulkInsertWithoutSetter_ThrowsMeaningfulException()
         {
             BulkDelete(_dataAccess.GetBookList());
@@ -1210,7 +1216,7 @@ namespace SqlBulkTools.IntegrationTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(SqlBulkToolsException), "No setter method available on property 'Id'. Could not write output back to property.")]
+        [MyExpectedException(typeof(SqlBulkToolsException), "No setter method available on property 'Id'. Could not write output back to property.")]
         public void SqlBulkTools_BulkInsertOrUpdateWithPrivateIdentityField_ThrowsMeaningfulException()
         {
             BulkDelete(_dataAccess.GetBookList());
@@ -1313,10 +1319,10 @@ namespace SqlBulkTools.IntegrationTests
             }
 
             // 15 were initially added with warehouse id 2, 15 more were added in second insert. 
-            //Assert.AreEqual(30, _db.Books.Count(x => x.WarehouseId == 2));
+            Assert.AreEqual(30, _dataAccess.GetBookList().Count(x => x.WarehouseId == 2));
 
             // 15 were initially added with warehouse id 1. 15 were deleted in second call and 15 were inserted.  
-            //Assert.AreEqual(15, _db.Books.Count(x => x.WarehouseId == 1));
+            Assert.AreEqual(15, _dataAccess.GetBookList().Count(x => x.WarehouseId == 1));
         }
 
         [TestMethod]
@@ -1373,10 +1379,8 @@ namespace SqlBulkTools.IntegrationTests
                 trans.Complete();
             }
 
-
-
-            //Assert.AreEqual(99999999, _db.Books.First(x => x.WarehouseId == 1).Price);
-            //Assert.AreNotEqual(99999999, _db.Books.First(x => x.WarehouseId == 2).Price);
+            Assert.AreEqual(99999999, _dataAccess.GetBookList().First(x => x.WarehouseId == 1).Price);
+            Assert.AreNotEqual(99999999, _dataAccess.GetBookList().First(x => x.WarehouseId == 2).Price);
         }
 
         [TestMethod]
@@ -1420,7 +1424,7 @@ namespace SqlBulkTools.IntegrationTests
 
             string isbn = books[17].ISBN;
 
-            //Assert.AreEqual(1234567, _db.Books.Single(x => x.ISBN.Equals(isbn)).Price);
+            Assert.AreEqual(1234567, _dataAccess.GetBookList(isbn).First().Price);
         }
 
         [TestMethod]
@@ -1469,7 +1473,7 @@ namespace SqlBulkTools.IntegrationTests
 
             string isbn = books[17].ISBN;
 
-            //Assert.AreEqual(1234567, _db.Books.Single(x => x.ISBN.Equals(isbn)).Price);
+            Assert.AreEqual(1234567, _dataAccess.GetBookList(isbn).First().Price);
         }
 
         [TestMethod]
@@ -1510,8 +1514,6 @@ namespace SqlBulkTools.IntegrationTests
                         .BulkUpdate()
                         .MatchTargetOn(x => x.ISBN)
                         .UpdateWhen(x => x.Price <= 20).Commit(conn);
-
-
                 }
 
                 trans.Complete();
@@ -1520,7 +1522,7 @@ namespace SqlBulkTools.IntegrationTests
             string isbn = books[0].ISBN;
 
             Assert.AreEqual(1, _dataAccess.GetBookList().Count(x => x.Price <= 20));
-            //Assert.AreEqual(17, _db.Books.Single(x => x.ISBN.Equals(isbn)).Price);
+            Assert.AreEqual(17, _dataAccess.GetBookList(isbn).First().Price);
         }
 
         [TestMethod]
@@ -1569,7 +1571,7 @@ namespace SqlBulkTools.IntegrationTests
                 trans.Complete();
             }
 
-            //Assert.IsFalse(_db.Books.Any(x => x.WarehouseId == 1));
+            Assert.IsFalse(_dataAccess.GetBookList().Any(x => x.WarehouseId == 1));
         }
 
         [TestMethod]
@@ -1808,7 +1810,8 @@ namespace SqlBulkTools.IntegrationTests
                     XmlTest = "<title>The best SQL Bulk tool</title>",
                     NCharTest = "SomeText",
                     ImageTest = new byte[] {3,3,32,4},
-                    TestSqlGeometry = SqlGeometry.Point(-2.74612, 53.881238, 4326)
+                    TestSqlGeometry = SqlGeometry.Point(-2.74612, 53.881238, 4326),
+                    TestSqlGeography = SqlGeography.Point(-5, 43.432, 4326)
                 }
             };
 
@@ -1818,21 +1821,25 @@ namespace SqlBulkTools.IntegrationTests
                     .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
                 {
                     bulk.Setup<TestDataType>()
+                        .ForDeleteQuery()
+                        .WithTable("TestDataTypes")
+                        .Delete()
+                        .Where(x => x.GuidTest != Guid.NewGuid())
+                        .Commit(conn);
+
+                    bulk.Setup<TestDataType>()
                         .ForCollection(dataTypeTest)
                         .WithTable("TestDataTypes")
                         .AddAllColumns()
                         .BulkInsertOrUpdate()
-                        .MatchTargetOn(x => x.TimeTest)
+                        .MatchTargetOn(x => x.GuidTest)
                         .Commit(conn);
                 }
 
                 trans.Complete();
             }
 
-
-            using (
-                var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["SqlBulkToolsTest"].ConnectionString)
-                )
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
             using (var command = new SqlCommand("SELECT TOP 1 * FROM [dbo].[TestDataTypes]", conn)
             {
                 CommandType = CommandType.Text
@@ -1858,19 +1865,19 @@ namespace SqlBulkTools.IntegrationTests
                         Assert.AreEqual(new TimeSpan(23, 32, 23), reader["TimeTest"]);
                         Assert.AreEqual(guid, reader["GuidTest"]);
                         Assert.AreEqual("This is some text.", reader["TextTest"]);
-                        Assert.AreEqual(new char[] { 'S', 'o', 'm', 'e' }, reader["CharTest"].ToString().Trim());
-                        Assert.AreEqual(126, reader["TinyIntTest"]);
+                        Assert.AreEqual("Some", reader["CharTest"].ToString().Trim());
+                        Assert.AreEqual(126, (byte)reader["TinyIntTest"], "Testing TinyIntTest");
                         Assert.AreEqual(342324324324324324, reader["BigIntTest"]);
                         Assert.AreEqual("<title>The best SQL Bulk tool</title>", reader["XmlTest"]);
                         Assert.AreEqual("SomeText", reader["NCharTest"].ToString().Trim());
-                        Assert.AreEqual(new byte[] { 3, 3, 32, 4 }, reader["ImageTest"]);
-                        Assert.AreEqual(new byte[] { 0, 3, 3, 2, 4, 3 }, reader["BinaryTest"]);
-                        Assert.AreEqual(new byte[] { 3, 23, 33, 243 }, reader["VarBinaryTest"]);
+                        CollectionAssert.AreEqual(new byte[] { 3, 3, 32, 4 }, (byte[])reader["ImageTest"], "ImageTest");
+                        CollectionAssert.AreEqual(new byte[] { 0, 3, 3, 2, 4, 3 }, (byte[])reader["BinaryTest"], "Testing BinaryTest");
+                        CollectionAssert.AreEqual(new byte[] { 3, 23, 33, 243 }, (byte[])reader["VarBinaryTest"], "Testing VarBinaryTest");
+                        Assert.IsNotNull(reader["TestSqlGeometry"]);
+                        Assert.IsNotNull(reader["TestSqlGeography"]);
                     }
                 }
             }
-
-
         }
 
         private long BulkInsert(IEnumerable<Book> col)
