@@ -1071,7 +1071,7 @@ namespace SqlBulkTools.IntegrationTests
             }
 
             var test = books.First();
-            var expected = 11;
+            var expected = 10;
 
             Assert.AreEqual(expected, test.Id);
         }
@@ -1199,7 +1199,8 @@ namespace SqlBulkTools.IntegrationTests
                             .AddColumn(x => x.ISBN)
                             .AddColumn(x => x.Price)
                             .BulkInsert()
-                            .SetIdentityColumn(x => x.Id, ColumnDirectionType.InputOutput);
+                            .SetIdentityColumn(x => x.Id, ColumnDirectionType.InputOutput)
+                            .Commit(conn);
                 }
 
                 trans.Complete();
@@ -1784,7 +1785,7 @@ namespace SqlBulkTools.IntegrationTests
         }
 
         [TestMethod]
-        public void SqlBulkTools_BulkInsertOrUpdae_TestDataTypes()
+        public void SqlBulkTools_BulkInsertOrUpdate_TestDataTypes()
         {
             _db.Books.RemoveRange(_db.Books.ToList());
             _db.SaveChanges();
@@ -1861,7 +1862,7 @@ namespace SqlBulkTools.IntegrationTests
                         Assert.AreEqual(178.43M, reader["DecimalTest"]);
                         Assert.AreEqual(24333.99M, reader["MoneyTest"]);
                         Assert.AreEqual(103.32M, reader["SmallMoneyTest"]);
-                        Assert.AreEqual(32.53M, reader["RealTest"]);
+                        Assert.AreEqual(32.53F, reader["RealTest"]);
                         Assert.AreEqual(154343.3434342M, reader["NumericTest"]);
                         Assert.AreEqual(todaysDate, reader["DateTimeTest"]);
                         Assert.AreEqual(new DateTime(2008, 12, 12, 10, 20, 30), reader["DateTime2Test"]);
