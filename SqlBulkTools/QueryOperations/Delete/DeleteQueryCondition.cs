@@ -75,5 +75,14 @@ namespace SqlBulkTools
                 _whereConditions, _parameters, _collationColumnDic);
         }
 
+        /// <summary>
+        /// Please understand the consequences before using this method. This will delete all records in the table. 
+        /// </summary>
+        /// <returns></returns>
+        public DeleteAllRecordsQueryReady<T> AllRecords()
+        {
+            return new DeleteAllRecordsQueryReady<T>(_tableName, _schema);
+        }
+
     }
 }

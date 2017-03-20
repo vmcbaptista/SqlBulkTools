@@ -17,7 +17,7 @@ using SqlBulkTools.TestCommon.Model;
 namespace SqlBulkTools.IntegrationTests
 {
     [TestClass]
-    public class BulkOperationsIT
+    public class BulkOperationsIt
     {
         private const int RepeatTimes = 1;
         private DataAccess _dataAccess;
@@ -509,7 +509,7 @@ namespace SqlBulkTools.IntegrationTests
                         .ForDeleteQuery()
                         .WithTable("CustomColumnMappingTests")
                         .Delete()
-                        .Where(x => x.NaturalId != -1)
+                        .AllRecords()
                         .Commit(conn);
 
                     bulk.Setup<CustomColumnMappingTest>()
@@ -550,7 +550,8 @@ namespace SqlBulkTools.IntegrationTests
                         .ForDeleteQuery()
                         .WithTable("CustomColumnMappingTests")
                         .Delete()
-                        .Where(x => x.NaturalId != -1)
+                        .AllRecords()
+                        .SetBatchQuantity(5)
                         .Commit(conn);
 
                     bulk.Setup<CustomColumnMappingTest>()
@@ -594,7 +595,7 @@ namespace SqlBulkTools.IntegrationTests
                         .ForDeleteQuery()
                         .WithTable("CustomColumnMappingTests")
                         .Delete()
-                        .Where(x => x.NaturalId != -1)
+                        .AllRecords()
                         .Commit(conn);
 
                     bulk.Setup<CustomColumnMappingTest>()
@@ -636,7 +637,7 @@ namespace SqlBulkTools.IntegrationTests
                         .ForDeleteQuery()
                         .WithTable("CustomColumnMappingTests")
                         .Delete()
-                        .Where(x => x.NaturalId != -1)
+                        .AllRecords()
                         .Commit(conn);
 
                     bulk.Setup<CustomColumnMappingTest>()
@@ -691,7 +692,7 @@ namespace SqlBulkTools.IntegrationTests
                         .ForDeleteQuery()
                         .WithTable("CustomColumnMappingTests")
                         .Delete()
-                        .Where(x => x.NaturalId != -1)
+                        .AllRecords()
                         .Commit(conn);
 
                     bulk.Setup<CustomColumnMappingTest>()
@@ -749,7 +750,7 @@ namespace SqlBulkTools.IntegrationTests
                         .ForDeleteQuery()
                         .WithTable("ReservedColumnNameTests")
                         .Delete()
-                        .Where(x => x.Id != -1)
+                        .AllRecords()
                         .Commit(conn);
 
                     bulk.Setup<ReservedColumnNameTest>()
@@ -1824,7 +1825,7 @@ namespace SqlBulkTools.IntegrationTests
                         .ForDeleteQuery()
                         .WithTable("TestDataTypes")
                         .Delete()
-                        .Where(x => x.GuidTest != Guid.NewGuid())
+                        .AllRecords()
                         .Commit(conn);
 
                     bulk.Setup<TestDataType>()

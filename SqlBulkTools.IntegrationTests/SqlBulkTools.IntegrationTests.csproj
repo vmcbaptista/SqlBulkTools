@@ -80,7 +80,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="BulkOperationsAsyncIT.cs" />
-    <Compile Include="BulkOperationsIT.cs" />
+    <Compile Include="BulkOperationsIt.cs" />
     <Compile Include="Helper\BookRandomizer.cs" />
     <Compile Include="Helper\DataAccess.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
