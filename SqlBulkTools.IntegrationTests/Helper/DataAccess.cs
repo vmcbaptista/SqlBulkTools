@@ -2,7 +2,7 @@
 using System.Configuration;
 using System.Data.SqlClient;
 using System.Linq;
-using SprocMapperLibrary;
+using SprocMapperLibrary.SqlServer;
 using SqlBulkTools.TestCommon.Model;
 
 namespace SqlBulkTools.IntegrationTests.Helper
@@ -14,9 +14,9 @@ namespace SqlBulkTools.IntegrationTests.Helper
             using (SqlConnection conn = new SqlConnection(ConfigurationManager
                 .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
             {
-                var books = conn.Select()
+                var books = conn.Sproc()
                     .AddSqlParameter("@Isbn", isbn)
-                    .ExecuteReader<Book>(conn, "dbo.GetBooks", true)
+                    .ExecuteReader<Book>("dbo.GetBooks", true)
                     .ToList();
 
                 return books;
@@ -28,8 +28,8 @@ namespace SqlBulkTools.IntegrationTests.Helper
             using (SqlConnection conn = new SqlConnection(ConfigurationManager
                 .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
             {
-                var bookCount = conn.Procedure()
-                    .ExecuteScalar<int>(conn, "dbo.GetBookCount");
+                var bookCount = conn.Sproc()
+                    .ExecuteScalar<int>("dbo.GetBookCount");
                 return bookCount;
             }
         }
@@ -39,9 +39,9 @@ namespace SqlBulkTools.IntegrationTests.Helper
             using (SqlConnection conn = new SqlConnection(ConfigurationManager
                 .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
             {
-                var schemaTestList = conn.Select()
+                var schemaTestList = conn.Sproc()
                     .AddSqlParameter("@Schema", "dbo")
-                    .ExecuteReader<SchemaTest1>(conn, "dbo.GetSchemaTest", true)
+                    .ExecuteReader<SchemaTest1>("dbo.GetSchemaTest", true)
                     .ToList();
 
                 return schemaTestList;
@@ -53,9 +53,9 @@ namespace SqlBulkTools.IntegrationTests.Helper
             using (SqlConnection conn = new SqlConnection(ConfigurationManager
                 .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
             {
-                var schemaTestList = conn.Select()
+                var schemaTestList = conn.Sproc()
                     .AddSqlParameter("@Schema", "AnotherSchema")
-                    .ExecuteReader<SchemaTest2>(conn, "dbo.GetSchemaTest", true)
+                    .ExecuteReader<SchemaTest2>("dbo.GetSchemaTest", true)
                     .ToList();
 
                 return schemaTestList;
@@ -68,10 +68,10 @@ namespace SqlBulkTools.IntegrationTests.Helper
                 .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
             {
                 var customColumnMappingTests = conn                  
-                    .Select()
+                    .Sproc()
                     .CustomColumnMapping<CustomColumnMappingTest>(x => x.ColumnXIsDifferent, "ColumnX")
                     .CustomColumnMapping<CustomColumnMappingTest>(x => x.ColumnYIsDifferentInDatabase, "ColumnY")
-                    .ExecuteReader<CustomColumnMappingTest>(conn, "dbo.GetCustomColumnMappingTests")                                        
+                    .ExecuteReader<CustomColumnMappingTest>("dbo.GetCustomColumnMappingTests")                                        
                     .ToList();
 
                 return customColumnMappingTests;
@@ -84,8 +84,8 @@ namespace SqlBulkTools.IntegrationTests.Helper
                 .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
             {
                 var reservedColumnNameTests = conn
-                    .Select()
-                    .ExecuteReader<ReservedColumnNameTest>(conn, "dbo.GetReservedColumnNameTests")
+                    .Sproc()
+                    .ExecuteReader<ReservedColumnNameTest>("dbo.GetReservedColumnNameTests")
                     .ToList();
 
                 return reservedColumnNameTests;
@@ -97,9 +97,9 @@ namespace SqlBulkTools.IntegrationTests.Helper
             using (SqlConnection conn = new SqlConnection(ConfigurationManager
                 .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
             {
-                conn.Procedure()
+                conn.Sproc()
                     .AddSqlParameter("@IdStart", idStart)
-                    .ExecuteNonQuery(conn, "dbo.ReseedBookIdentity");
+                    .ExecuteNonQuery("dbo.ReseedBookIdentity");
             }
         }
     }
