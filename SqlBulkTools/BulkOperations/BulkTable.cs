@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 // ReSharper disable once CheckNamespace
 namespace SqlBulkTools.BulkCopy
@@ -17,6 +19,7 @@ namespace SqlBulkTools.BulkCopy
         private readonly string _tableName;
         private Dictionary<string, string> CustomColumnMappings { get; set; }
         private BulkCopySettings _bulkCopySettings;
+        private List<PropertyInfo> _propertyInfoList;
 
         /// <summary>
         /// 
@@ -34,6 +37,7 @@ namespace SqlBulkTools.BulkCopy
             Columns = new HashSet<string>();
             CustomColumnMappings = new Dictionary<string, string>();
             _bulkCopySettings = new BulkCopySettings();
+            _propertyInfoList = typeof(T).GetProperties().OrderBy(x => x.Name).ToList();
         }
 
         /// <summary>
@@ -45,7 +49,7 @@ namespace SqlBulkTools.BulkCopy
         {
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
             Columns.Add(propertyName);
-            return new BulkAddColumn<T>(_list, _tableName, Columns, CustomColumnMappings, _schema, _bulkCopySettings);
+            return new BulkAddColumn<T>(_list, _tableName, Columns, CustomColumnMappings, _schema, _bulkCopySettings, _propertyInfoList);
         }
 
         /// <summary>
@@ -67,7 +71,7 @@ namespace SqlBulkTools.BulkCopy
 
             CustomColumnMappings.Add(propertyName, destination);
 
-            return new BulkAddColumn<T>(_list, _tableName, Columns, CustomColumnMappings, _schema, _bulkCopySettings);
+            return new BulkAddColumn<T>(_list, _tableName, Columns, CustomColumnMappings, _schema, _bulkCopySettings, _propertyInfoList);
         }
 
         /// <summary>
@@ -76,8 +80,8 @@ namespace SqlBulkTools.BulkCopy
         /// <returns></returns>
         public BulkAddColumnList<T> AddAllColumns()
         {
-            Columns = BulkOperationsHelper.GetAllValueTypeAndStringColumns(typeof(T));
-            return new BulkAddColumnList<T>(_list, _tableName, Columns, CustomColumnMappings, _schema, _bulkCopySettings);
+            Columns = BulkOperationsHelper.GetAllValueTypeAndStringColumns(_propertyInfoList, typeof(T));
+            return new BulkAddColumnList<T>(_list, _tableName, Columns, CustomColumnMappings, _schema, _bulkCopySettings, _propertyInfoList);
         }
 
         /// <summary>

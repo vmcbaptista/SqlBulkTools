@@ -3,11 +3,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{6CE3CC1D-C18B-43B2-8A75-F1C5C0A2D3FA}</ProjectGuid>
+    <ProjectGuid>{DCF50704-D460-4636-B4C4-9AEAF17AAC81}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SqlBulkTools.IntegrationTests</RootNamespace>
-    <AssemblyName>SqlBulkTools.IntegrationTests</AssemblyName>
+    <RootNamespace>SqlBulkTools.TestCommon</RootNamespace>
+    <AssemblyName>SqlBulkTools.TestCommon</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -43,31 +43,10 @@
       <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="FastMember, Version=1.0.0.9, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SprocMapper.1.2.5\lib\net45\FastMember.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.SqlServer.Types, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.SqlServer.Types.14.0.314.76\lib\net40\Microsoft.SqlServer.Types.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Ploeh.AutoFixture, Version=3.50.2.0, Culture=neutral, PublicKeyToken=b24654c590009d4f, processorArchitecture=MSIL">
-      <HintPath>..\packages\AutoFixture.3.50.2\lib\net40\Ploeh.AutoFixture.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="SprocMapperLibrary, Version=1.1.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SprocMapper.1.2.5\lib\net45\SprocMapperLibrary.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
+    <Reference Include="Microsoft.SqlServer.Types, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.configuration" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Transactions" />
-    <Reference Include="System.XML" />
-    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <Choose>
     <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
@@ -82,48 +61,23 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="BulkOperationsAsyncIt.cs" />
-    <Compile Include="BulkOperationsIt.cs" />
-    <Compile Include="Helper\BookRandomizer.cs" />
-    <Compile Include="Helper\DataAccess.cs" />
+    <Compile Include="Model\Book.cs" />
+    <Compile Include="Model\BookDto.cs" />
+    <Compile Include="Model\BookWithPrivateIdentity.cs" />
+    <Compile Include="Model\CustomColumnMappingTest.cs" />
+    <Compile Include="Model\ModelWithMixedTypes.cs" />
+    <Compile Include="Model\ReservedColumnNameTest.cs" />
+    <Compile Include="Model\SchemaTest1.cs" />
+    <Compile Include="Model\SchemaTest2.cs" />
+    <Compile Include="Model\TestDataTypes.cs" />
+    <Compile Include="Model\Transaction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="QueryOperationsAsyncIt.cs" />
-    <Compile Include="QueryOperationsIt.cs" />
-    <Compile Include="SqlServerTypes\Loader.cs" />
+    <Compile Include="MyExpectedException.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config">
-      <SubType>Designer</SubType>
-    </None>
+    <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="SQLScripts\Seed.sql" />
-    <Content Include="SqlServerTypes\readme.htm" />
-    <Content Include="SqlServerTypes\x64\msvcr120.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="SqlServerTypes\x64\SqlServerSpatial140.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="SqlServerTypes\x86\msvcr120.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="SqlServerTypes\x86\SqlServerSpatial140.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\SqlBulkTools.TestCommon\SqlBulkTools.TestCommon.csproj">
-      <Project>{dcf50704-d460-4636-b4c4-9aeaf17aac81}</Project>
-      <Name>SqlBulkTools.TestCommon</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SqlBulkTools\SqlBulkTools.csproj">
-      <Project>{5cd2ee50-a2e1-4740-aee4-87e9928f0230}</Project>
-      <Name>SqlBulkTools</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

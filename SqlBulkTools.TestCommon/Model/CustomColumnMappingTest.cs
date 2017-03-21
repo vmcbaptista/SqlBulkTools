@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SqlBulkTools.IntegrationTests.Model
+namespace SqlBulkTools.TestCommon.Model
 {
     public class CustomColumnMappingTest
     {

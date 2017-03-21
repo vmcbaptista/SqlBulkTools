@@ -53,6 +53,7 @@
     <Compile Include="BulkOperations\BulkCopyOptions.cs" />
     <Compile Include="Core\BulkOperationsUtility.cs" />
     <Compile Include="Interface\IBulkOperations.cs" />
+    <Compile Include="QueryOperations\Delete\DeleteAllRecordsQueryReady.cs" />
     <Compile Include="QueryOperations\Delete\DeleteQueryCondition.cs" />
     <Compile Include="QueryOperations\Delete\DeleteQueryReady.cs" />
     <Compile Include="QueryOperations\Delete\DeleteQueryTable.cs" />
@@ -94,7 +95,6 @@
     <Compile Include="Exception\SqlBulkToolsException.cs" />
     <Compile Include="BulkOperations\BulkForCollection.cs" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

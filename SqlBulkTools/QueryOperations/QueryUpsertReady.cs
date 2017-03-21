@@ -26,7 +26,8 @@ namespace SqlBulkTools
         private readonly HashSet<string> _matchTargetOnSet;
         private readonly HashSet<string> _excludeFromUpdate; 
         private ColumnDirectionType _outputIdentity;
-        private readonly Dictionary<string, string> _collationColumnDic; 
+        private readonly Dictionary<string, string> _collationColumnDic;
+        private readonly List<PropertyInfo> _propertyInfoList;
 
         /// <summary>
         /// 
@@ -38,7 +39,7 @@ namespace SqlBulkTools
         /// <param name="customColumnMappings"></param>
         /// <param name="sqlParams"></param>
         public QueryUpsertReady(T singleEntity, string tableName, string schema, HashSet<string> columns, Dictionary<string, string> customColumnMappings, 
-            List<SqlParameter> sqlParams)
+            List<SqlParameter> sqlParams, List<PropertyInfo> propertyInfoList)
         {
             _singleEntity = singleEntity;
             _tableName = tableName;
@@ -50,6 +51,7 @@ namespace SqlBulkTools
             _outputIdentity = ColumnDirectionType.Input;
             _excludeFromUpdate = new HashSet<string>();
             _collationColumnDic = new Dictionary<string, string>();
+            _propertyInfoList = propertyInfoList;
         }
 
         /// <summary>
@@ -189,14 +191,13 @@ namespace SqlBulkTools
 
             if (_matchTargetOnSet.Count == 0)
                 throw new NullReferenceException("MatchTargetOn is a mandatory for upsert operation");
-
                       
             try
             {
                 if (conn.State == ConnectionState.Closed)
                     conn.Open();
 
-                BulkOperationsHelper.AddSqlParamsForQuery(_sqlParams, _columns, _singleEntity, _identityColumn, _outputIdentity, _customColumnMappings);
+                BulkOperationsHelper.AddSqlParamsForQuery(_propertyInfoList, _sqlParams, _columns, _singleEntity, _identityColumn, _outputIdentity, _customColumnMappings);
                 BulkOperationsHelper.DoColumnMappings(_customColumnMappings, _columns);
 
                 SqlCommand command = conn.CreateCommand();
@@ -277,7 +278,7 @@ namespace SqlBulkTools
 
             try
             {
-                BulkOperationsHelper.AddSqlParamsForQuery(_sqlParams, _columns, _singleEntity, _identityColumn, _outputIdentity, _customColumnMappings);
+                BulkOperationsHelper.AddSqlParamsForQuery(_propertyInfoList, _sqlParams, _columns, _singleEntity, _identityColumn, _outputIdentity, _customColumnMappings);
                 BulkOperationsHelper.DoColumnMappings(_customColumnMappings, _columns);
 
                 if (conn.State == ConnectionState.Closed)
@@ -314,6 +315,7 @@ namespace SqlBulkTools
                             {
                                 break;
                             }
+
                             PropertyInfo propertyInfo = _singleEntity.GetType().GetProperty(_identityColumn);
                             propertyInfo.SetValue(_singleEntity, x.Value);
                             break;

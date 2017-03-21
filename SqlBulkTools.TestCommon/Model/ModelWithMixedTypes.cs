@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SqlBulkTools.UnitTests.Model
+namespace SqlBulkTools.TestCommon.Model
 {
     public class ModelWithMixedTypes
     {

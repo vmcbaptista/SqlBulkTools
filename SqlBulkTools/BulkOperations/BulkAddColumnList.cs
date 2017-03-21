@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace SqlBulkTools
 {
@@ -19,9 +20,10 @@ namespace SqlBulkTools
         /// <param name="customColumnMappings"></param>
         /// <param name="schema"></param>
         /// <param name="bulkCopySettings"></param>
-        public BulkAddColumnList(IEnumerable<T> list, string tableName, HashSet<string> columns, Dictionary<string, string> customColumnMappings, string schema, BulkCopySettings bulkCopySettings) 
+        public BulkAddColumnList(IEnumerable<T> list, string tableName, HashSet<string> columns, Dictionary<string, string> customColumnMappings, 
+            string schema, BulkCopySettings bulkCopySettings, List<PropertyInfo> propertyInfoList) 
             :
-            base(list, tableName, columns, customColumnMappings, schema, bulkCopySettings)
+            base(list, tableName, columns, customColumnMappings, schema, bulkCopySettings, propertyInfoList)
         {
 
         }

@@ -2,13 +2,16 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SqlBulkTools.IntegrationTests.Model
+namespace SqlBulkTools.TestCommon.Model
 {
-    public class BookWithPrivateIdentity
+    public class Book
     {
+
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
-        public int Id { get; } // This is made private by purpose
+        public int Id { get; set; }
+
+        public int? WarehouseId { get; set; }
 
         [MaxLength(13)]
         [Index]
@@ -30,6 +33,14 @@ namespace SqlBulkTools.IntegrationTests.Model
         public float? TestFloat { get; set; }
 
         public object InvalidType { get; set; }
+
+        public int? TestNullableInt { get; set; }
+
+        public bool? BestSeller { get; set; }
+
+        public DateTime? CreatedAt { get; set; } // nullable because it only references a few tests.
+
+        public DateTime? ModifiedAt { get; set; } // nullable because it only references a few tests.
     }
 
 }

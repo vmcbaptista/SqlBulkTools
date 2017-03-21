@@ -2,19 +2,20 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using NUnit.Framework;
-using SqlBulkTools.IntegrationTests.Model;
-using SqlBulkTools.UnitTests.Model;
+using SqlBulkTools.TestCommon.Model;
 
 namespace SqlBulkTools.UnitTests
 {
-    [TestFixture]
-    class BulkOperationsTests
+    [TestClass]
+    public class BulkOperationsTests
     {
 
-        [Test]
+        [TestMethod]
         public void BulkOperationsHelpers_BuildJoinConditionsForUpdateOrInsertWithThreeConditions()
         {
             // Arrange
@@ -27,7 +28,7 @@ namespace SqlBulkTools.UnitTests
             Assert.AreEqual("ON ([Target].[MarketPlaceId] = [Source].[MarketPlaceId]) AND ([Target].[FK_BusinessId] = [Source].[FK_BusinessId]) AND ([Target].[AddressId] = [Source].[AddressId]) ", result);
         }
 
-        [Test]
+        [TestMethod]
         public void BulkOperationsHelpers_BuildJoinConditionsForUpdateOrInsertWithTwoConditions()
         {
             // Arrange
@@ -40,7 +41,7 @@ namespace SqlBulkTools.UnitTests
             Assert.AreEqual("ON ([Target].[MarketPlaceId] = [Source].[MarketPlaceId]) AND ([Target].[FK_BusinessId] = [Source].[FK_BusinessId] COLLATE DEFAULT_COLLATION) ", result);
         }
 
-        [Test]
+        [TestMethod]
         public void BulkOperationsHelpers_BuildJoinConditionsForUpdateOrInsertWitSingleCondition()
         {
             // Arrange
@@ -53,13 +54,13 @@ namespace SqlBulkTools.UnitTests
             Assert.AreEqual("ON ([Target].[MarketPlaceId] = [Source].[MarketPlaceId]) ", result);
         }
 
-        [Test]
+        [TestMethod]
         public void BulkOperationsHelpers_BuildUpdateSet_BuildsCorrectSequenceForMultipleColumns()
         {
             // Arrange
             var updateOrInsertColumns = GetTestColumns();
             var expected =
-                "SET [Target].[id] = [Source].[id], [Target].[Name] = [Source].[Name], [Target].[Town] = [Source].[Town], [Target].[Email] = [Source].[Email], [Target].[IsCool] = [Source].[IsCool] ";
+                "SET [Target].[Email] = [Source].[Email], [Target].[id] = [Source].[id], [Target].[IsCool] = [Source].[IsCool], [Target].[Name] = [Source].[Name], [Target].[Town] = [Source].[Town] ";
 
             // Act
             var result = BulkOperationsHelper.BuildUpdateSet(updateOrInsertColumns, "Source", "Target", null);
@@ -69,7 +70,7 @@ namespace SqlBulkTools.UnitTests
 
         }
 
-        [Test]
+        [TestMethod]
         public void BulkOperationsHelpers_BuildUpdateSet_BuildsCorrectSequenceForSingleColumn()
         {
             // Arrange
@@ -87,13 +88,13 @@ namespace SqlBulkTools.UnitTests
 
         }
 
-        [Test]
+        [TestMethod]
         public void BulkOperationsHelpers_BuildInsertSet_BuildsCorrectSequenceForMultipleColumns()
         {
             // Arrange
             var updateOrInsertColumns = GetTestColumns();
             var expected =
-                "INSERT ([Name], [Town], [Email], [IsCool]) values ([Source].[Name], [Source].[Town], [Source].[Email], [Source].[IsCool])";
+                "INSERT ([Email], [IsCool], [Name], [Town]) values ([Source].[Email], [Source].[IsCool], [Source].[Name], [Source].[Town])";
 
             // Act
             var result = BulkOperationsHelper.BuildInsertSet(updateOrInsertColumns, "Source", "id");
@@ -103,7 +104,7 @@ namespace SqlBulkTools.UnitTests
 
         }
 
-        [Test]
+        [TestMethod]
         public void BulkOperationsHelpers_BuildInsertIntoSet_BuildsCorrectSequenceForSingleColumn()
         {
             // Arrange
@@ -120,13 +121,13 @@ namespace SqlBulkTools.UnitTests
             Assert.AreEqual(result, expected);
         }
 
-        [Test]
+        [TestMethod]
         public void BulkOperationsHelpers_BuildInsertIntoSet_BuildsCorrectSequenceForMultipleColumns()
         {
             var columns = GetTestColumns();
             var tableName = "TableName";
             var expected =
-                "INSERT INTO TableName ([Name], [Town], [Email], [IsCool]) ";
+                "INSERT INTO TableName ([Email], [IsCool], [Name], [Town]) ";
 
             // Act
             var result = BulkOperationsHelper.BuildInsertIntoSet(columns, "id", tableName);
@@ -136,7 +137,7 @@ namespace SqlBulkTools.UnitTests
 
         }
 
-        [Test]
+        [TestMethod]
         public void BulkOperationsHelpers_BuildInsertSet_BuildsCorrectSequenceForSingleColumn()
         {
             // Arrange
@@ -153,20 +154,21 @@ namespace SqlBulkTools.UnitTests
 
         }
 
-        [Test]
+        [TestMethod]
         public void BulkOperationsHelpers_GetAllValueTypeAndStringColumns_ReturnsCorrectSet()
         {
             // Arrange
-            HashSet<string> expected = new HashSet<string>() {"Title", "CreatedTime", "BoolTest", "IntegerTest", "Price"};
+            HashSet<string> expected = new HashSet<string>() { "BoolTest", "CreatedTime", "IntegerTest", "Price", "Title" };
+            List<PropertyInfo> propertyInfoList = typeof(ModelWithMixedTypes).GetProperties().OrderBy(x => x.Name).ToList();
 
             // Act
-            var result = BulkOperationsHelper.GetAllValueTypeAndStringColumns(typeof (ModelWithMixedTypes));
+            var result = BulkOperationsHelper.GetAllValueTypeAndStringColumns(propertyInfoList, typeof(ModelWithMixedTypes));
 
             // Assert
-            CollectionAssert.AreEqual(expected, result);
+            CollectionAssert.AreEqual(expected.ToList(), result.ToList());
         }
 
-        [Test]
+        [TestMethod]
         public void BulkOperationsHelpers_GetIndexManagementCmd_WhenDisableAllIndexesIsTrueReturnsCorrectCmd()
         {
             // Arrange
@@ -185,7 +187,7 @@ namespace SqlBulkTools.UnitTests
 
         }
 
-        [Test]
+        [TestMethod]
         public void BulkOperationsHelpers_RebuildSchema_WithExplicitSchemaIsCorrect()
         {
             // Arrange
@@ -198,7 +200,7 @@ namespace SqlBulkTools.UnitTests
             Assert.AreEqual(expected, result);
         }
 
-        [Test]
+        [TestMethod]
         public void BulkOperationsHelper_GetDropTmpTableCmd_ReturnsCorrectCmd()
         {
             // Arrange
@@ -212,12 +214,12 @@ namespace SqlBulkTools.UnitTests
 
         }
 
-        [Test]
+        [TestMethod]
         public void BulkOperationsHelper_BuildPredicateQuery_LessThanDecimalCondition()
         {
             // Arrange
             var targetAlias = "Target";
-            var updateOn = new[] {"stub"};
+            var updateOn = new[] { "stub" };
             var conditions = new List<PredicateCondition>()
             {
                 new PredicateCondition()
@@ -239,7 +241,7 @@ namespace SqlBulkTools.UnitTests
             Assert.AreEqual(expected, result);
         }
 
-        [Test]
+        [TestMethod]
         public void BulkOperationsHelper_BuildPredicateQuery_IsNullCondition()
         {
             // Arrange
@@ -264,7 +266,7 @@ namespace SqlBulkTools.UnitTests
             Assert.AreEqual(expected, result);
         }
 
-        [Test]
+        [TestMethod]
         public void BulkOperationsHelper_BuildPredicateQuery_IsNotNullCondition()
         {
             // Arrange
@@ -289,7 +291,7 @@ namespace SqlBulkTools.UnitTests
             Assert.AreEqual(expected, result);
         }
 
-        [Test]
+        [TestMethod]
         public void BulkOperationsHelper_BuildPredicateQuery_LessThan()
         {
             // Arrange
@@ -308,7 +310,7 @@ namespace SqlBulkTools.UnitTests
 
             var expected = "AND [Target].[Description] < @DescriptionCondition1 COLLATE DEFAULT_COLLATION ";
 
-            var hashSet = new HashSet<string>() {"DEFAULT_COLLATION"};
+            var hashSet = new HashSet<string>() { "DEFAULT_COLLATION" };
 
             // Act
             var result = BulkOperationsHelper.BuildPredicateQuery(updateOn, conditions, targetAlias, new Dictionary<string, string>() { { "Description", "DEFAULT_COLLATION" } });
@@ -317,7 +319,7 @@ namespace SqlBulkTools.UnitTests
             Assert.AreEqual(expected, result);
         }
 
-        [Test]
+        [TestMethod]
         public void BulkOperationsHelper_BuildPredicateQuery_LessThanOrEqualTo()
         {
             // Arrange
@@ -343,7 +345,7 @@ namespace SqlBulkTools.UnitTests
             Assert.AreEqual(expected, result);
         }
 
-        [Test]
+        [TestMethod]
         public void BulkOperationsHelper_BuildPredicateQuery_GreaterThan()
         {
             // Arrange
@@ -369,7 +371,7 @@ namespace SqlBulkTools.UnitTests
             Assert.AreEqual(expected, result);
         }
 
-        [Test]
+        [TestMethod]
         public void BulkOperationsHelper_BuildPredicateQuery_GreaterThanOrEqualTo()
         {
             // Arrange
@@ -395,7 +397,7 @@ namespace SqlBulkTools.UnitTests
             Assert.AreEqual(expected, result);
         }
 
-        [Test]
+        [TestMethod]
         public void BulkOperationsHelper_BuildPredicateQuery_CustomColumnMapping()
         {
             // Arrange
@@ -422,7 +424,7 @@ namespace SqlBulkTools.UnitTests
             Assert.AreEqual(expected, result);
         }
 
-        [Test]
+        [TestMethod]
         public void BulkOperationsHelper_BuildPredicateQuery_MultipleConditions()
         {
             // Arrange
@@ -456,7 +458,8 @@ namespace SqlBulkTools.UnitTests
             Assert.AreEqual(expected, result);
         }
 
-        [Test]
+        [TestMethod]
+        [ExpectedException(typeof(SqlBulkToolsException))]
         public void BulkOperationsHelper_BuildPredicateQuery_ThrowsWhenUpdateOnColIsEmpty()
         {
             // Arrange
@@ -482,11 +485,12 @@ namespace SqlBulkTools.UnitTests
                 },
             };
 
-            Assert.Throws<SqlBulkToolsException>(() => BulkOperationsHelper.BuildPredicateQuery(updateOn1, conditions, targetAlias, null));
-            Assert.Throws<SqlBulkToolsException>(() => BulkOperationsHelper.BuildPredicateQuery(null, conditions, targetAlias, null));
+            BulkOperationsHelper.BuildPredicateQuery(updateOn1, conditions, targetAlias, null);
+            BulkOperationsHelper.BuildPredicateQuery(null, conditions, targetAlias, null);
+            
         }
 
-        [Test]
+        [TestMethod]
         public void BulkOperationsHelper_BuildValueSet_WithOneValue()
         {
             // Arrange
@@ -500,7 +504,7 @@ namespace SqlBulkTools.UnitTests
             Assert.AreEqual("(@TestColumn)", result);
         }
 
-        [Test]
+        [TestMethod]
         public void BulkOperationsHelper_BuildValueSet_WithMultipleValues()
         {
             // Arrange
@@ -515,7 +519,7 @@ namespace SqlBulkTools.UnitTests
             Assert.AreEqual("(@TestColumnA, @TestColumnB)", result);
         }
 
-        [Test]
+        [TestMethod]
         public void BulkOperationsHelper_BuildValueSet_WithMultipleValuesWhenIdentitySet()
         {
             // Arrange
@@ -531,7 +535,7 @@ namespace SqlBulkTools.UnitTests
             Assert.AreEqual("(@TestColumnA, @TestColumnB)", result);
         }
 
-        [Test]
+        [TestMethod]
         public void BulkOperationsHelper_AddSqlParamsForUpdateQuery_GetsTypeAndValue()
         {
             Book book = new Book()
@@ -547,13 +551,15 @@ namespace SqlBulkTools.UnitTests
             columns.Add("BestSeller");
 
             List<SqlParameter> sqlParams = new List<SqlParameter>();
+            List<PropertyInfo> propertyInfoList = typeof(Book).GetProperties().OrderBy(x => x.Name).ToList();
 
-            BulkOperationsHelper.AddSqlParamsForQuery(sqlParams, columns, book);
+
+            BulkOperationsHelper.AddSqlParamsForQuery(propertyInfoList, sqlParams, columns, book);
 
             Assert.AreEqual(3, sqlParams.Count);
         }
 
-        [Test]
+        [TestMethod]
         public void BulkOperationsHelper_BuildMatchTargetOnListWithMultipleValues_ReturnsCorrectString()
         {
             // Arrange
@@ -566,11 +572,11 @@ namespace SqlBulkTools.UnitTests
             Assert.AreEqual(result, "WHERE [id] = @id AND [Name] = @Name AND [Town] = @Town AND [Email] = @Email AND [IsCool] = @IsCool");
         }
 
-        [Test]
+        [TestMethod]
         public void BulkOperationsHelper_BuildMatchTargetOnListWithSingleValue_ReturnsCorrectString()
         {
             // Arrange
-            var columns = new HashSet<string>() {"id"};
+            var columns = new HashSet<string>() { "id" };
 
             // ACt
             var result = BulkOperationsHelper.BuildMatchTargetOnList(columns, new Dictionary<string, string>() { { "id", "DEFAULT_COLLATION" } });
@@ -598,11 +604,11 @@ namespace SqlBulkTools.UnitTests
 
             parameters.Add("Id");
             parameters.Add("ISBN");
-            parameters.Add("Title");            
+            parameters.Add("Title");
             parameters.Add("PublishDate");
             parameters.Add("Price");
 
             return parameters;
-        } 
+        }
     }
 }

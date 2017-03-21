@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBulkTools.IntegrationTests;
-using SqlBulkTools.IntegrationTests.Model;
-using SqlBulkTools.IntegrationTests.TestEnvironment;
+using SqlBulkTools.TestCommon.Model;
 
 namespace SqlBulkTools.UnitTests
 {
-    [TestFixture]
+    [TestClass]
     public class DataTableOperationsTests
     {
-        [Test]
+        [TestMethod]
         public void DataTableTools_GetColumn_RetrievesColumn()
         {
             // Arrange
@@ -35,17 +34,19 @@ namespace SqlBulkTools.UnitTests
             Assert.AreEqual(expected2, result2);
         }
 
-        [Test]
+        [TestMethod]
+        [ExpectedException(typeof(SqlBulkToolsException))]
         public void DataTableTools_GetColumn_ThrowSqlBulkToolsExceptionWhenNoSetup()
         {
             // Arrange
             DataTableOperations dtOps = new DataTableOperations();
 
             // Act and Assert
-            Assert.Throws<SqlBulkToolsException>(() => dtOps.GetColumn<Book>(x => x.Description));
+            dtOps.GetColumn<Book>(x => x.Description);
         }
 
-        [Test]
+        [TestMethod]
+        [ExpectedException(typeof(SqlBulkToolsException))]
         public void DataTableTools_GetColumn_ThrowSqlBulkToolsExceptionWhenTypeMismatch()
         {
             // Arrange
@@ -56,10 +57,11 @@ namespace SqlBulkTools.UnitTests
                 .PrepareDataTable();
 
             // Act and Assert
-            Assert.Throws<SqlBulkToolsException>(() => dtOps.GetColumn<BookDto>(x => x.Id));
+            dtOps.GetColumn<BookDto>(x => x.Id);
         }
 
-        [Test]
+        [TestMethod]
+        [ExpectedException(typeof(SqlBulkToolsException))]
         public void DataTableTools_GetColumn_ThrowSqlBulkToolsExceptionWhenColumnMappingNotFound()
         {
             // Arrange
@@ -72,10 +74,10 @@ namespace SqlBulkTools.UnitTests
                 .PrepareDataTable();
 
             // Act and Assert
-            Assert.Throws<SqlBulkToolsException>(() => dtOps.GetColumn<Book>(x => x.Description));
+            dtOps.GetColumn<Book>(x => x.Description);
         }
 
-        [Test]
+        [TestMethod]
         public void DataTableTools_GetColumn_CustomColumnMapsCorrectly()
         {
             // Arrange
@@ -95,7 +97,8 @@ namespace SqlBulkTools.UnitTests
             Assert.AreEqual(expected, result);
         }
 
-        [Test]
+        [TestMethod]
+        [ExpectedException(typeof(SqlBulkToolsException))]
         public void DataTableTools_GetColumn_WhenColumnRemovedFromSetup()
         {
             // Arrange
@@ -108,10 +111,10 @@ namespace SqlBulkTools.UnitTests
                 .PrepareDataTable();
 
             // Act and Assert
-            Assert.Throws<SqlBulkToolsException>(() => dtOps.GetColumn<Book>(x => x.Description));
+            dtOps.GetColumn<Book>(x => x.Description);
         }
 
-        [Test]
+        [TestMethod]
         public void DataTableTools_PrepareDataTable_WithThreeColumnsAdded()
         {
             BookRandomizer randomizer = new BookRandomizer();
@@ -133,7 +136,7 @@ namespace SqlBulkTools.UnitTests
             Assert.AreEqual(typeof(DateTime), dt.Columns[dtOps.GetColumn<Book>(x => x.PublishDate)].DataType);
         }
 
-        [Test]
+        [TestMethod]
         public void DataTableTools_BuildPreparedDataDable_AddsRows()
         {
             var rowCount = 30;
@@ -154,7 +157,7 @@ namespace SqlBulkTools.UnitTests
             Assert.AreEqual(books[10].Description, dt.Rows[10].Field<string>(dtOps.GetColumn<Book>(x => x.Description)));
         }
 
-        [Test]
+        [TestMethod]
         public void DataTableTools_BuildPreparedDataDable_WithCustomDataTableSettings()
         {
             long autoIncrementSeedTest = 21312;
