@@ -1,13 +1,13 @@
 <img src="http://gregnz.com/images/SqlBulkTools/icon-large.png" alt="SqlBulkTools"> 
-#SqlBulkTools
+# SqlBulkTools
 -----------------------------
 SqlBulkTools features an easy to use fluent interface for performing SQL operations in c#. Supports Bulk Insert, Update, Delete and Merge. Includes advanced features such as output identity, delete entities conditionally (for merging), exclude column(s) from update (for merging), single entity operations and plenty more. 
 
 Please leave a Github star if you find this project useful.
 
-##Examples
+## Examples
 
-####Getting started
+#### Getting started
 -----------------------------
 ```c#
 using SqlBulkTools;
@@ -46,13 +46,13 @@ public class Book {
 
 ```
 
-####Note
+#### Note
 ---------------
 You may need to update your references to include System.Transactions for TransactionScope as 
 it's is not included by default.
 
 
-###BulkInsert
+### BulkInsert
 ---------------
 ```c#
 var bulk = new BulkOperations();
@@ -89,7 +89,7 @@ for more info.
 
 ```
 
-###BulkInsertOrUpdate (aka Merge)
+### BulkInsertOrUpdate (aka Merge)
 ---------------
 ```c#
 var bulk = new BulkOperations();
@@ -153,7 +153,7 @@ be thrown if you forget.
 */
 ```
 
-###BulkUpdate
+### BulkUpdate
 ---------------
 ```c#
 var bulk = new BulkOperations();
@@ -193,7 +193,7 @@ identity column.
 */
 
 ```
-###BulkDelete
+### BulkDelete
 ---------------
 ```c#
 
@@ -227,7 +227,7 @@ an SqlBulkToolsException.
 
 ```
 
-###UpdateWhen & DeleteWhen
+### UpdateWhen & DeleteWhen
 ---------------
 ```c#
 /* Only update or delete records when the target satisfies a speicific requirement. This is used alongside
@@ -275,7 +275,7 @@ using (TransactionScope trans = new TransactionScope())
 
 ```
 
-###Upsert a single record
+### Upsert a single record
 ---------------
 ```c#
 
@@ -328,7 +328,7 @@ IF (@@ROWCOUNT = 0)
 SET @Id=SCOPE_IDENTITY()
 ```
 
-###Insert a single record
+### Insert a single record
 ---------------
 ```c#
 
@@ -369,7 +369,7 @@ INSERT INTO [SqlBulkTools].[dbo].[Books]
 VALUES (@WarehouseId, @ISBN, @Title, @Description, @Price) 
 ```
 
-###Update One or Many entities based on condition
+### Update One or Many entities based on condition
 ---------------
 ```c#
 
@@ -414,7 +414,7 @@ SET [SqlBulkTools].[dbo].[Books].[Price] = @Price,
 WHERE [ISBN] = @ISBNCondition1
 ```
 
-###Delete One or Many entities based on condition
+### Delete One or Many entities based on condition
 ---------------
 ```c#
 /* Easily delete one or more records in a single roundtrip. */
@@ -448,7 +448,7 @@ AND [Price] >= @PriceCondition2
 AND [Description] IS NULL
 ```
 
-###Async Transactions (CommitAsync)
+### Async Transactions (CommitAsync)
 ---------------
 
 All setups include support for asynchronous transactions. Please note that you must supply
@@ -471,7 +471,7 @@ using (TransactionScope trans = new TransactionScope(TransactionScopeAsyncFlowOp
 }
 ```
 
-###Custom Mappings
+### Custom Mappings
 ---------------
 ```c#
 /* If the property names in your model don't match the column names in the corresponding table, you 
@@ -516,7 +516,7 @@ using (TransactionScope trans = new TransactionScope())
 }
 
 ```
-###Collation conflicts
+### Collation conflicts
 ---------------
 If you attempt to use MatchTargetOn against a string and you have mixed collations, you will receive a collation
 SQL Exception. To overcome this error, you can set a collation in the MatchTargetOn overload.
@@ -545,7 +545,7 @@ using (TransactionScope trans = new TransactionScope())
 }
 ```
 
-###BuildPreparedDataDable
+### BuildPreparedDataDable
 ---------------
 Easily create data tables for table variables or temp tables and benefit from the following features:
 - Strongly typed column names. 
@@ -595,7 +595,7 @@ dt = dtOps.BuildPreparedDataTable(); // Returns a populated DataTable
 
 ```
 
-###Advanced
+### Advanced
 ---------------
 ```c#
 var bulk = new BulkOperations();
@@ -631,7 +631,7 @@ bulk.Setup<Book>()
 
 ```
 
-###How does SqlBulkTools compare to others? 
+### How does SqlBulkTools compare to others? 
 <img src="http://gregnz.com/images/SqlBulkTools/performance_comparison.png" alt="Performance Comparison">
 
 <b>Test notes:</b>
