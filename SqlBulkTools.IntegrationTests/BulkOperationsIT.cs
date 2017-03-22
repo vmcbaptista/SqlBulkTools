@@ -80,6 +80,55 @@ namespace SqlBulkTools.IntegrationTests
         }
 
         [TestMethod]
+        public void SqlBulkTools_BulkInsertOrUpdateForComplexType_AddAllColumns()
+        {
+            var bulk = new BulkOperations();
+            List<ComplexTypeModel> complexTypeModelList = new List<ComplexTypeModel>();
+
+            for (int i = 0; i < 30; i++)
+            {
+                complexTypeModelList.Add(new ComplexTypeModel
+                {
+                    AverageEstimate = new EstimatedStats
+                    {
+                        TotalCost = 23.20
+                    },
+                    MinEstimate = new EstimatedStats
+                    {
+                        TotalCost = 10.20
+                    },
+                    Competition = 30,
+                    SearchVolume = 234.34
+
+                });
+            }
+
+            using (TransactionScope trans = new TransactionScope())
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager
+                    .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+                {
+                    bulk.Setup<ComplexTypeModel>()
+                        .ForDeleteQuery()
+                        .WithTable("ComplexTypeTest")
+                        .Delete()
+                        .AllRecords();
+
+                    bulk.Setup<ComplexTypeModel>()
+                        .ForCollection(complexTypeModelList)
+                        .WithTable("ComplexTypeTest")
+                        .AddAllColumns()
+                        .BulkInsertOrUpdate()
+                        .MatchTargetOn(x => x.Id)
+                        .SetIdentityColumn(x => x.Id)
+                        .Commit(conn);
+                }
+
+                trans.Complete();
+            }
+        }
+
+        [TestMethod]
         public void SqlBulkTools_BulkInsertForComplexType_AddColumnsManually()
         {
             var bulk = new BulkOperations();
@@ -120,9 +169,9 @@ namespace SqlBulkTools.IntegrationTests
                         .AddColumn(x => x.AverageEstimate.CreationDate)
                         .AddColumn(x => x.AverageEstimate.TotalCost)
                         .AddColumn(x => x.Competition)
-                        .AddColumn(x => x.MinEstimate.CreationDate)
+                        .AddColumn(x => x.MinEstimate.CreationDate, "MinEstimate_CreationDate") // Testing custom column mapping
                         .AddColumn(x => x.MinEstimate.TotalCost)
-                        .AddColumn(x => x.SearchVolume)
+                        .AddColumn(x => x.SearchVolume)                                                
                         .BulkInsert()
                         .SetIdentityColumn(x => x.Id)
                         .Commit(conn);

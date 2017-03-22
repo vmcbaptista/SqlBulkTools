@@ -860,7 +860,6 @@ namespace SqlBulkTools
         /// <param name="customColumnMappings"></param>
         internal static void MapColumns(SqlBulkCopy bulkCopy, HashSet<string> columns, Dictionary<string, string> customColumnMappings)
         {
-
             foreach (var column in columns.ToList().OrderBy(x => x))
             {
                 string mapping;
@@ -873,7 +872,6 @@ namespace SqlBulkTools
                 else
                     bulkCopy.ColumnMappings.Add(column, column);
             }
-
         }
 
         internal static HashSet<string> GetAllValueTypeAndStringColumns(List<PropertyInfo> propertyInfoList, Type type)
@@ -985,6 +983,11 @@ namespace SqlBulkTools
 
                 SetSqlBulkCopySettings(bulkcopy, bulkCopySettings);
 
+                foreach (var column in dt.Columns)
+                {
+                    bulkcopy.ColumnMappings.Add(column.ToString(), column.ToString());
+                }
+               
                 bulkcopy.WriteToServer(dt);
             }
         }
