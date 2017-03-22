@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.SqlServer.Types;
 using SqlBulkTools.Core;
 using SqlBulkTools.Enumeration;
+using System.ComponentModel.DataAnnotations.Schema;
 
 [assembly: InternalsVisibleTo("SqlBulkTools.UnitTests")]
 [assembly: InternalsVisibleTo("SqlBulkTools.IntegrationTests")]
@@ -531,24 +532,40 @@ namespace SqlBulkTools
 
             foreach (var property in propertyInfoList)
             {
-                var type = Nullable.GetUnderlyingType(property.PropertyType) ??
-                                    property.PropertyType;
+                var complexTypeAttr = property.PropertyType.GetCustomAttribute(typeof(ComplexTypeAttribute));
 
-                if (columnMappings != null && columnMappings.ContainsKey(property.Name))
+                if (complexTypeAttr != null)
                 {
-                    dataTable.Columns.Add(columnMappings[property.Name], type);
-                    var ordinal = dataTable.Columns[columnMappings[property.Name]].Ordinal;
+                    var complexPropertyInfoList = property.PropertyType.GetProperties();
 
-                    ordinalDic.Add(property.Name, ordinal);
+                    foreach (var complexProperty in complexPropertyInfoList)
+                    {
+                        AddPropertyToDataTable(complexProperty, columnMappings, dataTable, ordinalDic, columns, true, property.Name);
+                    }
+                }
+                else
+                {
+                    AddPropertyToDataTable(property, columnMappings, dataTable, ordinalDic, columns, false, null);
                 }
 
-                else if (columns.Contains(property.Name))
-                {
-                    dataTable.Columns.Add(property.Name, type);
-                    var ordinal = dataTable.Columns[property.Name].Ordinal;
+                //var type = Nullable.GetUnderlyingType(property.PropertyType) ??
+                //                    property.PropertyType;
 
-                    ordinalDic.Add(property.Name, ordinal);
-                }          
+                //if (columnMappings != null && columnMappings.ContainsKey(property.Name))
+                //{
+                //    dataTable.Columns.Add(columnMappings[property.Name], type);
+                //    var ordinal = dataTable.Columns[columnMappings[property.Name]].Ordinal;
+
+                //    ordinalDic.Add(property.Name, ordinal);
+                //}
+
+                //else if (columns.Contains(property.Name))
+                //{
+                //    dataTable.Columns.Add(property.Name, type);
+                //    var ordinal = dataTable.Columns[property.Name].Ordinal;
+
+                //    ordinalDic.Add(property.Name, ordinal);
+                //}          
             }
 
             if (outputIdentityCol)
@@ -560,6 +577,31 @@ namespace SqlBulkTools
             }
 
             return dataTable;
+        }
+
+        internal static void AddPropertyToDataTable(PropertyInfo property, Dictionary<string, string> columnMappings, 
+            DataTable dataTable, Dictionary<string, int> ordinalDic, HashSet<string> columns, bool isComplex, string basePropertyName)
+        {
+            var propertyName = isComplex ? $"{basePropertyName}_{property.Name}" : property.Name;
+
+            var type = Nullable.GetUnderlyingType(property.PropertyType) ??
+                    property.PropertyType;
+
+            if (columnMappings != null && columnMappings.ContainsKey(propertyName))
+            {
+                dataTable.Columns.Add(columnMappings[propertyName], type);
+                var ordinal = dataTable.Columns[columnMappings[propertyName]].Ordinal;
+
+                ordinalDic.Add(propertyName, ordinal);
+            }
+
+            else if (columns.Contains(propertyName))
+            {
+                dataTable.Columns.Add(propertyName, type);
+                var ordinal = dataTable.Columns[propertyName].Ordinal;
+
+                ordinalDic.Add(propertyName, ordinal);
+            }
         }
 
         public static DataTable ConvertListToDataTable<T>(List<PropertyInfo> propertyInfoList, DataTable dataTable, IEnumerable<T> list, HashSet<string> columns, Dictionary<string, int> ordinalDic,
@@ -575,15 +617,19 @@ namespace SqlBulkTools
                 {
                     foreach (var property in propertyInfoList)
                     {
-                        if (property.Name == column && item != null
-                            && CheckForValidDataType(property.PropertyType, throwIfInvalid: true))
+                        if (property.PropertyType.GetCustomAttribute(typeof(ComplexTypeAttribute)) != null)
                         {
-                            int ordinal;
+                            var complexPropertyList = property.PropertyType.GetProperties();
 
-                            if (ordinalDic.TryGetValue(property.Name, out ordinal))
+                            foreach (var complexProperty in complexPropertyList)
                             {
-                                values[ordinal] = property.GetValue(item, null);
+                                AddToDataTable(complexProperty, column, item, ordinalDic, values);
                             }
+                        }
+
+                        else
+                        {
+                            AddToDataTable(property, column, item, ordinalDic, values);
                         }
                     }
 
@@ -604,6 +650,19 @@ namespace SqlBulkTools
                 dataTable.Rows.Add(values);
             }
             return dataTable;
+        }
+
+        internal static void AddToDataTable<T>(PropertyInfo property, string column, T item, Dictionary<string, int> ordinalDic, object[] values)
+        {
+            if (property.Name == column && item != null &&
+                CheckForValidDataType(property.PropertyType, throwIfInvalid: true))
+            {
+                int ordinal;
+                if (ordinalDic.TryGetValue(property.Name, out ordinal))
+                {
+                    values[ordinal] = property.GetValue(item, null);
+                }
+            }
         }
 
         // Loops through object properties, checks if column has been added, adds as sql parameter. Used for the UpdateQuery method. 
@@ -652,6 +711,7 @@ namespace SqlBulkTools
         /// <returns></returns>
         private static bool CheckForValidDataType(Type type, bool throwIfInvalid = false)
         {
+
             if (type.IsValueType ||
                 type == typeof(string) ||
                 type == typeof(byte[]) ||
@@ -804,7 +864,24 @@ namespace SqlBulkTools
 
             foreach (var property in propertyInfoList)
             {
-                if (CheckForValidDataType(property.PropertyType))
+                //property.PropertyType.CustomAttributes.First(x => x.AttributeType.)
+
+                var complexTypeAttr = property.PropertyType.GetCustomAttribute(typeof(ComplexTypeAttribute));
+
+                if (complexTypeAttr != null)
+                {
+                    var complexTypeProperties = property.PropertyType.GetProperties();
+
+                    foreach (var complexProperty in complexTypeProperties)
+                    {
+                        if (CheckForValidDataType(complexProperty.PropertyType))
+                        {
+                            columns.Add($"{property.Name}_{complexProperty.Name}");
+                        }
+                    }
+                }
+
+                else if (CheckForValidDataType(property.PropertyType))
                 {
                     columns.Add(property.Name);
                 }

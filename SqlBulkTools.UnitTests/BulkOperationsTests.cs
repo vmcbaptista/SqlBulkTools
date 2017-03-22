@@ -158,7 +158,7 @@ namespace SqlBulkTools.UnitTests
         public void BulkOperationsHelper_GetAllPropertiesForComplexType_ReturnsCorrectSet()
         {
             // Arrange
-            HashSet<string> expected = new HashSet<string>() { "MinEstimate_CreationTime", "MinEstimate_TotalCost", "AverageEstimate_CreationTime", "AverageEstimate_TotalCost", "SearchVolume", "Competition" };
+            HashSet<string> expected = new HashSet<string>() { "AverageEstimate_TotalCost", "AverageEstimate_CreationTime", "Competition", "MinEstimate_TotalCost", "MinEstimate_CreationTime", "SearchVolume" };
             List<PropertyInfo> propertyInfoList = typeof(ComplexTypeModel).GetProperties().OrderBy(x => x.Name).ToList();
 
             // Act
@@ -166,6 +166,22 @@ namespace SqlBulkTools.UnitTests
 
             // Assert
             CollectionAssert.AreEqual(expected.ToList(), result.ToList());
+        }
+
+        [TestMethod]
+        public void BulkOperationsHelper_CreateDataTableForComplexType_IsStructuredCorrectly()
+        {
+            HashSet<string> columns = new HashSet<string>() { "AverageEstimate_TotalCost", "AverageEstimate_CreationTime", "Competition", "MinEstimate_TotalCost", "MinEstimate_CreationTime", "SearchVolume" };
+            List<PropertyInfo> propertyInfoList = typeof(ComplexTypeModel).GetProperties().OrderBy(x => x.Name).ToList();
+
+            var result = BulkOperationsHelper.CreateDataTable<ComplexTypeModel>(propertyInfoList, columns, null, new Dictionary<string, int>());
+
+            Assert.AreEqual(result.Columns["AverageEstimate_TotalCost"].DataType, typeof(double), "AverageEstimate_TotalCost");
+            Assert.AreEqual(result.Columns["AverageEstimate_CreationTime"].DataType, typeof(DateTime), "AverageEstimate_CreationTime");
+            Assert.AreEqual(result.Columns["MinEstimate_TotalCost"].DataType, typeof(double), "MinEstimate_TotalCost");
+            Assert.AreEqual(result.Columns["MinEstimate_CreationTime"].DataType, typeof(DateTime), "MinEstimate_CreationTime");
+            Assert.AreEqual(result.Columns["SearchVolume"].DataType, typeof(double), "SearchVolume");
+            Assert.AreEqual(result.Columns["Competition"].DataType, typeof(double), "Competition");
         }
 
         [TestMethod]

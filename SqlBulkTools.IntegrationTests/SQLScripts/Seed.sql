@@ -95,6 +95,16 @@ IF EXISTS(
 		END
 
 IF EXISTS(
+		SELECT * 
+		FROM INFORMATION_SCHEMA.TABLES
+		WHERE TABLE_CATALOG = 'SqlBulkTools'
+		AND TABLE_NAME = 'ComplexTypeTest'
+		)
+		BEGIN
+			DROP TABLE dbo.ComplexTypeTest
+		END
+
+IF EXISTS(
 		SELECT *
 		FROM INFORMATION_SCHEMA.TABLES
 		WHERE TABLE_CATALOG = 'SqlBulkTools'
@@ -187,6 +197,22 @@ CREATE TABLE [dbo].[Books](
 ) ON [PRIMARY]
 
 GO
+
+CREATE TABLE [dbo].[ComplexTypeTest](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[MinEstimate_TotalCost] [float] NULL,
+	[MinEstimate_CreationDate] [DateTime] NULL,
+	[AverageEstimate_TotalCost] [float] NULL,
+	[AverageEstimate_CreationDate] [DateTime] NULL,
+	[SearchVolume] [float] NULL,
+	[Competition] [float] NULL,
+ CONSTRAINT [PK_dbo.ComplexTypeTest] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+
+
 
 CREATE TABLE [AnotherSchema].[SchemaTest](
 	[Id] [int] IDENTITY(1,1) NOT NULL,
