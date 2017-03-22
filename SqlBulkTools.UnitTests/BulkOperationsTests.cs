@@ -155,6 +155,12 @@ namespace SqlBulkTools.UnitTests
         }
 
         [TestMethod]
+        public void BulkOperationsHelper_GetAllPropertiesForComplexType_ReturnsCorrectSet()
+        {
+            
+        }
+
+        [TestMethod]
         public void BulkOperationsHelpers_GetAllValueTypeAndStringColumns_ReturnsCorrectSet()
         {
             // Arrange
@@ -167,6 +173,7 @@ namespace SqlBulkTools.UnitTests
             // Assert
             CollectionAssert.AreEqual(expected.ToList(), result.ToList());
         }
+      
 
         [TestMethod]
         public void BulkOperationsHelpers_GetIndexManagementCmd_WhenDisableAllIndexesIsTrueReturnsCorrectCmd()
