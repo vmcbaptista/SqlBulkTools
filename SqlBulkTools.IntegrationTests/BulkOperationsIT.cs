@@ -39,13 +39,13 @@ namespace SqlBulkTools.IntegrationTests
 
             for (int i = 0; i < 30; i++)
             {
-                complexTypeModelList.Add(new ComplexTypeModel()
+                complexTypeModelList.Add(new ComplexTypeModel
                 {
-                    AverageEstimate = new EstimatedStats()
+                    AverageEstimate = new EstimatedStats
                     {
                         TotalCost = 23.20
                     },
-                    MinEstimate = new EstimatedStats()
+                    MinEstimate = new EstimatedStats
                     {
                         TotalCost = 10.20
                     },

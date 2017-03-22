@@ -623,13 +623,13 @@ namespace SqlBulkTools
 
                             foreach (var complexProperty in complexPropertyList)
                             {
-                                AddToDataTable(complexProperty, column, item, ordinalDic, values);
+                                AddToDataTable(complexProperty, column, item, ordinalDic, values, property.Name, true);
                             }
                         }
 
                         else
                         {
-                            AddToDataTable(property, column, item, ordinalDic, values);
+                            AddToDataTable(property, column, item, ordinalDic, values, null, false);
                         }
                     }
 
@@ -652,15 +652,26 @@ namespace SqlBulkTools
             return dataTable;
         }
 
-        internal static void AddToDataTable<T>(PropertyInfo property, string column, T item, Dictionary<string, int> ordinalDic, object[] values)
+        internal static void AddToDataTable<T>(PropertyInfo property, string column, T item, Dictionary<string, int> ordinalDic, 
+            object[] values, string basePropertyName, bool isComplex)
         {
-            if (property.Name == column && item != null &&
+            var propertyName = isComplex ? $"{basePropertyName}_{property.Name}" : property.Name;
+            if (propertyName == column && item != null &&
                 CheckForValidDataType(property.PropertyType, throwIfInvalid: true))
             {
                 int ordinal;
-                if (ordinalDic.TryGetValue(property.Name, out ordinal))
+                if (ordinalDic.TryGetValue(propertyName, out ordinal))
                 {
-                    values[ordinal] = property.GetValue(item, null);
+                    if (isComplex)
+                    {
+                        PropertyInfo complexType = item.GetType().GetProperty(basePropertyName);
+                        var value = complexType.GetValue(item, null);
+                        values[ordinal] = property.GetValue(value, null);
+                    }
+                    else
+                    {
+                        values[ordinal] = property.GetValue(item, null);
+                    }                    
                 }
             }
         }
