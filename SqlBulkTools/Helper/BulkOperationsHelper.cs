@@ -497,6 +497,13 @@ namespace SqlBulkTools
             {
                 memberExpr =
                     ((UnaryExpression)lambda.Body).Operand as MemberExpression;
+                
+
+                if (memberExpr?.Expression.Type.GetCustomAttribute(typeof(ComplexTypeAttribute)) != null 
+                    && memberExpr.Expression is MemberExpression)
+                {                   
+                    return $"{((MemberExpression)memberExpr.Expression).Member.Name}_{memberExpr.Member.Name}";
+                }
             }
             else if (lambda.Body.NodeType == ExpressionType.MemberAccess)
             {
