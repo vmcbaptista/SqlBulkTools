@@ -64,7 +64,8 @@ namespace SqlBulkTools.IntegrationTests
                         .ForDeleteQuery()
                         .WithTable("ComplexTypeTest")
                         .Delete()
-                        .AllRecords();
+                        .AllRecords()
+                        .Commit(conn);
 
                     bulk.Setup<ComplexTypeModel>()
                         .ForCollection(complexTypeModelList)

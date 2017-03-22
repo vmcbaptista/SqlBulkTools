@@ -24,6 +24,51 @@ namespace SqlBulkTools.IntegrationTests
         }
 
         [TestMethod]
+        public void SqlBulkTools_InsertQuery_WhenTypeIsComplex()
+        {
+            BulkOperations bulk = new BulkOperations();
+
+            var model = new ComplexTypeModel
+            {
+                AverageEstimate = new EstimatedStats
+                {
+                    TotalCost = 234.3
+                },
+                MinEstimate = new EstimatedStats
+                {
+                    TotalCost = 3434.33
+                },
+                Competition = 30,
+                SearchVolume = 234.34
+            };
+
+            using (TransactionScope trans = new TransactionScope())
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager
+                    .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+                {
+                    bulk.Setup<ComplexTypeModel>()
+                        .ForDeleteQuery()
+                        .WithTable("ComplexTypeTest")
+                        .Delete()
+                        .AllRecords()
+                        .Commit(conn);
+
+                    bulk.Setup<ComplexTypeModel>()
+                        .ForObject(model)
+                        .WithTable("ComplexTypeTest")
+                        .AddAllColumns()
+                        .Insert()
+                        .SetIdentityColumn(x => x.Id)
+                        .Commit(conn);
+                }
+
+                trans.Complete();
+            }
+        }
+
+        [
+            TestMethod]
         public void SqlBulkTools_UpdateQuery_SetPriceOnSingleEntity()
         {
             DeleteAllBooks();

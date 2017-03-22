@@ -182,7 +182,6 @@ namespace SqlBulkTools.QueryOperations
                 }
                 throw;
             }
-
         }
 
         /// <summary>
