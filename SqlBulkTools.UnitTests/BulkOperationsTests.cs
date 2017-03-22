@@ -157,7 +157,15 @@ namespace SqlBulkTools.UnitTests
         [TestMethod]
         public void BulkOperationsHelper_GetAllPropertiesForComplexType_ReturnsCorrectSet()
         {
-            
+            // Arrange
+            HashSet<string> expected = new HashSet<string>() { "MinEstimate_CreationTime", "MinEstimate_TotalCost", "AverageEstimate_CreationTime", "AverageEstimate_TotalCost", "SearchVolume", "Competition" };
+            List<PropertyInfo> propertyInfoList = typeof(ComplexTypeModel).GetProperties().OrderBy(x => x.Name).ToList();
+
+            // Act
+            var result = BulkOperationsHelper.GetAllValueTypeAndStringColumns(propertyInfoList, typeof(ComplexTypeModel));
+
+            // Assert
+            CollectionAssert.AreEqual(expected.ToList(), result.ToList());
         }
 
         [TestMethod]

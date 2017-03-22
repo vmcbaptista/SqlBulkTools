@@ -25,8 +25,6 @@ namespace SqlBulkTools.TestCommon.Model
             CreationTime = DateTime.UtcNow;
         }
 
-        public double? AverageCpc { get; set; }
-
         public double? TotalCost { get; set; }
 
         public DateTime CreationTime { get; set; }
