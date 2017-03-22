@@ -80,6 +80,9 @@ namespace SqlBulkTools.IntegrationTests
             var expected = 11;
 
             Assert.AreEqual(expected, test.Id);
+
+            // Reset identity seed back to default
+            _dataAccess.ReseedBookIdentity(0);
         }
 
         public async Task SqlBulkTools_BulkInsertAsync()

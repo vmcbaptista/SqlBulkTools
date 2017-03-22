@@ -200,17 +200,17 @@ GO
 
 CREATE TABLE [dbo].[ComplexTypeTest](
 	[Id] [int] IDENTITY(1,1) NOT NULL,
-	[MinEstimate_TotalCost] [float] NULL,
-	[MinEstimate_CreationDate] [DateTime] NULL,
-	[AverageEstimate_TotalCost] [float] NULL,
-	[AverageEstimate_CreationDate] [DateTime] NULL,
-	[SearchVolume] [float] NULL,
-	[Competition] [float] NULL,
+	[MinEstimate_TotalCost] float NOT NULL,
+	[MinEstimate_CreationDate] DateTime NOT NULL,
+	[AverageEstimate_TotalCost] float NOT NULL,
+	[AverageEstimate_CreationDate] DateTime NOT NULL,
+	[SearchVolume] float NOT NULL,
+	[Competition] float NOT NULL,
  CONSTRAINT [PK_dbo.ComplexTypeTest] PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+) ON [PRIMARY]
 
 
 
