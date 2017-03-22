@@ -34,7 +34,7 @@ namespace SqlBulkTools
         protected string _tableHint;
         protected Dictionary<string, int> _ordinalDic;
         protected List<PropertyInfo> _propertyInfoList;
-        #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         /// <summary>
         /// 
@@ -45,6 +45,7 @@ namespace SqlBulkTools
         /// <param name="columns"></param>
         /// <param name="customColumnMappings"></param>
         /// <param name="bulkCopySettings"></param>
+        /// <param name="propertyInfoList"></param>
         protected AbstractOperation(IEnumerable<T> list, string tableName, string schema, HashSet<string> columns,
             Dictionary<string, string> customColumnMappings, BulkCopySettings bulkCopySettings, List<PropertyInfo> propertyInfoList)
         {

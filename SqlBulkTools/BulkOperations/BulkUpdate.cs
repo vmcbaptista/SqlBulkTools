@@ -18,6 +18,7 @@ namespace SqlBulkTools
     public class BulkUpdate<T> : AbstractOperation<T>, ITransaction
     {
         private Dictionary<string, bool> _nullableColumnDic;
+
         /// <summary>
         /// Updates existing records in bulk. 
         /// </summary>
@@ -27,6 +28,7 @@ namespace SqlBulkTools
         /// <param name="columns"></param>
         /// <param name="customColumnMappings"></param>
         /// <param name="bulkCopySettings"></param>
+        /// <param name="propertyInfoList"></param>
         public BulkUpdate(IEnumerable<T> list, string tableName, string schema, HashSet<string> columns, 
             Dictionary<string, string> customColumnMappings, BulkCopySettings bulkCopySettings, List<PropertyInfo> propertyInfoList)
             :

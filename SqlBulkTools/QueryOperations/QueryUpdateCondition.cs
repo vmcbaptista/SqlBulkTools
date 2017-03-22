@@ -34,6 +34,7 @@ namespace SqlBulkTools
         /// <param name="columns"></param>
         /// <param name="customColumnMappings"></param>
         /// <param name="sqlParams"></param>
+        /// <param name="propertyInfoList"></param>
         public QueryUpdateCondition(T singleEntity, string tableName, string schema, HashSet<string> columns, 
             Dictionary<string, string> customColumnMappings, List<SqlParameter> sqlParams, List<PropertyInfo> propertyInfoList)
         {

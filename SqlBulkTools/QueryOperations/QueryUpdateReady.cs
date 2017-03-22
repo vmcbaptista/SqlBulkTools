@@ -44,6 +44,7 @@ namespace SqlBulkTools
         /// <param name="whereConditions"></param>
         /// <param name="sqlParams"></param>
         /// <param name="collationColumnDic"></param>
+        /// <param name="propertyInfoList"></param>
         public QueryUpdateReady(T singleEntity, string tableName, string schema, HashSet<string> columns, Dictionary<string, string> customColumnMappings,
             int conditionSortOrder, List<PredicateCondition> whereConditions, List<SqlParameter> sqlParams, Dictionary<string, string> collationColumnDic, List<PropertyInfo> propertyInfoList)
         {

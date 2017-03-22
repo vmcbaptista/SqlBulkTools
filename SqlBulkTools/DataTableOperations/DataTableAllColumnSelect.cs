@@ -16,12 +16,15 @@ namespace SqlBulkTools
         private readonly HashSet<string> _removedColumns;
         private readonly Dictionary<string, int> _ordinalDic;
         private readonly List<PropertyInfo> _propertyInfoList;
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="ext"></param>
         /// <param name="list"></param>
         /// <param name="columns"></param>
+        /// <param name="ordinalDic"></param>
+        /// <param name="propertyInfoList"></param>
         public DataTableAllColumnSelect(DataTableOperations ext, IEnumerable<T> list, HashSet<string> columns, Dictionary<string, int> ordinalDic, List<PropertyInfo> propertyInfoList) : base(ext, list, columns)
         {
             _removedColumns = new HashSet<string>();

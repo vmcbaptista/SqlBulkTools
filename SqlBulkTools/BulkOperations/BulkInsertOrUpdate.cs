@@ -30,6 +30,7 @@ namespace SqlBulkTools
         /// <param name="columns"></param>
         /// <param name="customColumnMappings"></param>
         /// <param name="bulkCopySettings"></param>
+        /// <param name="propertyInfoList"></param>
         public BulkInsertOrUpdate(IEnumerable<T> list, string tableName, string schema, HashSet<string> columns,
             Dictionary<string, string> customColumnMappings, BulkCopySettings bulkCopySettings, List<PropertyInfo> propertyInfoList) :
 

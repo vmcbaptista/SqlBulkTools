@@ -18,6 +18,7 @@ namespace SqlBulkTools
     public class BulkDelete<T> : AbstractOperation<T>, ITransaction
     {
         private Dictionary<string, bool> _nullableColumnDic;
+
         /// <summary>
         /// 
         /// </summary>
@@ -27,6 +28,7 @@ namespace SqlBulkTools
         /// <param name="columns"></param>
         /// <param name="customColumnMappings"></param>
         /// <param name="bulkCopySettings"></param>
+        /// <param name="propertyInfoList"></param>
         public BulkDelete(IEnumerable<T> list, string tableName, string schema, HashSet<string> columns, 
             Dictionary<string, string> customColumnMappings, BulkCopySettings bulkCopySettings, List<PropertyInfo> propertyInfoList)
             :

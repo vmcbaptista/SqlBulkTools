@@ -28,6 +28,7 @@ namespace SqlBulkTools.QueryOperations
         /// <param name="columns"></param>
         /// <param name="schema"></param>
         /// <param name="sqlParams"></param>
+        /// <param name="propertyInfoList"></param>
         public QueryAddColumnList(T singleEntity, string tableName, HashSet<string> columns, string schema,
             List<SqlParameter> sqlParams, List<PropertyInfo> propertyInfoList)
         {

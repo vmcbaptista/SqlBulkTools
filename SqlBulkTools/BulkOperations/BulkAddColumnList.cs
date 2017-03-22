@@ -20,6 +20,7 @@ namespace SqlBulkTools
         /// <param name="customColumnMappings"></param>
         /// <param name="schema"></param>
         /// <param name="bulkCopySettings"></param>
+        /// <param name="propertyInfoList"></param>
         public BulkAddColumnList(IEnumerable<T> list, string tableName, HashSet<string> columns, Dictionary<string, string> customColumnMappings, 
             string schema, BulkCopySettings bulkCopySettings, List<PropertyInfo> propertyInfoList) 
             :
