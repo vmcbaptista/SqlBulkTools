@@ -78,6 +78,8 @@ namespace SqlBulkTools.IntegrationTests
 
                 trans.Complete();
             }
+
+            Assert.IsTrue(_dataAccess.GetComplexTypeModelCount() > 0);
         }
 
         [TestMethod]
@@ -127,6 +129,8 @@ namespace SqlBulkTools.IntegrationTests
 
                 trans.Complete();
             }
+
+            Assert.IsTrue(_dataAccess.GetComplexTypeModelCount() > 0);
         }
 
         [TestMethod]
@@ -180,6 +184,8 @@ namespace SqlBulkTools.IntegrationTests
 
                 trans.Complete();
             }
+
+            Assert.IsTrue(_dataAccess.GetComplexTypeModelCount() > 0);
         }
 
         [TestMethod]

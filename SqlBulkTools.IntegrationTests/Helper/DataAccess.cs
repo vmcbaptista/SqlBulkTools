@@ -92,6 +92,17 @@ namespace SqlBulkTools.IntegrationTests.Helper
             }
         }
 
+        public int GetComplexTypeModelCount()
+        {
+            using (
+                SqlConnection conn =
+                    new SqlConnection(ConfigurationManager.ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+            {
+                return conn.Sproc()
+                    .ExecuteScalar<int>("dbo.GetComplexModelCount");
+            }
+        }
+
         public void ReseedBookIdentity(int idStart)
         {
             using (SqlConnection conn = new SqlConnection(ConfigurationManager

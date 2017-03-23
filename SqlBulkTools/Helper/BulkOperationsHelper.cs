@@ -683,8 +683,7 @@ namespace SqlBulkTools
             }
         }
 
-        // Loops through object properties, checks if column has been added, adds as sql parameter. Used for the UpdateQuery method. 
-        //TODO make this more modular
+        // Loops through object properties, checks if column has been added, adds as sql parameter. 
         public static void AddSqlParamsForQuery<T>(List<PropertyInfo> propertyInfoList, List<SqlParameter> sqlParameters, HashSet<string> columns, T item,
             string identityColumn = null, ColumnDirectionType direction = ColumnDirectionType.Input, Dictionary<string, string> customColumns = null)
         {
@@ -703,27 +702,13 @@ namespace SqlBulkTools
                             if (propertyName == column && item != null &&
                                 CheckForValidDataType(complexProperty.PropertyType, throwIfInvalid: true))
                             {
-                                DbType sqlType = BulkOperationsUtility.GetSqlTypeFromDotNetType(complexProperty.PropertyType);
-
-                                string actualColumnName;
-                                SqlParameter param;
-
-                                if (customColumns != null && customColumns.TryGetValue(column, out actualColumnName))
-                                {
-                                    param = new SqlParameter($"@{actualColumnName}", sqlType);
-                                }
-                                else
-                                    param = new SqlParameter($"@{column}", sqlType);
+                                SqlParameter param = GetSqlParam<T>(complexProperty, customColumns, column);
 
                                 PropertyInfo complexType = item.GetType().GetProperty(property.Name);
                                 var value = complexType.GetValue(item, null);
 
                                 PropertyInfo propertyInfo = complexType.PropertyType.GetProperty(complexProperty.Name);
                                 object propValue = propertyInfo.GetValue(value, null);
-
-                                //PropertyInfo complexType = item.GetType().GetProperty(basePropertyName);
-                                //var value = complexType.GetValue(item, null);
-                                //values[ordinal] = property.GetValue(value, null);
 
                                 param.Value = propValue ?? DBNull.Value;
 
@@ -734,17 +719,7 @@ namespace SqlBulkTools
 
                     else if (property.Name == column && item != null && CheckForValidDataType(property.PropertyType, throwIfInvalid: true))
                     {
-                        DbType sqlType = BulkOperationsUtility.GetSqlTypeFromDotNetType(property.PropertyType);
-
-                        string actualColumnName;
-                        SqlParameter param;
-
-                        if (customColumns != null && customColumns.TryGetValue(column, out actualColumnName))
-                        {
-                            param = new SqlParameter($"@{actualColumnName}", sqlType);
-                        }
-                        else
-                            param = new SqlParameter($"@{column}", sqlType);
+                        SqlParameter param = GetSqlParam<T>(property, customColumns, column);
 
                         object propValue = property.GetValue(item, null);
 
@@ -759,8 +734,7 @@ namespace SqlBulkTools
             }
         }
 
-        private static void AddSqlParamForQuery<T>(List<PropertyInfo> propertyInfoList, List<SqlParameter> sqlParameters, string column, PropertyInfo property, T item,
-            string identityColumn = null, ColumnDirectionType direction = ColumnDirectionType.Input, Dictionary<string, string> customColumns = null)
+        private static SqlParameter GetSqlParam<T>(PropertyInfo property, Dictionary<string, string> customColumns, string column)
         {
             DbType sqlType = BulkOperationsUtility.GetSqlTypeFromDotNetType(property.PropertyType);
 
@@ -774,14 +748,7 @@ namespace SqlBulkTools
             else
                 param = new SqlParameter($"@{column}", sqlType);
 
-            object propValue = property.GetValue(item, null);
-
-            param.Value = propValue ?? DBNull.Value;
-
-            if (column == identityColumn && direction == ColumnDirectionType.InputOutput)
-                param.Direction = ParameterDirection.InputOutput;
-
-            sqlParameters.Add(param);
+            return param;
         }
 
         /// <summary>
