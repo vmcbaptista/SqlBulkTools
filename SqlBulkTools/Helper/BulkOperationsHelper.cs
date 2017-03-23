@@ -1191,7 +1191,6 @@ namespace SqlBulkTools
         internal static void AddPredicate<T>(Expression<Func<T, bool>> predicate, PredicateType predicateType, List<PredicateCondition> predicateList,
             List<SqlParameter> sqlParamsList, int sortOrder, string appendParam)
         {
-            string leftName;
             string value;
             PredicateCondition condition;
 
@@ -1200,13 +1199,21 @@ namespace SqlBulkTools
             if (binaryBody == null)
                 throw new SqlBulkToolsException($"Expression not supported for {GetPredicateMethodName(predicateType)}");
 
+            var leftName = ((MemberExpression)binaryBody.Left).Member.Name;
+
+            if (((MemberExpression)binaryBody.Left).Expression.Type.GetCustomAttribute(typeof(ComplexTypeAttribute)) != null
+                 && ((MemberExpression)binaryBody.Left).Expression is MemberExpression)
+            {
+                leftName = $"{((MemberExpression)((MemberExpression)binaryBody.Left).Expression).Member.Name}_{leftName}";
+            }
+
             // For expression types Equal and NotEqual, it's possible for user to pass null value. This handles the null use case. 
             // SqlParameter is not added when comparison to null value is used. 
             switch (predicate.Body.NodeType)
             {
                 case ExpressionType.NotEqual:
                     {
-                        leftName = ((MemberExpression)binaryBody.Left).Member.Name;
+                        //leftName = ((MemberExpression)binaryBody.Left).Member.Name;
                         value = Expression.Lambda(binaryBody.Right).Compile().DynamicInvoke()?.ToString();
 
 
@@ -1251,7 +1258,7 @@ namespace SqlBulkTools
                 // SqlParameter is not added when comparison to null value is used. 
                 case ExpressionType.Equal:
                     {
-                        leftName = ((MemberExpression)binaryBody.Left).Member.Name;
+                        //leftName = ((MemberExpression)binaryBody.Left).Member.Name;
                         value = Expression.Lambda(binaryBody.Right).Compile().DynamicInvoke()?.ToString();
 
                         if (value != null)
@@ -1290,7 +1297,7 @@ namespace SqlBulkTools
                     }
                 case ExpressionType.LessThan:
                     {
-                        leftName = ((MemberExpression)binaryBody.Left).Member.Name;
+                        //leftName = ((MemberExpression)binaryBody.Left).Member.Name;
                         value = Expression.Lambda(binaryBody.Right).Compile().DynamicInvoke()?.ToString();
                         BuildCondition(leftName, value, binaryBody.Right.Type, ExpressionType.LessThan, predicateList, sqlParamsList,
                             predicateType, sortOrder, appendParam);
@@ -1298,7 +1305,7 @@ namespace SqlBulkTools
                     }
                 case ExpressionType.LessThanOrEqual:
                     {
-                        leftName = ((MemberExpression)binaryBody.Left).Member.Name;
+                        //leftName = ((MemberExpression)binaryBody.Left).Member.Name;
                         value = Expression.Lambda(binaryBody.Right).Compile().DynamicInvoke()?.ToString();
                         BuildCondition(leftName, value, binaryBody.Right.Type, ExpressionType.LessThanOrEqual, predicateList,
                             sqlParamsList, predicateType, sortOrder, appendParam);
@@ -1306,7 +1313,7 @@ namespace SqlBulkTools
                     }
                 case ExpressionType.GreaterThan:
                     {
-                        leftName = ((MemberExpression)binaryBody.Left).Member.Name;
+                        //leftName = ((MemberExpression)binaryBody.Left).Member.Name;
                         value = Expression.Lambda(binaryBody.Right).Compile().DynamicInvoke()?.ToString();
                         BuildCondition(leftName, value, binaryBody.Right.Type, ExpressionType.GreaterThan, predicateList,
                             sqlParamsList, predicateType, sortOrder, appendParam);
@@ -1314,7 +1321,7 @@ namespace SqlBulkTools
                     }
                 case ExpressionType.GreaterThanOrEqual:
                     {
-                        leftName = ((MemberExpression)binaryBody.Left).Member.Name;
+                        //leftName = ((MemberExpression)binaryBody.Left).Member.Name;
                         value = Expression.Lambda(binaryBody.Right).Compile().DynamicInvoke()?.ToString();
                         BuildCondition(leftName, value, binaryBody.Right.Type, ExpressionType.GreaterThanOrEqual, predicateList,
                             sqlParamsList, predicateType, sortOrder, appendParam);
