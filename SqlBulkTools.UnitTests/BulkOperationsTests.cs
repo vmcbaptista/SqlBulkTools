@@ -154,19 +154,34 @@ namespace SqlBulkTools.UnitTests
 
         }
 
-        [TestMethod, Ignore]
+        [TestMethod]
         public void BulkOperationsHelper_GetAllPropertiesForComplexType_ReturnsCorrectSet()
         {
-            throw new NotImplementedException();
             // Arrange
-            //HashSet<string> expected = new HashSet<string>() { "MinEstimate_CreationTime", "MinEstimate_TotalCost", "AverageEstimate_CreationTime", "AverageEstimate_TotalCost", "SearchVolume", "Competition" };
-            //List<PropertyInfo> propertyInfoList = typeof(ComplexTypeModel).GetProperties().OrderBy(x => x.Name).ToList();
+            HashSet<string> expected = new HashSet<string>() { "AverageEstimate_TotalCost", "AverageEstimate_CreationDate", "Competition", "Id", "MinEstimate_TotalCost", "MinEstimate_CreationDate", "SearchVolume" };
+            List<PropertyInfo> propertyInfoList = typeof(ComplexTypeModel).GetProperties().OrderBy(x => x.Name).ToList();
 
-            //// Act
-            //var result = BulkOperationsHelper.GetAllValueTypeAndStringColumns(propertyInfoList, typeof(ComplexTypeModel));
+            // Act
+            var result = BulkOperationsHelper.GetAllValueTypeAndStringColumns(propertyInfoList, typeof(ComplexTypeModel));
 
-            //// Assert
-            //CollectionAssert.AreEqual(expected.ToList(), result.ToList());
+            // Assert
+            CollectionAssert.AreEqual(expected.ToList(), result.ToList());
+        }
+
+        [TestMethod]
+        public void BulkOperationsHelper_CreateDataTableForComplexType_IsStructuredCorrectly()
+        {
+            HashSet<string> columns = new HashSet<string>() { "AverageEstimate_TotalCost", "AverageEstimate_CreationDate", "Competition", "MinEstimate_TotalCost", "MinEstimate_CreationDate", "SearchVolume" };
+            List<PropertyInfo> propertyInfoList = typeof(ComplexTypeModel).GetProperties().OrderBy(x => x.Name).ToList();
+
+            var result = BulkOperationsHelper.CreateDataTable<ComplexTypeModel>(propertyInfoList, columns, null, new Dictionary<string, int>());
+
+            Assert.AreEqual(result.Columns["AverageEstimate_TotalCost"].DataType, typeof(double), "AverageEstimate_TotalCost");
+            Assert.AreEqual(result.Columns["AverageEstimate_CreationDate"].DataType, typeof(DateTime), "AverageEstimate_CreationDate");
+            Assert.AreEqual(result.Columns["MinEstimate_TotalCost"].DataType, typeof(double), "MinEstimate_TotalCost");
+            Assert.AreEqual(result.Columns["MinEstimate_CreationDate"].DataType, typeof(DateTime), "MinEstimate_CreationDate");
+            Assert.AreEqual(result.Columns["SearchVolume"].DataType, typeof(double), "SearchVolume");
+            Assert.AreEqual(result.Columns["Competition"].DataType, typeof(double), "Competition");
         }
 
         [TestMethod]

@@ -6,6 +6,7 @@ namespace SqlBulkTools.TestCommon.Model
 
     public class ComplexTypeModel
     {
+        public int Id { get; set; }
 
         public EstimatedStats MinEstimate { get; set; }
 
@@ -22,11 +23,11 @@ namespace SqlBulkTools.TestCommon.Model
     {
         public EstimatedStats()
         {
-            CreationTime = DateTime.UtcNow;
+            CreationDate = DateTime.UtcNow;
         }
 
         public double? TotalCost { get; set; }
 
-        public DateTime CreationTime { get; set; }
+        public DateTime CreationDate { get; set; }
     }
 }

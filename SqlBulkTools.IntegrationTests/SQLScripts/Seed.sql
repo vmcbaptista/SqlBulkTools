@@ -26,6 +26,18 @@ IF EXISTS (
 		SELECT * 
 		FROM INFORMATION_SCHEMA.ROUTINES
 		WHERE SPECIFIC_CATALOG = 'SqlBulkTools'
+		AND SPECIFIC_NAME = 'GetComplexModelList'
+		)
+		BEGIN
+			DROP PROCEDURE dbo.GetComplexModelList
+		END
+
+GO
+
+IF EXISTS (
+		SELECT * 
+		FROM INFORMATION_SCHEMA.ROUTINES
+		WHERE SPECIFIC_CATALOG = 'SqlBulkTools'
 		AND SPECIFIC_NAME = 'GetBookCount'
 		)
 		BEGIN
@@ -92,6 +104,16 @@ IF EXISTS(
 		)
 		BEGIN
 			DROP TABLE dbo.Books
+		END
+
+IF EXISTS(
+		SELECT * 
+		FROM INFORMATION_SCHEMA.TABLES
+		WHERE TABLE_CATALOG = 'SqlBulkTools'
+		AND TABLE_NAME = 'ComplexTypeTest'
+		)
+		BEGIN
+			DROP TABLE dbo.ComplexTypeTest
 		END
 
 IF EXISTS(
@@ -187,6 +209,22 @@ CREATE TABLE [dbo].[Books](
 ) ON [PRIMARY]
 
 GO
+
+CREATE TABLE [dbo].[ComplexTypeTest](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[MinEstimate_TotalCost] float NOT NULL,
+	[MinEstimate_CreationDate] DateTime NOT NULL,
+	[AverageEstimate_TotalCost] float NOT NULL,
+	[AverageEstimate_CreationDate] DateTime NOT NULL,
+	[SearchVolume] float NOT NULL,
+	[Competition] float NOT NULL,
+ CONSTRAINT [PK_dbo.ComplexTypeTest] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+
 
 CREATE TABLE [AnotherSchema].[SchemaTest](
 	[Id] [int] IDENTITY(1,1) NOT NULL,
@@ -357,3 +395,18 @@ BEGIN
 	DBCC CHECKIDENT ('[dbo].[Books]', RESEED, @IdStart);
 END
 GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE GetComplexModelCount
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+    SELECT COUNT(*)
+	FROM ComplexTypeTest
+END
+GO
+

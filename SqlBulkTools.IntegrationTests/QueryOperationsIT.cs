@@ -24,6 +24,156 @@ namespace SqlBulkTools.IntegrationTests
         }
 
         [TestMethod]
+        public void SqlBulkTools_InsertQuery_WhenTypeIsComplex()
+        {
+            BulkOperations bulk = new BulkOperations();
+
+            var model = new ComplexTypeModel
+            {
+                AverageEstimate = new EstimatedStats
+                {
+                    TotalCost = 234.3
+                },
+                MinEstimate = new EstimatedStats
+                {
+                    TotalCost = 3434.33
+                },
+                Competition = 30,
+                SearchVolume = 234.34
+            };
+
+            using (TransactionScope trans = new TransactionScope())
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager
+                    .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+                {
+                    bulk.Setup<ComplexTypeModel>()
+                        .ForDeleteQuery()
+                        .WithTable("ComplexTypeTest")
+                        .Delete()
+                        .AllRecords()
+                        .Commit(conn);
+
+                    bulk.Setup<ComplexTypeModel>()
+                        .ForObject(model)
+                        .WithTable("ComplexTypeTest")
+                        .AddAllColumns()
+                        .Insert()
+                        .SetIdentityColumn(x => x.Id)
+                        .Commit(conn);
+                }
+
+                trans.Complete();
+            }
+
+            Assert.IsTrue(_dataAccess.GetComplexTypeModelCount() > 0);
+        }
+
+        [TestMethod]
+        public void SqlBulkTools_UpsertQuery_WhenTypeIsComplex()
+        {
+            BulkOperations bulk = new BulkOperations();
+
+            var model = new ComplexTypeModel
+            {
+                AverageEstimate = new EstimatedStats
+                {
+                    TotalCost = 234.3
+                },
+                MinEstimate = new EstimatedStats
+                {
+                    TotalCost = 3434.33
+                },
+                Competition = 30,
+                SearchVolume = 234.34
+            };
+
+            using (TransactionScope trans = new TransactionScope())
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager
+                    .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+                {
+                    bulk.Setup<ComplexTypeModel>()
+                        .ForDeleteQuery()
+                        .WithTable("ComplexTypeTest")
+                        .Delete()
+                        .AllRecords()
+                        .Commit(conn);
+
+                    bulk.Setup<ComplexTypeModel>()
+                        .ForObject(model)
+                        .WithTable("ComplexTypeTest")
+                        .AddAllColumns()
+                        .Upsert()
+                        .MatchTargetOn(x => x.Id)
+                        .SetIdentityColumn(x => x.Id)
+                        .Commit(conn);
+                }
+
+                trans.Complete();
+            }
+
+            Assert.IsTrue(_dataAccess.GetComplexTypeModelCount() > 0);
+        }
+
+        [TestMethod]
+        public void SqlBulkTools_UpdateQuery_WhenTypeIsComplex()
+        {
+            BulkOperations bulk = new BulkOperations();
+            
+            var model = new ComplexTypeModel
+            {
+                AverageEstimate = new EstimatedStats
+                {
+                    TotalCost = 234.3
+                },
+                MinEstimate = new EstimatedStats
+                {
+                    TotalCost = 3434.33
+                },
+                Competition = 30,
+                SearchVolume = 234.34
+            };
+
+            int result;
+
+            using (TransactionScope trans = new TransactionScope())
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager
+                    .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+                {
+                    bulk.Setup<ComplexTypeModel>()
+                        .ForDeleteQuery()
+                        .WithTable("ComplexTypeTest")
+                        .Delete()
+                        .AllRecords()
+                        .Commit(conn);
+
+                    bulk.Setup<ComplexTypeModel>()
+                        .ForObject(model)
+                        .WithTable("ComplexTypeTest")
+                        .AddAllColumns()
+                        .Insert()
+                        .SetIdentityColumn(x => x.Id)
+                        .Commit(conn);
+
+                    result = bulk.Setup<ComplexTypeModel>()
+                        .ForObject(model)
+                        .WithTable("ComplexTypeTest")
+                        .AddAllColumns()
+                        .Update()
+                        .Where(x => x.MinEstimate.TotalCost > 3000)
+                        .SetIdentityColumn(x => x.Id)
+                        .Commit(conn);
+                }
+
+                trans.Complete();
+            }
+
+            Assert.IsTrue(result == 1);
+        }
+
+        [TestMethod]
         public void SqlBulkTools_UpdateQuery_SetPriceOnSingleEntity()
         {
             DeleteAllBooks();
