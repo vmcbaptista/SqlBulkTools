@@ -44,7 +44,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="FastMember, Version=1.0.0.9, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SprocMapper.1.2.5\lib\net45\FastMember.dll</HintPath>
+      <HintPath>..\packages\SprocMapper.1.2.6\lib\net45\FastMember.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.SqlServer.Types, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL" />
@@ -53,7 +53,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="SprocMapperLibrary, Version=1.1.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SprocMapper.1.2.5\lib\net45\SprocMapperLibrary.dll</HintPath>
+      <HintPath>..\packages\SprocMapper.1.2.6\lib\net45\SprocMapperLibrary.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
