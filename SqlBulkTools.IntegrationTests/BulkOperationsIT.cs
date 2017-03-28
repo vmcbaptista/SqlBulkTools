@@ -555,6 +555,73 @@ namespace SqlBulkTools.IntegrationTests
         }
 
         [TestMethod]
+        public void SqlBulkTools_WithCustomSchema_WhenWithTableIncludesSchemaName()
+        {
+            // Arrange           
+            BulkOperations bulk = new BulkOperations();
+
+            List<SchemaTest2> conflictingSchemaCol = new List<SchemaTest2>();
+
+            for (int i = 0; i < 30; i++)
+            {
+                conflictingSchemaCol.Add(new SchemaTest2() { ColumnA = "ColumnA " + i });
+            }
+
+            using (TransactionScope trans = new TransactionScope())
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager
+                    .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+                {
+                    bulk.Setup<SchemaTest2>()
+                        .ForCollection(conflictingSchemaCol)
+                        .WithTable("SchemaTest.AnotherSchema")
+                        .AddColumn(x => x.ColumnA)
+                        .BulkDelete()
+                        .MatchTargetOn(x => x.ColumnA)
+                        .Commit(conn); // Remove existing rows
+
+                    bulk.Setup<SchemaTest2>()
+                        .ForCollection(conflictingSchemaCol)
+                        .WithTable("[SchemaTest].AnotherSchema")
+                        .AddAllColumns()
+                        .BulkInsert()
+                        .Commit(conn); // Add new rows
+                }
+
+                trans.Complete();
+            }
+
+            // Assert
+            Assert.IsTrue(_dataAccess.GetSchemaTest2List().Any());
+
+        }
+
+        [TestMethod]
+        [MyExpectedException(typeof(SqlBulkToolsException), "Table name can't contain more than one period '.' character.")]
+        public void SqlBulkTools_ThrowsException_WhenTableNameIsIncorrect()
+        {
+            // Arrange           
+            BulkOperations bulk = new BulkOperations();
+
+            using (TransactionScope trans = new TransactionScope())
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager
+                    .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+                {
+                    bulk.Setup<SchemaTest2>()
+                        .ForCollection(new List<SchemaTest2>())
+                        .WithTable("SchemaTest.AnotherSchema.TooManyPeriods")
+                        .AddColumn(x => x.ColumnA)
+                        .BulkDelete()
+                        .MatchTargetOn(x => x.ColumnA)
+                        .Commit(conn); 
+                }
+
+                trans.Complete();
+            }
+        }
+
+        [TestMethod]
         public void SqlBulkTools_BulkDeleteOnId_AddItemsThenRemovesAllItems()
         {
             // Arrange           

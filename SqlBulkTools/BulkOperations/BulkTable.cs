@@ -19,21 +19,21 @@ namespace SqlBulkTools.BulkCopy
         private readonly string _tableName;
         private Dictionary<string, string> CustomColumnMappings { get; set; }
         private BulkCopySettings _bulkCopySettings;
-        private List<PropertyInfo> _propertyInfoList;
+        private readonly List<PropertyInfo> _propertyInfoList;
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="list"></param>
         /// <param name="tableName"></param>
-        public BulkTable(IEnumerable<T> list, string tableName)
+        /// <param name="schema"></param>
+        public BulkTable(IEnumerable<T> list, string tableName, string schema)
         {
             _list = list;
-            _schema = Constants.DefaultSchemaName;
+            _schema = schema;
             Columns = new HashSet<string>();
             CustomColumnMappings = new Dictionary<string, string>();
             _tableName = tableName;
-            _schema = Constants.DefaultSchemaName;
             Columns = new HashSet<string>();
             CustomColumnMappings = new Dictionary<string, string>();
             _bulkCopySettings = new BulkCopySettings();
