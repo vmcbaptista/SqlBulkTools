@@ -552,7 +552,7 @@ namespace SqlBulkTools.IntegrationTests
             // Assert
             Assert.IsTrue(_dataAccess.GetSchemaTest2List().Any());
 
-        }
+        }    
 
         [TestMethod]
         public void SqlBulkTools_WithCustomSchema_WhenWithTableIncludesSchemaName()
@@ -615,6 +615,32 @@ namespace SqlBulkTools.IntegrationTests
                         .BulkDelete()
                         .MatchTargetOn(x => x.ColumnA)
                         .Commit(conn); 
+                }
+
+                trans.Complete();
+            }
+        }
+
+        [TestMethod]
+        [MyExpectedException(typeof(SqlBulkToolsException), "Schema has already been defined in WithTable method.")]
+        public void SqlBulkTools_ThrowsException_WhenSchemaDefinedTwice()
+        {
+            // Arrange           
+            BulkOperations bulk = new BulkOperations();
+
+            using (TransactionScope trans = new TransactionScope())
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager
+                    .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+                {
+                    bulk.Setup<SchemaTest2>()
+                        .ForCollection(new List<SchemaTest2>())
+                        .WithTable("SchemaTest.AnotherSchema")
+                        .WithSchema("YetAnotherSchema")
+                        .AddColumn(x => x.ColumnA)
+                        .BulkDelete()
+                        .MatchTargetOn(x => x.ColumnA)
+                        .Commit(conn);
                 }
 
                 trans.Complete();

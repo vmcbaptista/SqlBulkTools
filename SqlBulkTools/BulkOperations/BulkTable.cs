@@ -91,6 +91,9 @@ namespace SqlBulkTools.BulkCopy
         /// <returns></returns>
         public BulkTable<T> WithSchema(string schema)
         {
+            if (_schema != Constants.DefaultSchemaName)
+                throw new SqlBulkToolsException("Schema has already been defined in WithTable method.");
+
             _schema = schema;
             return this;
         }
