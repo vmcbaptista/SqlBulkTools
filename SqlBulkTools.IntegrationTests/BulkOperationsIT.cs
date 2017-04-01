@@ -10,9 +10,9 @@ using Microsoft.SqlServer.Types;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Ploeh.AutoFixture;
 using SqlBulkTools.Enumeration;
-using SqlBulkTools.IntegrationTests.Helper;
 using SqlBulkTools.TestCommon;
 using SqlBulkTools.TestCommon.Model;
+using SqlBulkTools.IntegrationTests.Data;
 
 namespace SqlBulkTools.IntegrationTests
 {
@@ -29,6 +29,49 @@ namespace SqlBulkTools.IntegrationTests
         {
             _dataAccess = new DataAccess();
             _randomizer = new BookRandomizer();
+        }
+
+        [TestMethod]
+        public void SqlBulkTools_BulkInsertOrUpdate_PassesWithCustomIdentityColumn()
+        {
+            var bulk = new BulkOperations();
+            List<CustomIdentityColumnNameTest> customIdentityColumnList = new List<CustomIdentityColumnNameTest>();
+
+            for (int i = 0; i < 30; i++)
+            {
+                customIdentityColumnList.Add(new CustomIdentityColumnNameTest
+                {
+                    ColumnA = i.ToString()               
+                });
+            }
+
+            using (TransactionScope trans = new TransactionScope())
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager
+                    .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+                {
+                    bulk.Setup<CustomIdentityColumnNameTest>()
+                        .ForDeleteQuery()
+                        .WithTable("CustomIdentityColumnNameTest")
+                        .Delete()
+                        .AllRecords()
+                        .Commit(conn);
+
+                    bulk.Setup<CustomIdentityColumnNameTest>()
+                        .ForCollection(customIdentityColumnList)
+                        .WithTable("CustomIdentityColumnNameTest")
+                        .AddColumn(x => x.Id, "ID_COMPANY")
+                        .AddColumn(x => x.ColumnA)
+                        .BulkInsertOrUpdate()
+                        .SetIdentityColumn(x => x.Id)
+                        .MatchTargetOn(x => x.ColumnA)
+                        .Commit(conn);
+                }
+
+                trans.Complete();
+            }
+
+            Assert.IsTrue(_dataAccess.GetCustomIdentityColumnNameTestList().Count == 30);
         }
 
         [TestMethod]

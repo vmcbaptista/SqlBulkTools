@@ -7,10 +7,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Transactions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Ploeh.AutoFixture;
 using SqlBulkTools.Enumeration;
-using SqlBulkTools.IntegrationTests.Helper;
 using SqlBulkTools.TestCommon.Model;
+using SqlBulkTools.TestCommon;
+using SqlBulkTools.IntegrationTests.Data;
+using Ploeh.AutoFixture;
 
 namespace SqlBulkTools.IntegrationTests
 {

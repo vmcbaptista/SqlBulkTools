@@ -79,13 +79,11 @@ namespace SqlBulkTools
             if (propertyName == null)
                 throw new SqlBulkToolsException("SetIdentityColumn column name can't be null");
 
-            if (_identityColumn == null)
-                _identityColumn = propertyName;
-
-            else
-            {
-                throw new SqlBulkToolsException("Can't have more than one identity column");
-            }
+            if (_identityColumn == null)           
+                _identityColumn = BulkOperationsHelper.GetActualColumn(_customColumnMappings, propertyName);
+                            
+            else           
+                throw new SqlBulkToolsException("Can't have more than one identity column");           
         }
 
         /// <summary>
@@ -115,13 +113,11 @@ namespace SqlBulkTools
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="columnName"></param>
+        /// <param name="propertyName"></param>
         /// <param name="collation"></param>
         /// <returns></returns>
-        protected void SetCollation(Expression<Func<T, object>> columnName, string collation)
+        protected void SetCollation(string propertyName, string collation)
         {
-            var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
-
             if (propertyName == null)
                 throw new SqlBulkToolsException("Collation can't be null");
 

@@ -5,8 +5,9 @@ using System.Linq;
 using System.Transactions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBulkTools.Enumeration;
-using SqlBulkTools.IntegrationTests.Helper;
 using SqlBulkTools.TestCommon.Model;
+using SqlBulkTools.IntegrationTests.Data;
+using SqlBulkTools.TestCommon;
 
 namespace SqlBulkTools.IntegrationTests
 {

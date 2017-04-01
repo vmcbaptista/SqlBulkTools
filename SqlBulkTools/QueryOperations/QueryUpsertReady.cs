@@ -69,13 +69,11 @@ namespace SqlBulkTools
             if (propertyName == null)
                 throw new SqlBulkToolsException("SetIdentityColumn column name can't be null");
 
-            if (_identityColumn == null)
-                _identityColumn = propertyName;
-
-            else
-            {
-                throw new SqlBulkToolsException("Can't have more than one identity column");
-            }
+            if (_identityColumn == null)            
+               _identityColumn = BulkOperationsHelper.GetActualColumn(_customColumnMappings, propertyName);
+            
+            else            
+                throw new SqlBulkToolsException("Can't have more than one identity column");        
 
             return this;
         }
@@ -115,14 +113,12 @@ namespace SqlBulkTools
             if (propertyName == null)
                 throw new SqlBulkToolsException("SetIdentityColumn column name can't be null");
 
-            if (_identityColumn == null)
-                _identityColumn = propertyName;
-
-            else
-            {
+            if (_identityColumn == null)           
+                _identityColumn = BulkOperationsHelper.GetActualColumn(_customColumnMappings, propertyName);
+            
+            else            
                 throw new SqlBulkToolsException("Can't have more than one identity column");
-            }
-
+            
             return this;
         }
 
@@ -140,7 +136,7 @@ namespace SqlBulkTools
             if (propertyName == null)
                 throw new NullReferenceException("MatchTargetOn column name can't be null.");
 
-            _matchTargetOnSet.Add(propertyName);
+            _matchTargetOnSet.Add(BulkOperationsHelper.GetActualColumn(_customColumnMappings, propertyName));
 
             if (!_columns.Contains(propertyName))
                 _columns.Add(propertyName);
@@ -160,16 +156,16 @@ namespace SqlBulkTools
         {
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
 
-
             if (propertyName == null)
                 throw new NullReferenceException("MatchTargetOn column name can't be null.");
 
-            _matchTargetOnSet.Add(propertyName);
+            var actualColumn = BulkOperationsHelper.GetActualColumn(_customColumnMappings, propertyName);
+            _matchTargetOnSet.Add(actualColumn);
 
             if (collation == null)
                 throw new SqlBulkToolsException("Collation can't be null");
 
-            _collationColumnDic.Add(propertyName, collation);
+            _collationColumnDic.Add(actualColumn, collation);
 
             return this;
         }

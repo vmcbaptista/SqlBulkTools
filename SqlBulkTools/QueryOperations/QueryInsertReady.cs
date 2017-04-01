@@ -62,12 +62,10 @@ namespace SqlBulkTools.QueryOperations
                 throw new SqlBulkToolsException("SetIdentityColumn column name can't be null");
 
             if (_identityColumn == null)
-                _identityColumn = propertyName;
-
-            else
-            {
-                throw new SqlBulkToolsException("Can't have more than one identity column");
-            }
+                _identityColumn = BulkOperationsHelper.GetActualColumn(_customColumnMappings, propertyName);
+            
+            else            
+                throw new SqlBulkToolsException("Can't have more than one identity column");            
 
             _columns.Add(propertyName);
 
@@ -89,8 +87,15 @@ namespace SqlBulkTools.QueryOperations
                 throw new SqlBulkToolsException("SetIdentityColumn column name can't be null");
 
             if (_identityColumn == null)
-                _identityColumn = propertyName;
+            {
+                string actualPropertyName;
 
+                if (_customColumnMappings.TryGetValue(propertyName, out actualPropertyName))
+                    _identityColumn = actualPropertyName;
+
+                else
+                    _identityColumn = propertyName;
+            }
 
             else
             {

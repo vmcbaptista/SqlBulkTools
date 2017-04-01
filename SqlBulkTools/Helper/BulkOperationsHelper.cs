@@ -21,6 +21,16 @@ namespace SqlBulkTools
 {
     internal static class BulkOperationsHelper
     {
+        internal static string GetActualColumn(Dictionary<string, string> customColumnMappings, string propertyName)
+        {
+            string actualPropertyName;
+
+            if (customColumnMappings.TryGetValue(propertyName, out actualPropertyName))
+                return actualPropertyName;
+
+            else
+                return propertyName;
+        }
 
         internal struct PrecisionType
         {
@@ -227,8 +237,6 @@ namespace SqlBulkTools
                     sb.Append($" AND [{column}] = @{column}{GetCollation(collationDic, column)}");
                 }
             }
-
-
 
             return sb.ToString();
         }
@@ -1005,7 +1013,7 @@ namespace SqlBulkTools
             if (dtCols.Rows.Count == 0)
                 throw new SqlBulkToolsException($"Table name '{tableName}' not found. Check your setup and try again.");
             return dtCols;
-        }
+        }       
 
         internal static void InsertToTmpTable(SqlConnection conn, DataTable dt, BulkCopySettings bulkCopySettings)
         {

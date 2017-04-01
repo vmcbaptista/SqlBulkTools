@@ -76,13 +76,11 @@ namespace SqlBulkTools
             if (propertyName == null)
                 throw new SqlBulkToolsException("SetIdentityColumn column name can't be null");
 
-            if (_identityColumn == null)
-                _identityColumn = propertyName;
-
-            else
-            {
+            if (_identityColumn == null)           
+                _identityColumn = BulkOperationsHelper.GetActualColumn(_customColumnMappings, propertyName);
+            
+            else           
                 throw new SqlBulkToolsException("Can't have more than one identity column");
-            }
 
             return this;
         }

@@ -50,7 +50,12 @@ namespace SqlBulkTools
         public BulkDelete<T> MatchTargetOn(Expression<Func<T, object>> columnName)
         {
             var propertyName = BulkOperationsHelper.GetPropertyName(columnName);
-            _matchTargetOn.Add(propertyName);
+
+            if (propertyName == null)
+                throw new NullReferenceException("MatchTargetOn column name can't be null.");
+
+            _matchTargetOn.Add(BulkOperationsHelper.GetActualColumn(_customColumnMappings, propertyName));
+
             return this;
         }
 
@@ -69,8 +74,10 @@ namespace SqlBulkTools
             if (propertyName == null)
                 throw new NullReferenceException("MatchTargetOn column name can't be null.");
 
-            _matchTargetOn.Add(propertyName);
-            base.SetCollation(columnName, collation);
+            var actualColumn = BulkOperationsHelper.GetActualColumn(_customColumnMappings, propertyName);
+
+            _matchTargetOn.Add(actualColumn);
+            base.SetCollation(actualColumn, collation);
 
             return this;
         }

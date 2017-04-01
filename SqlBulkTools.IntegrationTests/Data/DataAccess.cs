@@ -5,7 +5,7 @@ using System.Linq;
 using SprocMapperLibrary.SqlServer;
 using SqlBulkTools.TestCommon.Model;
 
-namespace SqlBulkTools.IntegrationTests.Helper
+namespace SqlBulkTools.IntegrationTests.Data
 {
     public class DataAccess
     {
@@ -111,6 +111,18 @@ namespace SqlBulkTools.IntegrationTests.Helper
                 conn.Sproc()
                     .AddSqlParameter("@IdStart", idStart)
                     .ExecuteNonQuery("dbo.ReseedBookIdentity");
+            }
+        }
+
+        public List<CustomIdentityColumnNameTest> GetCustomIdentityColumnNameTestList()
+        {
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager
+                .ConnectionStrings["SqlBulkToolsTest"].ConnectionString))
+            {
+                return conn.Sproc()
+                    .CustomColumnMapping<CustomIdentityColumnNameTest>(x => x.Id, "ID_COMPANY")
+                    .ExecuteReader<CustomIdentityColumnNameTest>("dbo.GetCustomIdentityColumnNameTestList")
+                    .ToList();
             }
         }
     }

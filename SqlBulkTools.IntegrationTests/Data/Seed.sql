@@ -26,6 +26,30 @@ IF EXISTS (
 		SELECT * 
 		FROM INFORMATION_SCHEMA.ROUTINES
 		WHERE SPECIFIC_CATALOG = 'SqlBulkTools'
+		AND SPECIFIC_NAME = 'GetCustomIdentityColumnNameTestList'
+		)
+		BEGIN
+			DROP PROCEDURE dbo.GetCustomIdentityColumnNameTestList
+		END
+
+GO
+
+IF EXISTS (
+		SELECT * 
+		FROM INFORMATION_SCHEMA.ROUTINES
+		WHERE SPECIFIC_CATALOG = 'SqlBulkTools'
+		AND SPECIFIC_NAME = 'GetComplexModelCount'
+		)
+		BEGIN
+			DROP PROCEDURE dbo.GetComplexModelCount
+		END
+
+GO
+
+IF EXISTS (
+		SELECT * 
+		FROM INFORMATION_SCHEMA.ROUTINES
+		WHERE SPECIFIC_CATALOG = 'SqlBulkTools'
 		AND SPECIFIC_NAME = 'GetComplexModelList'
 		)
 		BEGIN
@@ -110,6 +134,16 @@ IF EXISTS(
 		SELECT * 
 		FROM INFORMATION_SCHEMA.TABLES
 		WHERE TABLE_CATALOG = 'SqlBulkTools'
+		AND TABLE_NAME = 'CustomIdentityColumnNameTest'
+		)
+		BEGIN
+			DROP TABLE dbo.CustomIdentityColumnNameTest
+		END
+
+IF EXISTS(
+		SELECT * 
+		FROM INFORMATION_SCHEMA.TABLES
+		WHERE TABLE_CATALOG = 'SqlBulkTools'
 		AND TABLE_NAME = 'ComplexTypeTest'
 		)
 		BEGIN
@@ -188,6 +222,12 @@ CREATE SCHEMA AnotherSchema
 GO
 
 -- CREATE TABLES
+
+CREATE TABLE [dbo].[CustomIdentityColumnNameTest] 
+(
+	ID_COMPANY INT IDENTITY(1,1) NOT NULL,
+	ColumnA nvarchar(256) NOT NULL
+)
 
 CREATE TABLE [dbo].[Books](
 	[Id] [int] IDENTITY(1,1) NOT NULL,
@@ -407,6 +447,20 @@ BEGIN
 
     SELECT COUNT(*)
 	FROM ComplexTypeTest
+END
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE GetCustomIdentityColumnNameTestList
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT ID_COMPANY, ColumnA
+	FROM dbo.CustomIdentityColumnNameTest
 END
 GO
 
