@@ -26,11 +26,12 @@ namespace SqlBulkTools.QueryOperations
         /// </summary>
         /// <param name="singleEntity"></param>
         /// <param name="tableName"></param>
+        /// <param name="schema"></param>
         /// <param name="sqlParams"></param>
-        public QueryTable(T singleEntity, string tableName, List<SqlParameter> sqlParams)
+        public QueryTable(T singleEntity, string tableName, string schema, List<SqlParameter> sqlParams)
         {
             _singleEntity = singleEntity;
-            _schema = Constants.DefaultSchemaName;
+            _schema = schema;
             Columns = new HashSet<string>();
             CustomColumnMappings = new Dictionary<string, string>();
             _tableName = tableName;
@@ -70,6 +71,9 @@ namespace SqlBulkTools.QueryOperations
         /// <returns></returns>
         public QueryTable<T> WithSchema(string schema)
         {
+            if (_schema != Constants.DefaultSchemaName)
+                throw new SqlBulkToolsException("Schema has already been defined in WithTable method.");
+
             _schema = schema;
             return this;
         }

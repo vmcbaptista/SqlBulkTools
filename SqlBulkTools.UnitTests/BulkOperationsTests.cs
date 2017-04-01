@@ -8,12 +8,80 @@ using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using SqlBulkTools.TestCommon.Model;
+using SqlBulkTools.TestCommon;
 
 namespace SqlBulkTools.UnitTests
 {
     [TestClass]
     public class BulkOperationsTests
     {
+
+        [TestMethod]
+        public void GetTableAndSchema_WhenNoSchemaIsSpecified()
+        {
+            var expectedSchema = "dbo";
+            var expectedTableName = "MyTable";
+
+            var result = BulkOperationsHelper.GetTableAndSchema("MyTable");
+
+            Assert.AreEqual(result.Name, expectedTableName);
+            Assert.AreEqual(result.Schema, expectedSchema);
+        }
+
+        [TestMethod]
+        public void GetTableAndSchema_WhenASchemaIsSpecified_WithNoFormatting()
+        {
+            var expectedSchema = "TestSchema";
+            var expectedTableName = "MyTable";
+
+            var result = BulkOperationsHelper.GetTableAndSchema("TestSchema.MyTable");
+
+            Assert.AreEqual(result.Name, expectedTableName);
+            Assert.AreEqual(result.Schema, expectedSchema);
+        }
+
+        [TestMethod]
+        public void GetTableAndSchema_WhenASchemaIsSpecified_WithFormatting1()
+        {
+            var expectedSchema = "TestSchema";
+            var expectedTableName = "MyTable";
+
+            var result = BulkOperationsHelper.GetTableAndSchema("[TestSchema].[MyTable]");
+
+            Assert.AreEqual(result.Name, expectedTableName);
+            Assert.AreEqual(result.Schema, expectedSchema);
+        }
+
+        [TestMethod]
+        public void GetTableAndSchema_WhenASchemaIsSpecified_WithFormatting2()
+        {
+            var expectedSchema = "TestSchema";
+            var expectedTableName = "MyTable";
+
+            var result = BulkOperationsHelper.GetTableAndSchema("[TestSchema].MyTable");
+
+            Assert.AreEqual(result.Name, expectedTableName);
+            Assert.AreEqual(result.Schema, expectedSchema);
+        }
+
+        [TestMethod]
+        public void GetTableAndSchema_WhenASchemaIsSpecified_WithFormatting3()
+        {
+            var expectedSchema = "TestSchema";
+            var expectedTableName = "MyTable";
+
+            var result = BulkOperationsHelper.GetTableAndSchema("TestSchema.[MyTable]");
+
+            Assert.AreEqual(result.Name, expectedTableName);
+            Assert.AreEqual(result.Schema, expectedSchema);
+        }
+
+        [TestMethod]
+        [MyExpectedException(typeof(SqlBulkToolsException), "Table name can't contain more than one period '.' character.")]
+        public void GetTableAndSchema_WithAnInvalidName()
+        {
+            var result = BulkOperationsHelper.GetTableAndSchema("TestSchema.InvalidName.MyTable");
+        }
 
         [TestMethod]
         public void BulkOperationsHelpers_BuildJoinConditionsForUpdateOrInsertWithThreeConditions()

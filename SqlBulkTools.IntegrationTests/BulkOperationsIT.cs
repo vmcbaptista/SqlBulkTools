@@ -617,7 +617,7 @@ namespace SqlBulkTools.IntegrationTests
                 {
                     bulk.Setup<SchemaTest2>()
                         .ForCollection(conflictingSchemaCol)
-                        .WithTable("SchemaTest.AnotherSchema")
+                        .WithTable("AnotherSchema.SchemaTest")
                         .AddColumn(x => x.ColumnA)
                         .BulkDelete()
                         .MatchTargetOn(x => x.ColumnA)
@@ -625,7 +625,7 @@ namespace SqlBulkTools.IntegrationTests
 
                     bulk.Setup<SchemaTest2>()
                         .ForCollection(conflictingSchemaCol)
-                        .WithTable("[SchemaTest].AnotherSchema")
+                        .WithTable("[AnotherSchema].[SchemaTest]")
                         .AddAllColumns()
                         .BulkInsert()
                         .Commit(conn); // Add new rows

@@ -54,6 +54,7 @@
     <Compile Include="BulkOperations\AbstractOperation.cs" />
     <Compile Include="BulkOperations\BulkCopyOptions.cs" />
     <Compile Include="Core\BulkOperationsUtility.cs" />
+    <Compile Include="Core\Table.cs" />
     <Compile Include="Interface\IBulkOperations.cs" />
     <Compile Include="QueryOperations\Delete\DeleteAllRecordsQueryReady.cs" />
     <Compile Include="QueryOperations\Delete\DeleteQueryCondition.cs" />

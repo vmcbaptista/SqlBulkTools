@@ -13,6 +13,7 @@ using Microsoft.SqlServer.Types;
 using SqlBulkTools.Core;
 using SqlBulkTools.Enumeration;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.RegularExpressions;
 
 [assembly: InternalsVisibleTo("SqlBulkTools.UnitTests")]
 [assembly: InternalsVisibleTo("SqlBulkTools.IntegrationTests")]
@@ -21,6 +22,38 @@ namespace SqlBulkTools
 {
     internal static class BulkOperationsHelper
     {
+        internal static Table GetTableAndSchema(string tableName)
+        {
+            StringBuilder sb = new StringBuilder(tableName.Trim());
+
+            sb = sb.Replace("[", string.Empty);
+            sb = sb.Replace("]", string.Empty);
+
+            int periodCount = sb.ToString().ToCharArray().Count(x => x == '.');
+
+            if (periodCount == 0)
+                return new Table() { Name = tableName, Schema = Constants.DefaultSchemaName };
+
+            else if (periodCount > 1)
+            {
+                throw new SqlBulkToolsException("Table name can't contain more than one period '.' character.");
+            }
+
+            var tableMatch = Regex.Match(sb.ToString(), @"(?<=\.).*");
+
+            // Check if schema is included in table name.
+            tableName = tableMatch.Success ? tableMatch.Value : Constants.DefaultSchemaName;
+
+            var schemaMatch = Regex.Match(sb.ToString(), @"^([^.]*)");
+            string schema = schemaMatch.Success ? schemaMatch.Value : sb.ToString();
+
+            Table table = new Table();
+            table.Name = tableName;
+            table.Schema = schema;
+
+            return table;
+        }
+
         internal static string GetActualColumn(Dictionary<string, string> customColumnMappings, string propertyName)
         {
             string actualPropertyName;

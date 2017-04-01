@@ -30,7 +30,8 @@ namespace SqlBulkTools.QueryOperations
         /// <returns></returns>
         public QueryTable<T> WithTable(string tableName)
         {
-            return new QueryTable<T>(_entity, tableName, _sqlParams);
+            var table = BulkOperationsHelper.GetTableAndSchema(tableName);
+            return new QueryTable<T>(_entity, table.Name, table.Schema, _sqlParams);
         }
     }
 }
