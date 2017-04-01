@@ -111,7 +111,7 @@ namespace SqlBulkTools
             _conditionSortOrder++;
 
             string leftName = BulkOperationsHelper.GetExpressionLeftName(expression, PredicateType.And, "Collation");
-            _collationColumnDic.Add(leftName, collation);
+            _collationColumnDic.Add(BulkOperationsHelper.GetActualColumn(_customColumnMappings, leftName), collation);
 
             return this;
         }
@@ -143,7 +143,7 @@ namespace SqlBulkTools
             _conditionSortOrder++;
 
             string leftName = BulkOperationsHelper.GetExpressionLeftName(expression, PredicateType.Or, "Collation");
-            _collationColumnDic.Add(leftName, collation);
+            _collationColumnDic.Add(BulkOperationsHelper.GetActualColumn(_customColumnMappings, leftName), collation);
 
             return this;
         }
@@ -239,7 +239,7 @@ namespace SqlBulkTools
 
             string comm = $"{batchQtyStart}UPDATE {batchQty}{fullQualifiedTableName} " +
             $"{BulkOperationsHelper.BuildUpdateSet(_columns, null, _identityColumn)}" +
-            $"{BulkOperationsHelper.BuildPredicateQuery(concatenatedQuery, _collationColumnDic)}{batchQtyRepeat}";
+            $"{BulkOperationsHelper.BuildPredicateQuery(concatenatedQuery, _collationColumnDic, _customColumnMappings)}{batchQtyRepeat}";
 
             return comm;
         }

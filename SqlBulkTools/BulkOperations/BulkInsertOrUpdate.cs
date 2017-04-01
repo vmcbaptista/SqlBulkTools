@@ -59,7 +59,7 @@ namespace SqlBulkTools
             if (propertyName == null)
                 throw new NullReferenceException("MatchTargetOn column name can't be null.");
 
-            _matchTargetOn.Add(BulkOperationsHelper.GetActualColumn(_customColumnMappings, propertyName));
+            _matchTargetOn.Add(propertyName);
 
             return this;
         }
@@ -79,9 +79,8 @@ namespace SqlBulkTools
             if (propertyName == null)
                 throw new NullReferenceException("MatchTargetOn column name can't be null.");
 
-            var actualColumn = BulkOperationsHelper.GetActualColumn(_customColumnMappings, propertyName);
-            _matchTargetOn.Add(actualColumn);
-            base.SetCollation(actualColumn, collation);
+            _matchTargetOn.Add(propertyName);
+            base.SetCollation(propertyName, collation);
 
             return this;
         }

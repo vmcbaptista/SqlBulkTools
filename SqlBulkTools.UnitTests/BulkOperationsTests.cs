@@ -665,7 +665,7 @@ namespace SqlBulkTools.UnitTests
             var columns = GetTestColumns();
 
             // ACt
-            var result = BulkOperationsHelper.BuildMatchTargetOnList(columns, null);
+            var result = BulkOperationsHelper.BuildMatchTargetOnList(columns, null, new Dictionary<string, string>());
 
             // Assert
             Assert.AreEqual(result, "WHERE [id] = @id AND [Name] = @Name AND [Town] = @Town AND [Email] = @Email AND [IsCool] = @IsCool");
@@ -678,7 +678,7 @@ namespace SqlBulkTools.UnitTests
             var columns = new HashSet<string>() { "id" };
 
             // ACt
-            var result = BulkOperationsHelper.BuildMatchTargetOnList(columns, new Dictionary<string, string>() { { "id", "DEFAULT_COLLATION" } });
+            var result = BulkOperationsHelper.BuildMatchTargetOnList(columns, new Dictionary<string, string>() { { "id", "DEFAULT_COLLATION" } }, new Dictionary<string, string>());
 
             // Assert
             Assert.AreEqual(result, "WHERE [id] = @id COLLATE DEFAULT_COLLATION");

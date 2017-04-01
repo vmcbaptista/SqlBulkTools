@@ -121,7 +121,7 @@ namespace SqlBulkTools
             if (propertyName == null)
                 throw new SqlBulkToolsException("Collation can't be null");
 
-            _collationColumnDic.Add(propertyName, collation);
+            _collationColumnDic.Add(BulkOperationsHelper.GetActualColumn(_customColumnMappings, propertyName), collation);
         }
 
         /// <summary>

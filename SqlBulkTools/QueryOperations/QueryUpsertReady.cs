@@ -23,7 +23,7 @@ namespace SqlBulkTools
         private readonly Dictionary<string, string> _customColumnMappings;
         private string _identityColumn;
         private readonly List<SqlParameter> _sqlParams;
-        private readonly HashSet<string> _matchTargetOnSet;
+        private readonly HashSet<string> _matchTargetOn;
         private readonly HashSet<string> _excludeFromUpdate; 
         private ColumnDirectionType _outputIdentity;
         private readonly Dictionary<string, string> _collationColumnDic;
@@ -48,7 +48,7 @@ namespace SqlBulkTools
             _columns = columns;
             _customColumnMappings = customColumnMappings;
             _sqlParams = sqlParams;
-            _matchTargetOnSet = new HashSet<string>();
+            _matchTargetOn = new HashSet<string>();
             _outputIdentity = ColumnDirectionType.Input;
             _excludeFromUpdate = new HashSet<string>();
             _collationColumnDic = new Dictionary<string, string>();
@@ -136,10 +136,7 @@ namespace SqlBulkTools
             if (propertyName == null)
                 throw new NullReferenceException("MatchTargetOn column name can't be null.");
 
-            _matchTargetOnSet.Add(BulkOperationsHelper.GetActualColumn(_customColumnMappings, propertyName));
-
-            if (!_columns.Contains(propertyName))
-                _columns.Add(propertyName);
+            _matchTargetOn.Add(propertyName);
 
             return this;
         }
@@ -159,13 +156,12 @@ namespace SqlBulkTools
             if (propertyName == null)
                 throw new NullReferenceException("MatchTargetOn column name can't be null.");
 
-            var actualColumn = BulkOperationsHelper.GetActualColumn(_customColumnMappings, propertyName);
-            _matchTargetOnSet.Add(actualColumn);
+            _matchTargetOn.Add(propertyName);
 
             if (collation == null)
                 throw new SqlBulkToolsException("Collation can't be null");
 
-            _collationColumnDic.Add(actualColumn, collation);
+            _collationColumnDic.Add(BulkOperationsHelper.GetActualColumn(_customColumnMappings, propertyName), collation);
 
             return this;
         }
@@ -186,7 +182,7 @@ namespace SqlBulkTools
                 return affectedRows;
             }
 
-            if (_matchTargetOnSet.Count == 0)
+            if (_matchTargetOn.Count == 0)
                 throw new NullReferenceException("MatchTargetOn is a mandatory for upsert operation");
                       
             try
@@ -202,13 +198,7 @@ namespace SqlBulkTools
 
                 string fullQualifiedTableName = BulkOperationsHelper.GetFullQualifyingTableName(conn.Database, _schema, _tableName);
 
-                command.CommandText = $"UPDATE {fullQualifiedTableName} {BulkOperationsHelper.BuildUpdateSet(_columns, _excludeFromUpdate, _identityColumn)}" +
-                $"{(_outputIdentity == ColumnDirectionType.InputOutput ? $", @{_identityColumn} = [{_identityColumn}] " : string.Empty)} " +
-                $"{BulkOperationsHelper.BuildMatchTargetOnList(_matchTargetOnSet, _collationColumnDic)} " +
-                $"IF (@@ROWCOUNT = 0) BEGIN " +
-                $"{BulkOperationsHelper.BuildInsertIntoSet(_columns, _identityColumn, fullQualifiedTableName)} " +
-                $"VALUES{BulkOperationsHelper.BuildValueSet(_columns, _identityColumn)}" +
-                $"{(_outputIdentity == ColumnDirectionType.InputOutput ? $" SET @{_identityColumn} = SCOPE_IDENTITY()" : string.Empty)} END";
+                command.CommandText = GetCommand(fullQualifiedTableName);
 
                 if (_sqlParams.Count > 0)
                 {
@@ -270,7 +260,7 @@ namespace SqlBulkTools
                 return affectedRows;
             }
 
-            if (_matchTargetOnSet.Count == 0)
+            if (_matchTargetOn.Count == 0)
                 throw new NullReferenceException("MatchTargetOn is a mandatory for upsert operation");
 
             try
@@ -286,13 +276,7 @@ namespace SqlBulkTools
 
                 string fullQualifiedTableName = BulkOperationsHelper.GetFullQualifyingTableName(conn.Database, _schema, _tableName);
 
-                command.CommandText = $"UPDATE {fullQualifiedTableName} {BulkOperationsHelper.BuildUpdateSet(_columns, _excludeFromUpdate, _identityColumn)}" +
-                    $"{(_outputIdentity == ColumnDirectionType.InputOutput ? $", @{_identityColumn} = [{_identityColumn}] " : string.Empty)} " +
-                    $"{BulkOperationsHelper.BuildMatchTargetOnList(_matchTargetOnSet, _collationColumnDic)} " +
-                    $"IF (@@ROWCOUNT = 0) BEGIN " +
-                    $"{BulkOperationsHelper.BuildInsertIntoSet(_columns, _identityColumn, fullQualifiedTableName)} " +
-                    $"VALUES{BulkOperationsHelper.BuildValueSet(_columns, _identityColumn)}" +
-                    $"{(_outputIdentity == ColumnDirectionType.InputOutput ? $" SET @{_identityColumn} = SCOPE_IDENTITY()" : string.Empty)} END";
+                command.CommandText = GetCommand(fullQualifiedTableName);
 
                 if (_sqlParams.Count > 0)
                 {
@@ -337,6 +321,22 @@ namespace SqlBulkTools
 
                 throw;
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="fullQualifiedTableName"></param>
+        /// <returns></returns>
+        public string GetCommand(string fullQualifiedTableName)
+        {
+            return $"UPDATE {fullQualifiedTableName} {BulkOperationsHelper.BuildUpdateSet(_columns, _excludeFromUpdate, _identityColumn)}" +
+                $"{(_outputIdentity == ColumnDirectionType.InputOutput ? $", @{_identityColumn} = [{_identityColumn}] " : string.Empty)} " +
+                $"{BulkOperationsHelper.BuildMatchTargetOnList(_matchTargetOn, _collationColumnDic, _customColumnMappings)} " +
+                $"IF (@@ROWCOUNT = 0) BEGIN " +
+                $"{BulkOperationsHelper.BuildInsertIntoSet(_columns, _identityColumn, fullQualifiedTableName)} " +
+                $"VALUES{BulkOperationsHelper.BuildValueSet(_columns, _identityColumn)}" +
+                $"{(_outputIdentity == ColumnDirectionType.InputOutput ? $" SET @{_identityColumn} = SCOPE_IDENTITY()" : string.Empty)} END";
         }
     }
 }

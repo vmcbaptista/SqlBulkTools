@@ -7,7 +7,7 @@ namespace SqlBulkTools.TestCommon.Model
     {
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         [Key]
-        public int NaturalId { get; set; }
+        public int NaturalIdTest { get; set; }
 
         [Column("ColumnX"), StringLength(256)]
         public string ColumnXIsDifferent { get; set; }

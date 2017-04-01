@@ -82,7 +82,7 @@ namespace SqlBulkTools
             _conditionSortOrder++;
 
             string leftName = BulkOperationsHelper.GetExpressionLeftName(expression, PredicateType.Or, "Collation");
-            _collationColumnDic.Add(leftName, collation);
+            _collationColumnDic.Add(BulkOperationsHelper.GetActualColumn(_customColumnMappings, leftName), collation);
 
             return new QueryUpdateReady<T>(_singleEntity, _tableName, _schema, _columns, _customColumnMappings,
                 _conditionSortOrder, _whereConditions, _sqlParams, _collationColumnDic, _propertyInfoList);

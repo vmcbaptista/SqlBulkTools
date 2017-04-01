@@ -254,11 +254,13 @@ namespace SqlBulkTools
             return string.Empty;
         }
 
-        internal static string BuildMatchTargetOnList(HashSet<string> matchTargetOnColumns, Dictionary<string, string> collationDic)
+        internal static string BuildMatchTargetOnList(HashSet<string> matchTargetOnColumns, Dictionary<string, string> collationDic, Dictionary<string, string> customColumnMappings)
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append($"WHERE [{matchTargetOnColumns.ElementAt(0)}] = @{matchTargetOnColumns.ElementAt(0)}{GetCollation(collationDic, matchTargetOnColumns.ElementAt(0))}");
+            var whereClauseColumn = GetActualColumn(customColumnMappings, matchTargetOnColumns.ElementAt(0));
+
+            sb.Append($"WHERE [{whereClauseColumn}] = @{whereClauseColumn}{GetCollation(collationDic, whereClauseColumn)}");
 
             if (matchTargetOnColumns.Count() > 1)
             {
@@ -267,7 +269,8 @@ namespace SqlBulkTools
                     if (column.Equals(matchTargetOnColumns.ElementAt(0)))
                         continue;
 
-                    sb.Append($" AND [{column}] = @{column}{GetCollation(collationDic, column)}");
+                    var andClauseColumn = GetActualColumn(customColumnMappings, column);
+                    sb.Append($" AND [{andClauseColumn}] = @{andClauseColumn}{GetCollation(collationDic, andClauseColumn)}");
                 }
             }
 
@@ -296,7 +299,7 @@ namespace SqlBulkTools
         }
 
         // Used for UpdateQuery and DeleteQuery where, and, or conditions. 
-        internal static string BuildPredicateQuery(IEnumerable<PredicateCondition> conditions, Dictionary<string, string> collationDic)
+        internal static string BuildPredicateQuery(IEnumerable<PredicateCondition> conditions, Dictionary<string, string> collationDic, Dictionary<string, string> customColumnMappings)
         {
             if (conditions == null)
                 return null;
@@ -309,6 +312,9 @@ namespace SqlBulkTools
             foreach (var condition in conditions)
             {
                 string targetColumn = condition.CustomColumnMapping ?? condition.LeftName;
+
+                if (customColumnMappings != null)
+                    targetColumn = GetActualColumn(customColumnMappings, targetColumn);
 
                 switch (condition.PredicateType)
                 {

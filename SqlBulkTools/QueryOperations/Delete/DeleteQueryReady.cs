@@ -24,6 +24,7 @@ namespace SqlBulkTools
         private readonly List<SqlParameter> _parameters;
         private int _conditionSortOrder;
         private readonly Dictionary<string, string> _collationColumnDic;
+        private readonly Dictionary<string, string> _customColumnMappings;
         private int? _batchQuantity;
 
         /// <summary>
@@ -35,8 +36,9 @@ namespace SqlBulkTools
         /// <param name="whereConditions"></param>
         /// <param name="parameters"></param>
         /// <param name="collationColumnDic"></param>
+        /// <param name="customColumnMappings"></param>
         public DeleteQueryReady(string tableName, string schema, int conditionSortOrder, List<PredicateCondition> whereConditions, 
-            List<SqlParameter> parameters, Dictionary<string, string> collationColumnDic)
+            List<SqlParameter> parameters, Dictionary<string, string> collationColumnDic, Dictionary<string, string> customColumnMappings)
         {
             _tableName = tableName;
             _schema = schema;
@@ -46,6 +48,7 @@ namespace SqlBulkTools
             _conditionSortOrder = conditionSortOrder;
             _parameters = parameters;
             _collationColumnDic = collationColumnDic;
+            _customColumnMappings = customColumnMappings;
             _batchQuantity = null;
         }
 
@@ -77,7 +80,7 @@ namespace SqlBulkTools
             _conditionSortOrder++;
 
             string leftName = BulkOperationsHelper.GetExpressionLeftName(expression, PredicateType.And, "Collation");
-            _collationColumnDic.Add(leftName, collation);
+            _collationColumnDic.Add(BulkOperationsHelper.GetActualColumn(_customColumnMappings, leftName), collation);
 
             return this;
         }
@@ -109,7 +112,7 @@ namespace SqlBulkTools
             _conditionSortOrder++;
 
             string leftName = BulkOperationsHelper.GetExpressionLeftName(expression, PredicateType.Or, "Collation");
-            _collationColumnDic.Add(leftName, collation);
+            _collationColumnDic.Add(BulkOperationsHelper.GetActualColumn(_customColumnMappings, leftName), collation);
 
             return this;
         }
@@ -190,7 +193,7 @@ namespace SqlBulkTools
             string batchQtyRepeat = _batchQuantity != null ? $"\nIF @@ROWCOUNT != 0\ngoto DeleteMore" : string.Empty;
 
             string comm = $"{batchQtyStart}DELETE {batchQty}FROM {fullQualifiedTableName} " +
-                          $"{BulkOperationsHelper.BuildPredicateQuery(concatenatedQuery, _collationColumnDic)}{batchQtyRepeat}";
+                          $"{BulkOperationsHelper.BuildPredicateQuery(concatenatedQuery, _collationColumnDic, _customColumnMappings)}{batchQtyRepeat}";
 
             return comm;
         }

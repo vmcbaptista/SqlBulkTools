@@ -69,6 +69,7 @@ namespace SqlBulkTools.IntegrationTests.Data
             {
                 var customColumnMappingTests = conn                  
                     .Sproc()
+                    .CustomColumnMapping<CustomColumnMappingTest>(x => x.NaturalIdTest, "NaturalId")
                     .CustomColumnMapping<CustomColumnMappingTest>(x => x.ColumnXIsDifferent, "ColumnX")
                     .CustomColumnMapping<CustomColumnMappingTest>(x => x.ColumnYIsDifferentInDatabase, "ColumnY")
                     .ExecuteReader<CustomColumnMappingTest>("dbo.GetCustomColumnMappingTests")                                        

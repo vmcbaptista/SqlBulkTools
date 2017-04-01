@@ -19,6 +19,7 @@ namespace SqlBulkTools
         private readonly List<SqlParameter> _parameters;
         private int _conditionSortOrder;
         private readonly Dictionary<string, string> _collationColumnDic;
+        private readonly Dictionary<string, string> _customColumnMappings;
 
         /// <summary>
         /// 
@@ -33,7 +34,27 @@ namespace SqlBulkTools
             _whereConditions = new List<PredicateCondition>();
             _parameters = new List<SqlParameter>();
             _collationColumnDic = new Dictionary<string, string>();
+            _customColumnMappings = new Dictionary<string, string>();
             _conditionSortOrder = 1;
+        }
+
+        /// <summary>
+        /// By default SqlBulkTools will attempt to match the model property names to SQL column names (case insensitive). 
+        /// If any of your model property names do not match 
+        /// the SQL table column(s) as defined in given table, then use this method to set up a custom mapping.  
+        /// </summary>
+        /// <param name="source">
+        /// The object member that has a different name in SQL table. 
+        /// </param>
+        /// <param name="destination">
+        /// The actual name of column as represented in SQL table. 
+        /// </param>
+        /// <returns></returns>
+        public DeleteQueryCondition<T> CustomColumnMapping(Expression<Func<T, object>> source, string destination)
+        {
+            var propertyName = BulkOperationsHelper.GetPropertyName(source);
+            _customColumnMappings.Add(propertyName, destination);
+            return this;
         }
 
         /// <summary>
@@ -50,7 +71,7 @@ namespace SqlBulkTools
             _conditionSortOrder++;
 
             return new DeleteQueryReady<T>(_tableName, _schema, _conditionSortOrder, 
-                _whereConditions, _parameters, _collationColumnDic);
+                _whereConditions, _parameters, _collationColumnDic, _customColumnMappings);
         }
 
         /// <summary>
@@ -69,10 +90,10 @@ namespace SqlBulkTools
             _conditionSortOrder++;
 
             string leftName = BulkOperationsHelper.GetExpressionLeftName(expression, PredicateType.Or, "Collation");
-            _collationColumnDic.Add(leftName, collation);
+            _collationColumnDic.Add(BulkOperationsHelper.GetActualColumn(_customColumnMappings, leftName), collation);
 
             return new DeleteQueryReady<T>(_tableName, _schema, _conditionSortOrder,
-                _whereConditions, _parameters, _collationColumnDic);
+                _whereConditions, _parameters, _collationColumnDic, _customColumnMappings);
         }
 
         /// <summary>
