@@ -8,3 +8,4 @@ script:
  - dotnet test SqlBulkTools.NetStandard.UnitTests/SqlBulkTools.NetStandard.UnitTests.csproj
  - dotnet pack --no-restore --no-build --include-symbols /p:PackageVersion=2.1.$TRAVIS_BUILD_NUMBER
  - dotnet nuget push **/*.nupkg --api-key $ApiKey -s https://api.nuget.org/v3/index.json
+ - dotnet nuget push **/*.symbols.nupkg --api-key $ApiKey -s https://nuget.smbsrc.net/
