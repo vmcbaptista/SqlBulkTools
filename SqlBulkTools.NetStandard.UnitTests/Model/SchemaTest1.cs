@@ -3,13 +3,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SqlBulkTools.TestCommon.Model
 {
-    [Table("SchemaTest", Schema = "AnotherSchema")]
-    public class SchemaTest2
+    [Table("SchemaTest")]
+    public class SchemaTest1
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
         public int Id { get; set; }
 
-        public string ColumnA { get; set; }
+        public string ColumnB { get; set; }
     }
 }

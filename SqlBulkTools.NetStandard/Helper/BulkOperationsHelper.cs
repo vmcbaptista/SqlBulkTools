@@ -20,7 +20,7 @@ using SqlBulkTools.Enumeration;
 // ReSharper disable once CheckNamespace
 namespace SqlBulkTools
 {
-    internal static class BulkOperationsHelper
+    public static class BulkOperationsHelper
     {
         internal static Table GetTableAndSchema(string tableName)
         {
@@ -400,7 +400,7 @@ namespace SqlBulkTools
         /// <param name="excludeFromUpdate"></param>
         /// <param name="identityColumn"></param>
         /// <returns></returns>
-        internal static string BuildUpdateSet(HashSet<string> columns, HashSet<string> excludeFromUpdate,
+        public static string BuildUpdateSet(HashSet<string> columns, HashSet<string> excludeFromUpdate,
             string identityColumn)
         {
             var command = new StringBuilder();

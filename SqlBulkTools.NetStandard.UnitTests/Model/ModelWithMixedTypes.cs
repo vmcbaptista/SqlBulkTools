@@ -14,5 +14,7 @@ namespace SqlBulkTools.TestCommon.Model
         public object InvalidObject { get; set; }
     }
 
-    public class ForeignObject {}
+    public class ForeignObject
+    {
+    }
 }

@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Ploeh.AutoFixture;
-using Ploeh.AutoFixture.Kernel;
+using AutoFixture;
+using AutoFixture.Kernel;
 using SqlBulkTools.TestCommon.Model;
 
 namespace SqlBulkTools.TestCommon
@@ -16,7 +16,7 @@ namespace SqlBulkTools.TestCommon
             fixture.Customizations.Add(new PriceBuilder());
             fixture.Customizations.Add(new IsbnBuilder());
             fixture.Customizations.Add(new TitleBuilder());
-            List<Book> books = new List<Book>();
+            var books = new List<Book>();
             books = fixture.Build<Book>().Without(x => x.Id).CreateMany(count).ToList();
             return books;
         }
@@ -31,7 +31,7 @@ namespace SqlBulkTools.TestCommon
             if (pi == null ||
                 pi.Name != "Price" ||
                 pi.PropertyType != typeof(decimal))
-                return new NoSpecimen(request);
+                return new NoSpecimen();
 
             return context.Resolve(
                 new RangedNumberRequest(typeof(decimal), 1.0m, 268.5m));
@@ -50,7 +50,7 @@ namespace SqlBulkTools.TestCommon
             return context.Resolve(typeof(string))
                     .ToString().Substring(0, 13);
 
-            return new NoSpecimen(request);
+            return new NoSpecimen();
         }
     }
 
@@ -66,7 +66,7 @@ namespace SqlBulkTools.TestCommon
                 return context.Resolve(typeof(string))
                         .ToString().Substring(0, 10);
 
-            return new NoSpecimen(request);
+            return new NoSpecimen();
         }
     }
 }

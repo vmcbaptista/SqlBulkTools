@@ -9,6 +9,5 @@ namespace SqlBulkTools.TestCommon.Model
         public DateTime TransactionDate { get; set; }
         public int Quantity { get; set; }
         public decimal ActualCost { get; set; }
-
     }
 }

@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBulkTools.TestCommon.Model;
 using SqlBulkTools.TestCommon;
+using System.Data;
+using Xunit;
 
 namespace SqlBulkTools.UnitTests
 {
-    [TestClass]
     public class DataTableOperationsTests
     {
-        [TestMethod]
+        [Fact]
         public void DataTableTools_GetColumn_RetrievesColumn()
         {
             // Arrange
-            DataTableOperations dtOps = new DataTableOperations();
+            var dtOps = new DataTableOperations();
 
             dtOps.SetupDataTable<Book>()
                 .ForCollection(null)
@@ -22,7 +21,7 @@ namespace SqlBulkTools.UnitTests
                 .AddColumn(x => x.Price)
                 .PrepareDataTable();
 
-            var expected1 = "ISBN";
+            const string expected1 = "ISBN";
             var expected2 = "Price";
 
             // Act
@@ -30,42 +29,42 @@ namespace SqlBulkTools.UnitTests
             var result2 = dtOps.GetColumn<Book>(x => x.Price);
 
             // Assert
-            Assert.AreEqual(expected1, result1);
-            Assert.AreEqual(expected2, result2);
+            Assert.Equal(expected1, result1);
+            Assert.Equal(expected2, result2);
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(SqlBulkToolsException))]
+        [Fact]
         public void DataTableTools_GetColumn_ThrowSqlBulkToolsExceptionWhenNoSetup()
         {
             // Arrange
-            DataTableOperations dtOps = new DataTableOperations();
+            var dtOps = new DataTableOperations();
 
             // Act and Assert
-            dtOps.GetColumn<Book>(x => x.Description);
+            Assert.Throws<SqlBulkToolsException>(() => dtOps.GetColumn<Book>(x => x.Description));
+            
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(SqlBulkToolsException))]
+        [Fact]
         public void DataTableTools_GetColumn_ThrowSqlBulkToolsExceptionWhenTypeMismatch()
         {
             // Arrange
-            DataTableOperations dtOps = new DataTableOperations();
+            var dtOps = new DataTableOperations();
             dtOps.SetupDataTable<Book>()
-                .ForCollection(new List<Book>() { new Book() { Description = "A book" } })
+                .ForCollection(new List<Book> { new Book { Description = "A book" } })
                 .AddAllColumns()
                 .PrepareDataTable();
 
             // Act and Assert
-            dtOps.GetColumn<BookDto>(x => x.Id);
+            Assert.Throws<SqlBulkToolsException>(() => dtOps.GetColumn<BookDto>(x => x.Id));
+
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(SqlBulkToolsException))]
+        [Fact]
+//        [ExpectedException(typeof(SqlBulkToolsException))]
         public void DataTableTools_GetColumn_ThrowSqlBulkToolsExceptionWhenColumnMappingNotFound()
         {
             // Arrange
-            DataTableOperations dtOps = new DataTableOperations();
+            var dtOps = new DataTableOperations();
 
             dtOps.SetupDataTable<Book>()
                 .ForCollection(null)
@@ -74,15 +73,15 @@ namespace SqlBulkTools.UnitTests
                 .PrepareDataTable();
 
             // Act and Assert
-            dtOps.GetColumn<Book>(x => x.Description);
+            Assert.Throws<SqlBulkToolsException>(() => dtOps.GetColumn<Book>(x => x.Description));
         }
 
-        [TestMethod]
+        [Fact]
         public void DataTableTools_GetColumn_CustomColumnMapsCorrectly()
         {
             // Arrange
             var expected = "PublishingDate";
-            DataTableOperations dtOps = new DataTableOperations();
+            var dtOps = new DataTableOperations();
 
             dtOps.SetupDataTable<Book>()
                 .ForCollection(null)
@@ -94,15 +93,15 @@ namespace SqlBulkTools.UnitTests
             var result = dtOps.GetColumn<Book>(x => x.PublishDate);
 
             // Assert
-            Assert.AreEqual(expected, result);
+            Assert.Equal(expected, result);
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(SqlBulkToolsException))]
+        [Fact]
+//        [ExpectedException(typeof(SqlBulkToolsException))]
         public void DataTableTools_GetColumn_WhenColumnRemovedFromSetup()
         {
             // Arrange
-            DataTableOperations dtOps = new DataTableOperations();
+            var dtOps = new DataTableOperations();
 
             dtOps.SetupDataTable<Book>()
                 .ForCollection(null)
@@ -111,16 +110,17 @@ namespace SqlBulkTools.UnitTests
                 .PrepareDataTable();
 
             // Act and Assert
-            dtOps.GetColumn<Book>(x => x.Description);
+            Assert.Throws<SqlBulkToolsException>(() => dtOps.GetColumn<Book>(x => x.Description));
+
         }
 
-        [TestMethod]
+        [Fact]
         public void DataTableTools_PrepareDataTable_WithThreeColumnsAdded()
         {
-            BookRandomizer randomizer = new BookRandomizer();
+            var randomizer = new BookRandomizer();
 
-            DataTableOperations dtOps = new DataTableOperations();
-            List<Book> books = randomizer.GetRandomCollection(30);
+            var dtOps = new DataTableOperations();
+            var books = randomizer.GetRandomCollection(30);
 
             var dt = dtOps.SetupDataTable<Book>()
                 .ForCollection(books)
@@ -130,20 +130,20 @@ namespace SqlBulkTools.UnitTests
                 .CustomColumnMapping(x => x.PublishDate, "SomeOtherMapping")
                 .PrepareDataTable();
 
-            Assert.AreEqual("ISBN", dt.Columns[dtOps.GetColumn<Book>(x => x.ISBN)].ColumnName);
-            Assert.AreEqual("Price", dt.Columns[dtOps.GetColumn<Book>(x => x.Price)].ColumnName);
-            Assert.AreEqual("SomeOtherMapping", dt.Columns[dtOps.GetColumn<Book>(x => x.PublishDate)].ColumnName);
-            Assert.AreEqual(typeof(DateTime), dt.Columns[dtOps.GetColumn<Book>(x => x.PublishDate)].DataType);
+            Assert.Equal("ISBN", dt.Columns[dtOps.GetColumn<Book>(x => x.ISBN)].ColumnName);
+            Assert.Equal("Price", dt.Columns[dtOps.GetColumn<Book>(x => x.Price)].ColumnName);
+            Assert.Equal("SomeOtherMapping", dt.Columns[dtOps.GetColumn<Book>(x => x.PublishDate)].ColumnName);
+            Assert.Equal(typeof(DateTime), dt.Columns[dtOps.GetColumn<Book>(x => x.PublishDate)].DataType);
         }
 
-        [TestMethod]
+        [Fact]
         public void DataTableTools_BuildPreparedDataDable_AddsRows()
         {
             var rowCount = 30;
-            BookRandomizer randomizer = new BookRandomizer();
+            var randomizer = new BookRandomizer();
 
-            DataTableOperations dtOps = new DataTableOperations();
-            List<Book> books = randomizer.GetRandomCollection(rowCount);
+            var dtOps = new DataTableOperations();
+            var books = randomizer.GetRandomCollection(rowCount);
 
             var dt = dtOps.SetupDataTable<Book>()
                 .ForCollection(books)
@@ -152,19 +152,19 @@ namespace SqlBulkTools.UnitTests
 
             dt = dtOps.BuildPreparedDataDable();
 
-            Assert.AreEqual(rowCount, dt.Rows.Count);
-            Assert.AreEqual(books[10].ISBN, dt.Rows[10].Field<string>(dtOps.GetColumn<Book>(x => x.ISBN)));
-            Assert.AreEqual(books[10].Description, dt.Rows[10].Field<string>(dtOps.GetColumn<Book>(x => x.Description)));
+            Assert.Equal(rowCount, dt.Rows.Count);
+            Assert.Equal(books[10].ISBN, dt.Rows[10].Field<string>(dtOps.GetColumn<Book>(x => x.ISBN)));
+            Assert.Equal(books[10].Description, dt.Rows[10].Field<string>(dtOps.GetColumn<Book>(x => x.Description)));
         }
 
-        [TestMethod]
+        [Fact]
         public void DataTableTools_BuildPreparedDataDable_WithCustomDataTableSettings()
         {
-            long autoIncrementSeedTest = 21312;
-            BookRandomizer randomizer = new BookRandomizer();
+            const long autoIncrementSeedTest = 21312;
+            var randomizer = new BookRandomizer();
 
-            DataTableOperations dtOps = new DataTableOperations();
-            List<Book> books = randomizer.GetRandomCollection(30);
+            var dtOps = new DataTableOperations();
+            var books = randomizer.GetRandomCollection(30);
 
             var dt = dtOps.SetupDataTable<Book>()
                 .ForCollection(books)
@@ -175,7 +175,7 @@ namespace SqlBulkTools.UnitTests
 
             dt = dtOps.BuildPreparedDataDable();
 
-            Assert.AreEqual(dt.Columns[dtOps.GetColumn<Book>(x => x.Id)].AutoIncrementSeed, autoIncrementSeedTest);
+            Assert.Equal(dt.Columns[dtOps.GetColumn<Book>(x => x.Id)].AutoIncrementSeed, autoIncrementSeedTest);
 
         }
     }

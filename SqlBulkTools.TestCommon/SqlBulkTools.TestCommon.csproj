@@ -64,19 +64,6 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="BookRandomizer.cs" />
-    <Compile Include="Model\Book.cs" />
-    <Compile Include="Model\BookDto.cs" />
-    <Compile Include="Model\BookWithPrivateIdentity.cs" />
-    <Compile Include="Model\ComplexTypeModel.cs" />
-    <Compile Include="Model\CustomColumnMappingTest.cs" />
-    <Compile Include="Model\CustomIdentityColumnNameTest.cs" />
-    <Compile Include="Model\ModelWithMixedTypes.cs" />
-    <Compile Include="Model\ReservedColumnNameTest.cs" />
-    <Compile Include="Model\SchemaTest1.cs" />
-    <Compile Include="Model\SchemaTest2.cs" />
-    <Compile Include="Model\TestDataTypes.cs" />
-    <Compile Include="Model\Transaction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MyExpectedException.cs" />
   </ItemGroup>

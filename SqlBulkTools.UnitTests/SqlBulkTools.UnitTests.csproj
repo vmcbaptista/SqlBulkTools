@@ -61,8 +61,6 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="BulkOperationsTests.cs" />
-    <Compile Include="DataTableOperationsTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

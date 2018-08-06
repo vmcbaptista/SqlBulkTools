@@ -1,9 +1,8 @@
 ﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SqlBulkTools.TestCommon
 {
-    public sealed class MyExpectedException : ExpectedExceptionBaseAttribute
+    public sealed class MyExpectedException : Exception
     {
         private readonly Type _expectedExceptionType;
         private readonly string _expectedExceptionMessage;
