@@ -4,6 +4,11 @@
     <IsPackable>false</IsPackable>
     <LangVersion>7.2</LangVersion>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="AutoFixture.AutoNSubstitute" Version="4.5.0" />
     <PackageReference Include="AutoFixture.Xunit2" Version="4.5.0" />
