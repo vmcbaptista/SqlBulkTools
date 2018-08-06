@@ -1,4 +1,8 @@
 language: csharp
 solution: SqlBulkTools.sln
-install:
-  - nuget restore SqlBulkTools.sln
+mono: none
+dotnet: 2.1.301
+script:
+ - dotnet restore
+ - dotnet build
+ - dotnet test SqlBulkTools.NetStandard.UnitTests/SqlBulkTools.NetStandard.UnitTests.csproj
