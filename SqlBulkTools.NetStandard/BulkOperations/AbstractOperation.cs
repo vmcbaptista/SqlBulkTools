@@ -16,24 +16,24 @@ namespace SqlBulkTools
         // ReSharper disable InconsistentNaming
         protected ColumnDirectionType _outputIdentity;
         protected string _identityColumn;
-        protected Dictionary<int, T> _outputIdentityDic;
+        protected readonly Dictionary<int, T> _outputIdentityDic;
         protected bool _disableAllIndexes;
         protected int _sqlTimeout;
-        protected HashSet<string> _columns;
-        protected string _schema;
-        protected string _tableName;
-        protected Dictionary<string, string> _customColumnMappings;
-        protected IEnumerable<T> _list;
-        protected List<string> _matchTargetOn;
+        protected readonly HashSet<string> _columns;
+        protected readonly string _schema;
+        protected readonly string _tableName;
+        protected readonly Dictionary<string, string> _customColumnMappings;
+        protected readonly IEnumerable<T> _list;
+        protected readonly List<string> _matchTargetOn;
         protected List<PredicateCondition> _updatePredicates;
         protected List<PredicateCondition> _deletePredicates;
         protected List<SqlParameter> _parameters;
-        protected Dictionary<string, string> _collationColumnDic;
+        protected readonly Dictionary<string, string> _collationColumnDic;
         protected int _conditionSortOrder;
-        protected BulkCopySettings _bulkCopySettings;
+        protected readonly BulkCopySettings _bulkCopySettings;
         protected string _tableHint;
-        protected Dictionary<string, int> _ordinalDic;
-        protected List<PropertyInfo> _propertyInfoList;
+        protected readonly Dictionary<string, int> _ordinalDic;
+        protected readonly List<PropertyInfo> _propertyInfoList;
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         /// <summary>

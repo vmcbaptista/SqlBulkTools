@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Transactions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBulkTools.Enumeration;
 using SqlBulkTools.TestCommon.Model;
 using SqlBulkTools.TestCommon;

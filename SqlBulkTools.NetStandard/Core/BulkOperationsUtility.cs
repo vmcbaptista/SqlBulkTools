@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Linq;
 
 namespace SqlBulkTools.Core
 {
@@ -48,7 +47,6 @@ namespace SqlBulkTools.Core
             { typeof(Guid?), DbType.Guid},
             { typeof(DateTime?), DbType.DateTime },
             { typeof(DateTimeOffset?), DbType.DateTimeOffset},
-            { typeof(Binary), DbType.Binary},
             { typeof(TimeSpan), DbType.Time },
             { typeof(TimeSpan?), DbType.Time },
         };

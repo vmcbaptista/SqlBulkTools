@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBulkTools", "SqlBulkTools\SqlBulkTools.csproj", "{5CD2EE50-A2E1-4740-AEE4-87E9928F0230}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBulkTools.UnitTests", "SqlBulkTools.UnitTests\SqlBulkTools.UnitTests.csproj", "{D20B543C-C7E2-40C4-8402-EE0CBC93E837}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBulkTools.TestCommon", "SqlBulkTools.TestCommon\SqlBulkTools.TestCommon.csproj", "{DCF50704-D460-4636-B4C4-9AEAF17AAC81}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBulkTools.IntegrationTests", "SqlBulkTools.IntegrationTests\SqlBulkTools.IntegrationTests.csproj", "{6CE3CC1D-C18B-43B2-8A75-F1C5C0A2D3FA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBulkTools.NetStandard", "SqlBulkTools.NetStandard\SqlBulkTools.NetStandard.csproj", "{CE4F978A-AE8A-4F7B-8A2D-3E5A4B00D18F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{5CD2EE50-A2E1-4740-AEE4-87E9928F0230}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5CD2EE50-A2E1-4740-AEE4-87E9928F0230}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5CD2EE50-A2E1-4740-AEE4-87E9928F0230}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5CD2EE50-A2E1-4740-AEE4-87E9928F0230}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B91DE38C-7ED2-4445-AC02-6A4DEC07F3BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B91DE38C-7ED2-4445-AC02-6A4DEC07F3BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B91DE38C-7ED2-4445-AC02-6A4DEC07F3BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -41,6 +37,10 @@ Global
 		{6CE3CC1D-C18B-43B2-8A75-F1C5C0A2D3FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6CE3CC1D-C18B-43B2-8A75-F1C5C0A2D3FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6CE3CC1D-C18B-43B2-8A75-F1C5C0A2D3FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE4F978A-AE8A-4F7B-8A2D-3E5A4B00D18F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE4F978A-AE8A-4F7B-8A2D-3E5A4B00D18F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE4F978A-AE8A-4F7B-8A2D-3E5A4B00D18F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE4F978A-AE8A-4F7B-8A2D-3E5A4B00D18F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

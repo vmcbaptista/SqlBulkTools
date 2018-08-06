@@ -124,7 +124,7 @@ namespace SqlBulkTools
 
                     BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopySettings);
 
-                    command.CommandText = BulkOperationsHelper.GetInsertIntoStagingTableCmd(command, connection, _schema, _tableName,
+                    command.CommandText = BulkOperationsHelper.GetInsertIntoStagingTableCmd(connection, _schema, _tableName,
                         _columns, _identityColumn, _outputIdentity);
                     command.ExecuteNonQuery();
 
@@ -204,7 +204,7 @@ namespace SqlBulkTools
 
                     BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopySettings);
 
-                    command.CommandText = BulkOperationsHelper.GetInsertIntoStagingTableCmd(command, connection, _schema, _tableName,
+                    command.CommandText = BulkOperationsHelper.GetInsertIntoStagingTableCmd(connection, _schema, _tableName,
                         _columns, _identityColumn, _outputIdentity);
                     await command.ExecuteNonQueryAsync();
 
