@@ -7,4 +7,4 @@ script:
  - dotnet build
  - dotnet test SqlBulkTools.NetStandard.UnitTests/SqlBulkTools.NetStandard.UnitTests.csproj
  - dotnet pack --no-restore --no-build --include-symbols /p:PackageVersion=2.1.$TRAVIS_BUILD_NUMBER
- - dotnet push **/*.nupkg --api-key $ApiKey
+ - dotnet nuget push **/*.nupkg --api-key $ApiKey
