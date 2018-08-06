@@ -1,4 +1,4 @@
-<img src="http://gregnz.com/images/SqlBulkTools/icon-large.png" alt="SqlBulkTools"> 
+<img src="http://gregnz.com/images/SqlBulkTools/icon-large.png" alt="SqlBulkTools">  [![Build Status](https://travis-ci.org/tiagorosendo/SqlBulkTools.svg?branch=master)](https://travis-ci.org/tiagorosendo/SqlBulkTools)
 
 SqlBulkTools features an easy to use fluent interface for performing SQL operations in c#. Supports Bulk Insert, Update, Delete and Merge. Includes advanced features such as output identity, delete entities conditionally (for merging), exclude column(s) from update (for merging), single entity operations and plenty more. 
 
