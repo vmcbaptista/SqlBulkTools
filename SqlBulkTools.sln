@@ -1,13 +1,16 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2047
 MinimumVisualStudioVersion = 10.0.40219.1
-#Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBulkTools.IntegrationTests", "SqlBulkTools.IntegrationTests\SqlBulkTools.IntegrationTests.csproj", "{6CE3CC1D-C18B-43B2-8A75-F1C5C0A2D3FA}"
-#EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBulkTools.NetStandard", "SqlBulkTools.NetStandard\SqlBulkTools.NetStandard.csproj", "{CE4F978A-AE8A-4F7B-8A2D-3E5A4B00D18F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlBulkTools.NetStandard", "SqlBulkTools.NetStandard\SqlBulkTools.NetStandard.csproj", "{CE4F978A-AE8A-4F7B-8A2D-3E5A4B00D18F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBulkTools.NetStandard.UnitTests", "SqlBulkTools.NetStandard.UnitTests\SqlBulkTools.NetStandard.UnitTests.csproj", "{F1E1BFDA-3509-477F-8CF6-A8CA312D60E6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlBulkTools.NetStandard.UnitTests", "SqlBulkTools.NetStandard.UnitTests\SqlBulkTools.NetStandard.UnitTests.csproj", "{F1E1BFDA-3509-477F-8CF6-A8CA312D60E6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F2D7AF6D-F749-4A80-9575-CF9AF919450D}"
+	ProjectSection(SolutionItems) = preProject
+		.travis.yml = .travis.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,18 +18,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{B91DE38C-7ED2-4445-AC02-6A4DEC07F3BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B91DE38C-7ED2-4445-AC02-6A4DEC07F3BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B91DE38C-7ED2-4445-AC02-6A4DEC07F3BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B91DE38C-7ED2-4445-AC02-6A4DEC07F3BD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{93203B4C-287E-4CCD-8796-988425B9E7F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{93203B4C-287E-4CCD-8796-988425B9E7F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{93203B4C-287E-4CCD-8796-988425B9E7F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{93203B4C-287E-4CCD-8796-988425B9E7F3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6CE3CC1D-C18B-43B2-8A75-F1C5C0A2D3FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6CE3CC1D-C18B-43B2-8A75-F1C5C0A2D3FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6CE3CC1D-C18B-43B2-8A75-F1C5C0A2D3FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6CE3CC1D-C18B-43B2-8A75-F1C5C0A2D3FA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CE4F978A-AE8A-4F7B-8A2D-3E5A4B00D18F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CE4F978A-AE8A-4F7B-8A2D-3E5A4B00D18F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CE4F978A-AE8A-4F7B-8A2D-3E5A4B00D18F}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -38,5 +29,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6B0A0416-D96B-455C-BC1A-C69A7ED35A6D}
 	EndGlobalSection
 EndGlobal
