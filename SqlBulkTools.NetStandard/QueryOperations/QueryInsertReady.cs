@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SqlBulkTools.Enumeration;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -6,12 +7,11 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using SqlBulkTools.Enumeration;
 
 namespace SqlBulkTools.QueryOperations
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class QueryInsertReady<T> : ITransaction
@@ -27,7 +27,7 @@ namespace SqlBulkTools.QueryOperations
         private readonly List<PropertyInfo> _propertyInfoList;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="singleEntity"></param>
         /// <param name="tableName"></param>
@@ -50,7 +50,7 @@ namespace SqlBulkTools.QueryOperations
         }
 
         /// <summary>
-        /// Sets the identity column for the table. 
+        /// Sets the identity column for the table.
         /// </summary>
         /// <param name="columnName"></param>
         /// <returns></returns>
@@ -63,9 +63,8 @@ namespace SqlBulkTools.QueryOperations
 
             if (_identityColumn == null)
                 _identityColumn = BulkOperationsHelper.GetActualColumn(_customColumnMappings, propertyName);
-            
-            else            
-                throw new SqlBulkToolsException("Can't have more than one identity column");            
+            else
+                throw new SqlBulkToolsException("Can't have more than one identity column");
 
             _columns.Add(propertyName);
 
@@ -73,7 +72,7 @@ namespace SqlBulkTools.QueryOperations
         }
 
         /// <summary>
-        /// Sets the identity column for the table. 
+        /// Sets the identity column for the table.
         /// </summary>
         /// <param name="columnName"></param>
         /// <param name="direction"></param>
@@ -92,11 +91,9 @@ namespace SqlBulkTools.QueryOperations
 
                 if (_customColumnMappings.TryGetValue(propertyName, out actualPropertyName))
                     _identityColumn = actualPropertyName;
-
                 else
                     _identityColumn = propertyName;
             }
-
             else
             {
                 throw new SqlBulkToolsException("Can't have more than one identity column");
@@ -107,8 +104,16 @@ namespace SqlBulkTools.QueryOperations
             return this;
         }
 
+        public int Commit(IDbConnection connection)
+        {
+            if (connection is SqlConnection == false)
+                throw new ArgumentException("Parameter must be a SqlConnection instance");
+
+            return Commit((SqlConnection)connection);
+        }
+
         /// <summary>
-        /// Commits a transaction to database. A valid setup must exist for the operation to be 
+        /// Commits a transaction to database. A valid setup must exist for the operation to be
         /// successful.
         /// </summary>
         /// <param name="connection"></param>
@@ -120,7 +125,7 @@ namespace SqlBulkTools.QueryOperations
             if (_singleEntity == null)
             {
                 return affectedRows;
-            }      
+            }
 
             if (connection.State != ConnectionState.Open)
                 connection.Open();
@@ -146,8 +151,6 @@ namespace SqlBulkTools.QueryOperations
                     sb.Append($"SET @{_identityColumn}=SCOPE_IDENTITY();");
                 }
 
-                
-
                 command.CommandText = sb.ToString();
 
                 if (_sqlParams.Count > 0)
@@ -165,7 +168,7 @@ namespace SqlBulkTools.QueryOperations
                             && x.ParameterName == $"@{_identityColumn}")
                         {
                             PropertyInfo propertyInfo = _singleEntity.GetType().GetProperty(_identityColumn);
-                            propertyInfo.SetValue(_singleEntity, x.Value);                           
+                            propertyInfo.SetValue(_singleEntity, x.Value);
                             break;
                         }
                     }
@@ -173,15 +176,14 @@ namespace SqlBulkTools.QueryOperations
 
                 return affectedRows;
             }
-
             catch (SqlException e)
             {
                 for (int i = 0; i < e.Errors.Count; i++)
                 {
-                    // Error 8102 and 544 is identity error. 
+                    // Error 8102 and 544 is identity error.
                     if (e.Errors[i].Number == 544 || e.Errors[i].Number == 8102)
                     {
-                        // Expensive but neccessary to inform user of an important configuration setup. 
+                        // Expensive but neccessary to inform user of an important configuration setup.
                         throw new IdentityException(e.Errors[i].Message);
                     }
                 }
@@ -190,7 +192,7 @@ namespace SqlBulkTools.QueryOperations
         }
 
         /// <summary>
-        /// Commits a transaction to database asynchronously. A valid setup must exist for the operation to be 
+        /// Commits a transaction to database asynchronously. A valid setup must exist for the operation to be
         /// successful.
         /// </summary>
         /// <param name="connection"></param>
@@ -253,15 +255,14 @@ namespace SqlBulkTools.QueryOperations
 
                 return affectedRows;
             }
-
             catch (SqlException e)
             {
                 for (int i = 0; i < e.Errors.Count; i++)
                 {
-                    // Error 8102 and 544 is identity error. 
+                    // Error 8102 and 544 is identity error.
                     if (e.Errors[i].Number == 544 || e.Errors[i].Number == 8102)
                     {
-                        // Expensive but neccessary to inform user of an important configuration setup. 
+                        // Expensive but neccessary to inform user of an important configuration setup.
                         throw new IdentityException(e.Errors[i].Message);
                     }
                 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
@@ -8,7 +7,7 @@ using System.Threading.Tasks;
 namespace SqlBulkTools
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class DeleteAllRecordsQueryReady<T> : ITransaction
@@ -18,7 +17,7 @@ namespace SqlBulkTools
         private int? _batchQuantity;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="tableName"></param>
         /// <param name="schema"></param>
@@ -40,8 +39,16 @@ namespace SqlBulkTools
             return this;
         }
 
+        public int Commit(IDbConnection connection)
+        {
+            if (connection is SqlConnection == false)
+                throw new ArgumentException("Parameter must be a SqlConnection instance");
+
+            return Commit((SqlConnection)connection);
+        }
+
         /// <summary>
-        /// Commits a transaction to database. A valid setup must exist for the operation to be 
+        /// Commits a transaction to database. A valid setup must exist for the operation to be
         /// successful.
         /// </summary>
         /// <param name="connection"></param>
@@ -62,14 +69,13 @@ namespace SqlBulkTools
         }
 
         /// <summary>
-        /// Commits a transaction to database asynchronously. A valid setup must exist for the operation to be 
+        /// Commits a transaction to database asynchronously. A valid setup must exist for the operation to be
         /// successful.
         /// </summary>
         /// <param name="connection"></param>
         /// <returns></returns>
         public async Task<int> CommitAsync(SqlConnection connection)
         {
-
             if (connection.State == ConnectionState.Closed)
                 await connection.OpenAsync();
 

@@ -1,17 +1,17 @@
-﻿using System;
+﻿using SqlBulkTools.Enumeration;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using SqlBulkTools.Enumeration;
 
 // ReSharper disable once CheckNamespace
 namespace SqlBulkTools
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class DeleteQueryReady<T> : ITransaction
@@ -28,7 +28,7 @@ namespace SqlBulkTools
         private int? _batchQuantity;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="tableName"></param>
         /// <param name="schema"></param>
@@ -37,7 +37,7 @@ namespace SqlBulkTools
         /// <param name="parameters"></param>
         /// <param name="collationColumnDic"></param>
         /// <param name="customColumnMappings"></param>
-        public DeleteQueryReady(string tableName, string schema, int conditionSortOrder, List<PredicateCondition> whereConditions, 
+        public DeleteQueryReady(string tableName, string schema, int conditionSortOrder, List<PredicateCondition> whereConditions,
             List<SqlParameter> parameters, Dictionary<string, string> collationColumnDic, Dictionary<string, string> customColumnMappings)
         {
             _tableName = tableName;
@@ -51,7 +51,6 @@ namespace SqlBulkTools
             _customColumnMappings = customColumnMappings;
             _batchQuantity = null;
         }
-
 
         /// <summary>
         /// Specify an additional condition to match on.
@@ -128,14 +127,22 @@ namespace SqlBulkTools
             return this;
         }
 
+        public int Commit(IDbConnection connection)
+        {
+            if (connection is SqlConnection == false)
+                throw new ArgumentException("Parameter must be a SqlConnection instance");
+
+            return Commit((SqlConnection)connection);
+        }
+
         /// <summary>
-        /// Commits a transaction to database. A valid setup must exist for the operation to be 
+        /// Commits a transaction to database. A valid setup must exist for the operation to be
         /// successful.
         /// </summary>
         /// <param name="connection"></param>
         /// <returns></returns>
         public int Commit(SqlConnection connection)
-        {            
+        {
             if (connection.State == ConnectionState.Closed)
                 connection.Open();
 
@@ -155,14 +162,13 @@ namespace SqlBulkTools
         }
 
         /// <summary>
-        /// Commits a transaction to database asynchronously. A valid setup must exist for the operation to be 
+        /// Commits a transaction to database asynchronously. A valid setup must exist for the operation to be
         /// successful.
         /// </summary>
         /// <param name="connection"></param>
         /// <returns></returns>
         public async Task<int> CommitAsync(SqlConnection connection)
         {
-
             if (connection.State == ConnectionState.Closed)
                 await connection.OpenAsync();
 
