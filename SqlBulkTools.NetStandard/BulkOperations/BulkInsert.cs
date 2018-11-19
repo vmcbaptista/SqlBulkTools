@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SqlBulkTools.Enumeration;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -6,19 +7,18 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
-using SqlBulkTools.Enumeration;
 
 // ReSharper disable once CheckNamespace
 namespace SqlBulkTools
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class BulkInsert<T> : AbstractOperation<T>, ITransaction
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="list"></param>
         /// <param name="tableName"></param>
@@ -31,11 +31,11 @@ namespace SqlBulkTools
             Dictionary<string, string> customColumnMappings, BulkCopySettings bulkCopySettings, List<PropertyInfo> propertyInfoList) :
 
             base(list, tableName, schema, columns, customColumnMappings, bulkCopySettings, propertyInfoList)
-        {}
+        { }
 
         /// <summary>
-        /// Sets the identity column for the table. Required if an Identity column exists in table and one of the two 
-        /// following conditions is met: (1) MatchTargetOn list contains an identity column (2) AddAllColumns is used in setup. 
+        /// Sets the identity column for the table. Required if an Identity column exists in table and one of the two
+        /// following conditions is met: (1) MatchTargetOn list contains an identity column (2) AddAllColumns is used in setup.
         /// </summary>
         /// <param name="columnName"></param>
         /// <returns></returns>
@@ -46,8 +46,8 @@ namespace SqlBulkTools
         }
 
         /// <summary>
-        /// Sets the identity column for the table. Required if an Identity column exists in table and one of the two 
-        /// following conditions is met: (1) MatchTargetOn list contains an identity column (2) AddAllColumns is used in setup. 
+        /// Sets the identity column for the table. Required if an Identity column exists in table and one of the two
+        /// following conditions is met: (1) MatchTargetOn list contains an identity column (2) AddAllColumns is used in setup.
         /// </summary>
         /// <param name="columnName"></param>
         /// <param name="outputIdentity"></param>
@@ -59,7 +59,7 @@ namespace SqlBulkTools
         }
 
         /// <summary>
-        /// Disables all Non-Clustered indexes on the table before the transaction and rebuilds after the 
+        /// Disables all Non-Clustered indexes on the table before the transaction and rebuilds after the
         /// transaction. This option should only be considered for very large operations.
         /// </summary>
         /// <returns></returns>
@@ -69,8 +69,16 @@ namespace SqlBulkTools
             return this;
         }
 
+        public int Commit(IDbConnection connection)
+        {
+            if (connection is SqlConnection == false)
+                throw new ArgumentException("Parameter must be a SqlConnection instance");
+
+            return Commit((SqlConnection)connection);
+        }
+
         /// <summary>
-        /// Commits a transaction to database. A valid setup must exist for the operation to be 
+        /// Commits a transaction to database. A valid setup must exist for the operation to be
         /// successful.
         /// </summary>
         /// <param name="connection"></param>
@@ -83,16 +91,15 @@ namespace SqlBulkTools
             {
                 return affectedRows;
             }
-            
+
             DataTable dt = BulkOperationsHelper.CreateDataTable<T>(_propertyInfoList, _columns, _customColumnMappings, _ordinalDic, _matchTargetOn, _outputIdentity);
             dt = BulkOperationsHelper.ConvertListToDataTable(_propertyInfoList, dt, _list, _columns, _ordinalDic);
 
-            // Must be after ToDataTable is called. 
+            // Must be after ToDataTable is called.
             BulkOperationsHelper.DoColumnMappings(_customColumnMappings, _columns, _matchTargetOn);
 
             if (connection.State == ConnectionState.Closed)
                 connection.Open();
-
 
             DataTable dtCols = null;
             if (_outputIdentity == ColumnDirectionType.InputOutput)
@@ -129,9 +136,7 @@ namespace SqlBulkTools
                     command.ExecuteNonQuery();
 
                     BulkOperationsHelper.LoadFromTmpOutputTable(command, _identityColumn, _outputIdentityDic, OperationType.Insert, _list);
-
                 }
-
                 else
                     bulkcopy.WriteToServer(dt);
 
@@ -150,14 +155,13 @@ namespace SqlBulkTools
         }
 
         /// <summary>
-        /// Commits a transaction to database asynchronously. A valid setup must exist for the operation to be 
+        /// Commits a transaction to database asynchronously. A valid setup must exist for the operation to be
         /// successful.
         /// </summary>
         /// <param name="connection"></param>
         /// <returns></returns>
         public async Task<int> CommitAsync(SqlConnection connection)
         {
-
             int affectedRows = 0;
 
             if (!_list.Any())
@@ -168,12 +172,11 @@ namespace SqlBulkTools
             DataTable dt = BulkOperationsHelper.CreateDataTable<T>(_propertyInfoList, _columns, _customColumnMappings, _ordinalDic, _matchTargetOn, _outputIdentity);
             dt = BulkOperationsHelper.ConvertListToDataTable(_propertyInfoList, dt, _list, _columns, _ordinalDic);
 
-            // Must be after ToDataTable is called. 
+            // Must be after ToDataTable is called.
             BulkOperationsHelper.DoColumnMappings(_customColumnMappings, _columns, _matchTargetOn);
 
             if (connection.State != ConnectionState.Open)
                 await connection.OpenAsync();
-
 
             DataTable dtCols = null;
             if (_outputIdentity == ColumnDirectionType.InputOutput)
@@ -210,7 +213,6 @@ namespace SqlBulkTools
 
                     BulkOperationsHelper.LoadFromTmpOutputTable(command, _identityColumn, _outputIdentityDic, OperationType.Insert, _list);
                 }
-
                 else
                     await bulkcopy.WriteToServerAsync(dt);
 
@@ -225,7 +227,6 @@ namespace SqlBulkTools
 
                 affectedRows = dt.Rows.Count;
                 return affectedRows;
-
             }
         }
     }

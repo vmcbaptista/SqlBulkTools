@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SqlBulkTools.Enumeration;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -6,13 +7,12 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
-using SqlBulkTools.Enumeration;
 
 // ReSharper disable once CheckNamespace
 namespace SqlBulkTools
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class QueryUpdateReady<T> : ITransaction
@@ -33,7 +33,7 @@ namespace SqlBulkTools
         private List<PropertyInfo> _propertyInfoList;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="singleEntity"></param>
         /// <param name="tableName"></param>
@@ -65,7 +65,7 @@ namespace SqlBulkTools
         }
 
         /// <summary>
-        /// Sets the identity column for the table. 
+        /// Sets the identity column for the table.
         /// </summary>
         /// <param name="columnName"></param>
         /// <returns></returns>
@@ -76,10 +76,9 @@ namespace SqlBulkTools
             if (propertyName == null)
                 throw new SqlBulkToolsException("SetIdentityColumn column name can't be null");
 
-            if (_identityColumn == null)           
+            if (_identityColumn == null)
                 _identityColumn = BulkOperationsHelper.GetActualColumn(_customColumnMappings, propertyName);
-            
-            else           
+            else
                 throw new SqlBulkToolsException("Can't have more than one identity column");
 
             return this;
@@ -159,8 +158,16 @@ namespace SqlBulkTools
             return this;
         }
 
+        public int Commit(IDbConnection connection)
+        {
+            if (connection is SqlConnection == false)
+                throw new ArgumentException("Parameter must be a SqlConnection instance");
+
+            return Commit((SqlConnection)connection);
+        }
+
         /// <summary>
-        /// Commits a transaction to database. A valid setup must exist for the operation to be 
+        /// Commits a transaction to database. A valid setup must exist for the operation to be
         /// successful.
         /// </summary>
         /// <param name="connection"></param>
@@ -192,7 +199,7 @@ namespace SqlBulkTools
         }
 
         /// <summary>
-        /// Commits a transaction to database asynchronously. A valid setup must exist for the operation to be 
+        /// Commits a transaction to database asynchronously. A valid setup must exist for the operation to be
         /// successful.
         /// </summary>
         /// <param name="connection"></param>
@@ -207,7 +214,6 @@ namespace SqlBulkTools
 
             if (connection.State == ConnectionState.Closed)
                 await connection.OpenAsync();
-
 
             SqlCommand command = connection.CreateCommand();
             command.Connection = connection;

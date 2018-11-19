@@ -1,17 +1,17 @@
-﻿using System;
+﻿using SqlBulkTools.Enumeration;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
-using SqlBulkTools.Enumeration;
 
 // ReSharper disable once CheckNamespace
 namespace SqlBulkTools
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class QueryUpsertReady<T> : ITransaction
@@ -24,13 +24,13 @@ namespace SqlBulkTools
         private string _identityColumn;
         private readonly List<SqlParameter> _sqlParams;
         private readonly HashSet<string> _matchTargetOn;
-        private readonly HashSet<string> _excludeFromUpdate; 
+        private readonly HashSet<string> _excludeFromUpdate;
         private ColumnDirectionType _outputIdentity;
         private readonly Dictionary<string, string> _collationColumnDic;
         private readonly List<PropertyInfo> _propertyInfoList;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="singleEntity"></param>
         /// <param name="tableName"></param>
@@ -39,7 +39,7 @@ namespace SqlBulkTools
         /// <param name="customColumnMappings"></param>
         /// <param name="sqlParams"></param>
         /// <param name="propertyInfoList"></param>
-        public QueryUpsertReady(T singleEntity, string tableName, string schema, HashSet<string> columns, Dictionary<string, string> customColumnMappings, 
+        public QueryUpsertReady(T singleEntity, string tableName, string schema, HashSet<string> columns, Dictionary<string, string> customColumnMappings,
             List<SqlParameter> sqlParams, List<PropertyInfo> propertyInfoList)
         {
             _singleEntity = singleEntity;
@@ -56,7 +56,7 @@ namespace SqlBulkTools
         }
 
         /// <summary>
-        /// Sets the identity column for the table. 
+        /// Sets the identity column for the table.
         /// </summary>
         /// <param name="columnName"></param>
         /// <param name="outputIdentity"></param>
@@ -69,17 +69,16 @@ namespace SqlBulkTools
             if (propertyName == null)
                 throw new SqlBulkToolsException("SetIdentityColumn column name can't be null");
 
-            if (_identityColumn == null)            
-               _identityColumn = BulkOperationsHelper.GetActualColumn(_customColumnMappings, propertyName);
-            
-            else            
-                throw new SqlBulkToolsException("Can't have more than one identity column");        
+            if (_identityColumn == null)
+                _identityColumn = BulkOperationsHelper.GetActualColumn(_customColumnMappings, propertyName);
+            else
+                throw new SqlBulkToolsException("Can't have more than one identity column");
 
             return this;
         }
 
         /// <summary>
-        /// Exclude a property from the update statement. Useful for when you want to include CreatedDate or Guid for inserts only. 
+        /// Exclude a property from the update statement. Useful for when you want to include CreatedDate or Guid for inserts only.
         /// </summary>
         /// <param name="columnName"></param>
         /// <returns></returns>
@@ -90,11 +89,10 @@ namespace SqlBulkTools
             if (propertyName == null)
                 throw new SqlBulkToolsException("ExcludeColumnFromUpdate column name can't be null");
 
-
             if (!_columns.Contains(propertyName))
             {
-               throw new SqlBulkToolsException("ExcludeColumnFromUpdate could not exclude column from update because column could not " +
-                                               "be recognised. Call AddAllColumns() or AddColumn() for this column first."); 
+                throw new SqlBulkToolsException("ExcludeColumnFromUpdate could not exclude column from update because column could not " +
+                                                "be recognised. Call AddAllColumns() or AddColumn() for this column first.");
             }
             _excludeFromUpdate.Add(propertyName);
 
@@ -102,7 +100,7 @@ namespace SqlBulkTools
         }
 
         /// <summary>
-        /// Sets the identity column for the table. 
+        /// Sets the identity column for the table.
         /// </summary>
         /// <param name="columnName"></param>
         /// <returns></returns>
@@ -113,19 +111,18 @@ namespace SqlBulkTools
             if (propertyName == null)
                 throw new SqlBulkToolsException("SetIdentityColumn column name can't be null");
 
-            if (_identityColumn == null)           
+            if (_identityColumn == null)
                 _identityColumn = BulkOperationsHelper.GetActualColumn(_customColumnMappings, propertyName);
-            
-            else            
+            else
                 throw new SqlBulkToolsException("Can't have more than one identity column");
-            
+
             return this;
         }
 
         /// <summary>
-        /// At least one MatchTargetOn is required for correct configuration. MatchTargetOn is the matching clause for evaluating 
-        /// each row in table. This is usally set to the unique identifier in the table (e.g. Id). Multiple MatchTargetOn members are allowed 
-        /// for matching composite relationships. 
+        /// At least one MatchTargetOn is required for correct configuration. MatchTargetOn is the matching clause for evaluating
+        /// each row in table. This is usally set to the unique identifier in the table (e.g. Id). Multiple MatchTargetOn members are allowed
+        /// for matching composite relationships.
         /// </summary>
         /// <param name="columnName"></param>
         /// <returns></returns>
@@ -142,9 +139,9 @@ namespace SqlBulkTools
         }
 
         /// <summary>
-        /// At least one MatchTargetOn is required for correct configuration. MatchTargetOn is the matching clause for evaluating 
-        /// each row in table. This is usally set to the unique identifier in the table (e.g. Id). Multiple MatchTargetOn members are allowed 
-        /// for matching composite relationships. 
+        /// At least one MatchTargetOn is required for correct configuration. MatchTargetOn is the matching clause for evaluating
+        /// each row in table. This is usally set to the unique identifier in the table (e.g. Id). Multiple MatchTargetOn members are allowed
+        /// for matching composite relationships.
         /// </summary>
         /// <param name="columnName"></param>
         /// <param name="collation">Only explicitly set the collation if there is a collation conflict.</param>
@@ -166,8 +163,16 @@ namespace SqlBulkTools
             return this;
         }
 
+        public int Commit(IDbConnection connection)
+        {
+            if (connection is SqlConnection == false)
+                throw new ArgumentException("Parameter must be a SqlConnection instance");
+
+            return Commit((SqlConnection)connection);
+        }
+
         /// <summary>
-        /// Commits a transaction to database. A valid setup must exist for the operation to be 
+        /// Commits a transaction to database. A valid setup must exist for the operation to be
         /// successful.
         /// </summary>
         /// <param name="conn"></param>
@@ -184,7 +189,7 @@ namespace SqlBulkTools
 
             if (_matchTargetOn.Count == 0)
                 throw new NullReferenceException("MatchTargetOn is a mandatory for upsert operation");
-                      
+
             try
             {
                 if (conn.State == ConnectionState.Closed)
@@ -227,15 +232,14 @@ namespace SqlBulkTools
 
                 return affectedRows;
             }
-
             catch (SqlException e)
             {
                 for (int i = 0; i < e.Errors.Count; i++)
                 {
-                    // Error 8102 and 544 is identity error. 
+                    // Error 8102 and 544 is identity error.
                     if (e.Errors[i].Number == 544 || e.Errors[i].Number == 8102)
                     {
-                        // Expensive but neccessary to inform user of an important configuration setup. 
+                        // Expensive but neccessary to inform user of an important configuration setup.
                         throw new IdentityException(e.Errors[i].Message);
                     }
                 }
@@ -245,7 +249,7 @@ namespace SqlBulkTools
         }
 
         /// <summary>
-        /// Commits a transaction to database asynchronously. A valid setup must exist for the operation to be 
+        /// Commits a transaction to database asynchronously. A valid setup must exist for the operation to be
         /// successful.
         /// </summary>
         /// <param name="conn"></param>
@@ -306,15 +310,14 @@ namespace SqlBulkTools
 
                 return affectedRows;
             }
-
             catch (SqlException e)
             {
                 for (int i = 0; i < e.Errors.Count; i++)
                 {
-                    // Error 8102 and 544 is identity error. 
+                    // Error 8102 and 544 is identity error.
                     if (e.Errors[i].Number == 544 || e.Errors[i].Number == 8102)
                     {
-                        // Expensive but neccessary to inform user of an important configuration setup. 
+                        // Expensive but neccessary to inform user of an important configuration setup.
                         throw new IdentityException(e.Errors[i].Message);
                     }
                 }
@@ -324,7 +327,7 @@ namespace SqlBulkTools
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="fullQualifiedTableName"></param>
         /// <returns></returns>
