@@ -7,6 +7,9 @@ Please leave a Github star if you find this project useful.
 ## Examples
 
 #### Getting started
+
+```dotnet add package SqlBulkTools.NetStandard --version 2.1.13```
+
 -----------------------------
 ```c#
 using SqlBulkTools;
