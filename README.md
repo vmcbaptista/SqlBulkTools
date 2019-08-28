@@ -609,7 +609,7 @@ bulk.Setup<Book>()
     .WithSchema("Api") // Specify a schema 
     .WithBulkCopySettings(new BulkCopySettings()
     {
-      BatchSize = 5000,
+      BatchSize = 5000, // Default is 0 - single batch
       BulkCopyTimeout = 720, // Default is 600 seconds
       EnableStreaming = true,
       SqlBulkCopyOptions = SqlBulkCopyOptions.TableLock
@@ -630,6 +630,16 @@ bulk.Setup<Book>()
     .BulkInsert()
     .TmpDisableAllNonClusteredIndexes()
     .Commit(conn);
+
+
+/* When user that run operations on server side does not have permissions to ALTER table or 
+when you wont to fire triggers and check constraint then proper SqlBulkCopyOptions should be applied. */
+
+// Example
+    .WithBulkCopySettings(new BulkCopySettings()
+    {
+      SqlBulkCopyOptions = SqlBulkCopyOptions.FireTriggers | SqlBulkCopyOptions.CheckConstraints
+    })
 
 ```
 
