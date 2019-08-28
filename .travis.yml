@@ -9,4 +9,5 @@ script:
  - dotnet build
  - dotnet test SqlBulkTools.NetStandard.UnitTests/SqlBulkTools.NetStandard.UnitTests.csproj
  - dotnet pack --no-restore --no-build --include-symbols /p:PackageVersion=$PACKAGE_VERSION
- - dotnet nuget push **/SqlBulkTools.NetStandard.$PACKAGE_VERSION.nupkg -k $ApiKey -s https://api.nuget.org/v3/index.json
+ - if [ $TRAVIS_BRANCH == "master" && $TRAVIS_PULL_REQUEST == "false" ]; then dotnet nuget push **/SqlBulkTools.NetStandard.$PACKAGE_VERSION.nupkg -k $ApiKey -s https://api.nuget.org/v3/index.json fi
+ 
