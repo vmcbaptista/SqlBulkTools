@@ -14,6 +14,7 @@ namespace SqlBulkTools
     {
         private readonly string _tableName;
         private readonly string _schema;
+        private readonly int _sqlTimeout;
         private int? _batchQuantity;
 
         /// <summary>
@@ -21,10 +22,11 @@ namespace SqlBulkTools
         /// </summary>
         /// <param name="tableName"></param>
         /// <param name="schema"></param>
-        public DeleteAllRecordsQueryReady(string tableName, string schema)
+        public DeleteAllRecordsQueryReady(string tableName, string schema, int sqlTimeout)
         {
             _tableName = tableName;
             _schema = schema;
+            _sqlTimeout = sqlTimeout;
             _batchQuantity = null;
         }
 
@@ -60,6 +62,7 @@ namespace SqlBulkTools
 
             SqlCommand command = connection.CreateCommand();
             command.Connection = connection;
+            command.CommandTimeout = _sqlTimeout;
 
             command.CommandText = GetQuery(connection);
 
@@ -81,6 +84,7 @@ namespace SqlBulkTools
 
             SqlCommand command = connection.CreateCommand();
             command.Connection = connection;
+            command.CommandTimeout = _sqlTimeout;
 
             command.CommandText = command.CommandText = GetQuery(connection);
 

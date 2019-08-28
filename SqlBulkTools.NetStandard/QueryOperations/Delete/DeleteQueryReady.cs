@@ -18,6 +18,7 @@ namespace SqlBulkTools
     {
         private readonly string _tableName;
         private readonly string _schema;
+        private readonly int _sqlTimeout;
         private readonly List<PredicateCondition> _whereConditions;
         private readonly List<PredicateCondition> _andConditions;
         private readonly List<PredicateCondition> _orConditions;
@@ -32,16 +33,18 @@ namespace SqlBulkTools
         /// </summary>
         /// <param name="tableName"></param>
         /// <param name="schema"></param>
+        /// <param name="sqlTimeout"></param>
         /// <param name="conditionSortOrder"></param>
         /// <param name="whereConditions"></param>
         /// <param name="parameters"></param>
         /// <param name="collationColumnDic"></param>
         /// <param name="customColumnMappings"></param>
-        public DeleteQueryReady(string tableName, string schema, int conditionSortOrder, List<PredicateCondition> whereConditions,
+        public DeleteQueryReady(string tableName, string schema, int sqlTimeout, int conditionSortOrder, List<PredicateCondition> whereConditions,
             List<SqlParameter> parameters, Dictionary<string, string> collationColumnDic, Dictionary<string, string> customColumnMappings)
         {
             _tableName = tableName;
             _schema = schema;
+            _sqlTimeout = sqlTimeout;
             _whereConditions = whereConditions;
             _andConditions = new List<PredicateCondition>();
             _orConditions = new List<PredicateCondition>();
@@ -148,6 +151,7 @@ namespace SqlBulkTools
 
             SqlCommand command = connection.CreateCommand();
             command.Connection = connection;
+            command.CommandTimeout = _sqlTimeout;
 
             command.CommandText = GetQuery(connection);
 
@@ -174,6 +178,7 @@ namespace SqlBulkTools
 
             SqlCommand command = connection.CreateCommand();
             command.Connection = connection;
+            command.CommandTimeout = _sqlTimeout;
 
             command.CommandText = command.CommandText = GetQuery(connection);
 
