@@ -9,6 +9,7 @@ namespace SqlBulkTools
     public abstract class AbstractColumnSelection<T>
     {
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+        protected readonly BulkOperations bulk;
         // ReSharper disable InconsistentNaming
         protected IEnumerable<T> _list;
         protected string _tableName;
@@ -30,8 +31,9 @@ namespace SqlBulkTools
         /// <param name="schema"></param>
         /// <param name="bulkCopySettings"></param>
         /// <param name="propertyInfoList"></param>
-        protected AbstractColumnSelection(IEnumerable<T> list, string tableName, HashSet<string> columns, Dictionary<string, string> customColumnMappings, string schema, BulkCopySettings bulkCopySettings, List<PropertyInfo> propertyInfoList)
+        protected AbstractColumnSelection(BulkOperations bulk, IEnumerable<T> list, string tableName, HashSet<string> columns, Dictionary<string, string> customColumnMappings, string schema, BulkCopySettings bulkCopySettings, List<PropertyInfo> propertyInfoList)
         {
+            this.bulk = bulk;
             _disableAllIndexes = false;
             _customColumnMappings = customColumnMappings;
             _list = list;
@@ -49,7 +51,7 @@ namespace SqlBulkTools
         /// <returns></returns>
         public BulkInsert<T> BulkInsert()
         {
-            return new BulkInsert<T>(_list, _tableName, _schema, _columns, _customColumnMappings, _bulkCopySettings, _propertyInfoList);
+            return new BulkInsert<T>(bulk, _list, _tableName, _schema, _columns, _customColumnMappings, _bulkCopySettings, _propertyInfoList);
         }
 
         /// <summary>
@@ -61,7 +63,7 @@ namespace SqlBulkTools
         /// <returns></returns>
         public BulkInsertOrUpdate<T> BulkInsertOrUpdate()
         {
-            return new BulkInsertOrUpdate<T>(_list, _tableName, _schema, _columns,
+            return new BulkInsertOrUpdate<T>(bulk, _list, _tableName, _schema, _columns,
                 _customColumnMappings, _bulkCopySettings, _propertyInfoList);
         }
 
@@ -72,7 +74,7 @@ namespace SqlBulkTools
         /// <returns></returns>
         public BulkUpdate<T> BulkUpdate()
         {
-            return new BulkUpdate<T>(_list, _tableName, _schema, _columns, 
+            return new BulkUpdate<T>(bulk, _list, _tableName, _schema, _columns, 
                 _customColumnMappings, _bulkCopySettings, _propertyInfoList);
         }
 
@@ -83,7 +85,7 @@ namespace SqlBulkTools
         /// <returns></returns>
         public BulkDelete<T> BulkDelete()
         {
-            return new BulkDelete<T>(_list, _tableName, _schema, _columns,  
+            return new BulkDelete<T>(bulk, _list, _tableName, _schema, _columns,  
                 _customColumnMappings, _bulkCopySettings, _propertyInfoList);
         }
     }

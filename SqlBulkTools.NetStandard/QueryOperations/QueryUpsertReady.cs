@@ -163,12 +163,12 @@ namespace SqlBulkTools
             return this;
         }
 
-        public int Commit(IDbConnection connection)
+        public int Commit(IDbConnection connection, IDbTransaction transaction = null)
         {
             if (connection is SqlConnection == false)
                 throw new ArgumentException("Parameter must be a SqlConnection instance");
 
-            return Commit((SqlConnection)connection);
+            return Commit((SqlConnection)connection, (SqlTransaction)transaction);
         }
 
         /// <summary>
@@ -179,7 +179,7 @@ namespace SqlBulkTools
         /// <returns></returns>
         /// <exception cref="NullReferenceException"></exception>
         /// <exception cref="IdentityException"></exception>
-        public int Commit(SqlConnection conn)
+        public int Commit(SqlConnection conn, SqlTransaction transaction)
         {
             int affectedRows = 0;
             if (_singleEntity == null)
@@ -200,6 +200,7 @@ namespace SqlBulkTools
 
                 SqlCommand command = conn.CreateCommand();
                 command.Connection = conn;
+                command.Transaction = transaction;
 
                 string fullQualifiedTableName = BulkOperationsHelper.GetFullQualifyingTableName(conn.Database, _schema, _tableName);
 
@@ -256,7 +257,7 @@ namespace SqlBulkTools
         /// <returns></returns>
         /// <exception cref="NullReferenceException"></exception>
         /// <exception cref="IdentityException"></exception>
-        public async Task<int> CommitAsync(SqlConnection conn)
+        public async Task<int> CommitAsync(SqlConnection conn, SqlTransaction transaction)
         {
             int affectedRows = 0;
             if (_singleEntity == null)
@@ -277,6 +278,7 @@ namespace SqlBulkTools
 
                 SqlCommand command = conn.CreateCommand();
                 command.Connection = conn;
+                command.Transaction = transaction;
 
                 string fullQualifiedTableName = BulkOperationsHelper.GetFullQualifyingTableName(conn.Database, _schema, _tableName);
 

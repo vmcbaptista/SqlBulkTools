@@ -15,7 +15,6 @@ namespace SqlBulkTools
     {
         private readonly string _tableName;
         private readonly string _schema;
-        private readonly int _sqlTimeout;
         private readonly List<PredicateCondition> _whereConditions;
         private readonly List<SqlParameter> _parameters;
         private int _conditionSortOrder;
@@ -32,7 +31,6 @@ namespace SqlBulkTools
         {
             _tableName = tableName;
             _schema = schema;
-            _sqlTimeout = sqlTimeout;
             _whereConditions = new List<PredicateCondition>();
             _parameters = new List<SqlParameter>();
             _collationColumnDic = new Dictionary<string, string>();
@@ -72,7 +70,7 @@ namespace SqlBulkTools
 
             _conditionSortOrder++;
 
-            return new DeleteQueryReady<T>(_tableName, _schema, _sqlTimeout, _conditionSortOrder, 
+            return new DeleteQueryReady<T>(_tableName, _schema, _conditionSortOrder, 
                 _whereConditions, _parameters, _collationColumnDic, _customColumnMappings);
         }
 
@@ -94,7 +92,7 @@ namespace SqlBulkTools
             string leftName = BulkOperationsHelper.GetExpressionLeftName(expression, PredicateType.Or, "Collation");
             _collationColumnDic.Add(BulkOperationsHelper.GetActualColumn(_customColumnMappings, leftName), collation);
 
-            return new DeleteQueryReady<T>(_tableName, _schema, _sqlTimeout, _conditionSortOrder,
+            return new DeleteQueryReady<T>(_tableName, _schema, _conditionSortOrder,
                 _whereConditions, _parameters, _collationColumnDic, _customColumnMappings);
         }
 
@@ -104,7 +102,7 @@ namespace SqlBulkTools
         /// <returns></returns>
         public DeleteAllRecordsQueryReady<T> AllRecords()
         {
-            return new DeleteAllRecordsQueryReady<T>(_tableName, _schema, _sqlTimeout);
+            return new DeleteAllRecordsQueryReady<T>(_tableName, _schema);
         }
 
     }

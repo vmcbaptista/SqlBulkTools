@@ -27,10 +27,10 @@ namespace SqlBulkTools
         /// <param name="customColumnMappings"></param>
         /// <param name="bulkCopySettings"></param>
         /// <param name="propertyInfoList"></param>
-        public BulkInsert(IEnumerable<T> list, string tableName, string schema, HashSet<string> columns,
+        public BulkInsert(BulkOperations bulk, IEnumerable<T> list, string tableName, string schema, HashSet<string> columns,
             Dictionary<string, string> customColumnMappings, BulkCopySettings bulkCopySettings, List<PropertyInfo> propertyInfoList) :
 
-            base(list, tableName, schema, columns, customColumnMappings, bulkCopySettings, propertyInfoList)
+            base(bulk, list, tableName, schema, columns, customColumnMappings, bulkCopySettings, propertyInfoList)
         { }
 
         /// <summary>
@@ -69,12 +69,18 @@ namespace SqlBulkTools
             return this;
         }
 
-        public int Commit(IDbConnection connection)
+        public int Commit(IDbConnection connection, IDbTransaction transaction = null)
         {
             if (connection is SqlConnection == false)
                 throw new ArgumentException("Parameter must be a SqlConnection instance");
 
-            return Commit((SqlConnection)connection);
+            return Commit((SqlConnection)connection, (SqlTransaction)transaction);
+        }
+
+        public BulkInsert<T> WithTimeout(int timeout)
+        {
+            this._sqlTimeout = timeout;
+            return this;
         }
 
         /// <summary>
@@ -83,7 +89,7 @@ namespace SqlBulkTools
         /// </summary>
         /// <param name="connection"></param>
         /// <returns></returns>
-        public int Commit(SqlConnection connection)
+        public int Commit(SqlConnection connection, SqlTransaction transaction)
         {
             int affectedRows = 0;
 
@@ -103,10 +109,10 @@ namespace SqlBulkTools
 
             DataTable dtCols = null;
             if (_outputIdentity == ColumnDirectionType.InputOutput)
-                dtCols = BulkOperationsHelper.GetDatabaseSchema(connection, _schema, _tableName);
+                dtCols = BulkOperationsHelper.GetDatabaseSchema(bulk, connection, _schema, _tableName);
 
             //Bulk insert into temp table
-            using (SqlBulkCopy bulkcopy = new SqlBulkCopy(connection, _bulkCopySettings.SqlBulkCopyOptions, null))
+            using (SqlBulkCopy bulkcopy = new SqlBulkCopy(connection, _bulkCopySettings.SqlBulkCopyOptions, transaction))
             {
                 bulkcopy.DestinationTableName = BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema, _tableName);
                 BulkOperationsHelper.MapColumns(bulkcopy, _columns, _customColumnMappings);
@@ -115,6 +121,8 @@ namespace SqlBulkTools
 
                 SqlCommand command = connection.CreateCommand();
                 command.Connection = connection;
+                command.CommandTimeout = _sqlTimeout;
+                command.Transaction = transaction;
 
                 if (_disableAllIndexes)
                 {
@@ -129,7 +137,7 @@ namespace SqlBulkTools
                     command.CommandText = BulkOperationsHelper.BuildCreateTempTable(_columns, dtCols, _outputIdentity);
                     command.ExecuteNonQuery();
 
-                    BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopySettings);
+                    BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopySettings, transaction);
 
                     command.CommandText = BulkOperationsHelper.GetInsertIntoStagingTableCmd(connection, _schema, _tableName,
                         _columns, _identityColumn, _outputIdentity);
@@ -160,7 +168,7 @@ namespace SqlBulkTools
         /// </summary>
         /// <param name="connection"></param>
         /// <returns></returns>
-        public async Task<int> CommitAsync(SqlConnection connection)
+        public async Task<int> CommitAsync(SqlConnection connection, SqlTransaction transaction)
         {
             int affectedRows = 0;
 
@@ -180,9 +188,9 @@ namespace SqlBulkTools
 
             DataTable dtCols = null;
             if (_outputIdentity == ColumnDirectionType.InputOutput)
-                dtCols = BulkOperationsHelper.GetDatabaseSchema(connection, _schema, _tableName);
+                dtCols = BulkOperationsHelper.GetDatabaseSchema(bulk, connection, _schema, _tableName);
 
-            using (SqlBulkCopy bulkcopy = new SqlBulkCopy(connection, _bulkCopySettings.SqlBulkCopyOptions, null))
+            using (SqlBulkCopy bulkcopy = new SqlBulkCopy(connection, _bulkCopySettings.SqlBulkCopyOptions, transaction))
             {
                 bulkcopy.DestinationTableName = BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema, _tableName);
                 BulkOperationsHelper.MapColumns(bulkcopy, _columns, _customColumnMappings);
@@ -191,6 +199,8 @@ namespace SqlBulkTools
 
                 SqlCommand command = connection.CreateCommand();
                 command.Connection = connection;
+                command.CommandTimeout = _sqlTimeout;
+                command.Transaction = transaction;
 
                 if (_disableAllIndexes)
                 {
@@ -205,7 +215,7 @@ namespace SqlBulkTools
                     command.CommandText = BulkOperationsHelper.BuildCreateTempTable(_columns, dtCols, _outputIdentity);
                     await command.ExecuteNonQueryAsync();
 
-                    BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopySettings);
+                    BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopySettings, transaction);
 
                     command.CommandText = BulkOperationsHelper.GetInsertIntoStagingTableCmd(connection, _schema, _tableName,
                         _columns, _identityColumn, _outputIdentity);

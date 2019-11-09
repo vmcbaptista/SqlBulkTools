@@ -12,7 +12,8 @@ namespace SqlBulkTools
     /// </summary>
     public abstract class AbstractOperation<T>
     {
-        #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+        protected readonly BulkOperations bulk;
         // ReSharper disable InconsistentNaming
         protected ColumnDirectionType _outputIdentity;
         protected string _identityColumn;
@@ -46,9 +47,10 @@ namespace SqlBulkTools
         /// <param name="customColumnMappings"></param>
         /// <param name="bulkCopySettings"></param>
         /// <param name="propertyInfoList"></param>
-        protected AbstractOperation(IEnumerable<T> list, string tableName, string schema, HashSet<string> columns,
+        protected AbstractOperation(BulkOperations bulk, IEnumerable<T> list, string tableName, string schema, HashSet<string> columns,
             Dictionary<string, string> customColumnMappings, BulkCopySettings bulkCopySettings, List<PropertyInfo> propertyInfoList)
         {
+            this.bulk = bulk;
             _list = list;
             _tableName = tableName;
             _schema = schema;

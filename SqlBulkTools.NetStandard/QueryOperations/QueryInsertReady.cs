@@ -104,12 +104,12 @@ namespace SqlBulkTools.QueryOperations
             return this;
         }
 
-        public int Commit(IDbConnection connection)
+        public int Commit(IDbConnection connection, IDbTransaction transaction = null)
         {
             if (connection is SqlConnection == false)
                 throw new ArgumentException("Parameter must be a SqlConnection instance");
 
-            return Commit((SqlConnection)connection);
+            return Commit((SqlConnection)connection, (SqlTransaction)transaction);
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace SqlBulkTools.QueryOperations
         /// <param name="connection"></param>
         /// <returns></returns>
         /// <exception cref="IdentityException"></exception>
-        public int Commit(SqlConnection connection)
+        public int Commit(SqlConnection connection, SqlTransaction transaction)
         {
             int affectedRows = 0;
             if (_singleEntity == null)
@@ -137,6 +137,7 @@ namespace SqlBulkTools.QueryOperations
 
                 SqlCommand command = connection.CreateCommand();
                 command.Connection = connection;
+                command.Transaction = transaction;
 
                 string fullQualifiedTableName = BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema,
                 _tableName);
@@ -198,7 +199,7 @@ namespace SqlBulkTools.QueryOperations
         /// <param name="connection"></param>
         /// <returns></returns>
         /// <exception cref="IdentityException"></exception>
-        public async Task<int> CommitAsync(SqlConnection connection)
+        public async Task<int> CommitAsync(SqlConnection connection, SqlTransaction transaction)
         {
             int affectedRows = 0;
             if (_singleEntity == null)
@@ -216,6 +217,7 @@ namespace SqlBulkTools.QueryOperations
 
                 SqlCommand command = connection.CreateCommand();
                 command.Connection = connection;
+                command.Transaction = transaction;
 
                 string fullQualifiedTableName = BulkOperationsHelper.GetFullQualifyingTableName(connection.Database, _schema,
                 _tableName);

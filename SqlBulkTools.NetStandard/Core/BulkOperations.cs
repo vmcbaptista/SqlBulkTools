@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using System.Dynamic;
 
 namespace SqlBulkTools
@@ -29,5 +32,70 @@ namespace SqlBulkTools
         {
             return new Setup(this);
         }
+
+
+        /// <summary>
+        /// Utility to prefetch schema information meta data for a given SQL table.
+        /// Necessary when using Transaction around Bulk Operations.
+        /// </summary>
+        public void Prepare(SqlConnection conn, string tableName)
+        {
+            var table = BulkOperationsHelper.GetTableAndSchema(tableName);
+            Prepare(conn, table.Schema, table.Name);
+        }
+        internal DataTable Prepare(SqlConnection conn, string schema, string tableName)
+        {
+            var sk = new SchemaKey(conn.Database, schema, tableName);
+            if (schemaCache.TryGetValue(sk, out var result))
+                return result;
+
+            if (conn.State != ConnectionState.Open)
+                conn.Open();
+
+            var dtCols = conn.GetSchema("Columns", sk.ToRestrictions());
+
+            if (dtCols.Rows.Count == 0 && schema != null)
+                throw new SqlBulkToolsException(
+                    $"Table name '{tableName}' with schema name '{schema}' not found. Check your setup and try again.");
+            if (dtCols.Rows.Count == 0)
+            {
+                throw new SqlBulkToolsException($"Table name '{tableName}' not found. Check your setup and try again.");
+            }
+
+            schemaCache[sk] = dtCols;
+            return dtCols;
+        }
+
+        class SchemaKey
+        {
+            public readonly string Database, Schema, TableName;
+            public SchemaKey(string database, string schema, string tableName)
+            {
+                this.Database = database;
+                this.Schema = schema;
+                this.TableName = tableName;
+            }
+
+            public string[] ToRestrictions() => new string[4]
+            {
+                Database,
+                Schema,
+                TableName,
+                null
+            };
+
+            public override int GetHashCode()
+            {
+                return Database.GetHashCode() ^ Schema.GetHashCode() ^ TableName.GetHashCode();
+            }
+            public override bool Equals(object obj)
+            {
+                return obj is SchemaKey sk
+                    && sk.Database == Database
+                    && sk.Schema == Schema
+                    && sk.TableName == TableName;
+            }
+        }
+        Dictionary<SchemaKey, DataTable> schemaCache = new Dictionary<SchemaKey, DataTable>();
     }
 }

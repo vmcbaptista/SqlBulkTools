@@ -892,6 +892,7 @@ namespace SqlBulkTools
                 //property.PropertyType.CustomAttributes.First(x => x.AttributeType.)
 
                 var complexTypeAttr = property.PropertyType.GetCustomAttribute(typeof(ComplexTypeAttribute));
+                var generatedTypeAttr = (DatabaseGeneratedAttribute)property.PropertyType.GetCustomAttribute(typeof(DatabaseGeneratedAttribute));
 
                 if (complexTypeAttr != null)
                 {
@@ -900,6 +901,11 @@ namespace SqlBulkTools
                     foreach (var complexProperty in complexTypeProperties)
                         if (CheckForValidDataType(complexProperty.PropertyType))
                             columns.Add($"{property.Name}_{complexProperty.Name}");
+                }
+
+                else if (generatedTypeAttr != null && generatedTypeAttr.DatabaseGeneratedOption == DatabaseGeneratedOption.Computed)
+                {
+                    // do not add
                 }
 
                 else if (CheckForValidDataType(property.PropertyType))
@@ -984,28 +990,14 @@ namespace SqlBulkTools
         /// <param name="schema"></param>
         /// <param name="tableName"></param>
         /// <returns></returns>
-        internal static DataTable GetDatabaseSchema(SqlConnection conn, string schema, string tableName)
+        internal static DataTable GetDatabaseSchema(BulkOperations bulk, SqlConnection conn, string schema, string tableName)
         {
-            var restrictions = new string[4];
-            restrictions[0] = conn.Database;
-            restrictions[1] = schema;
-            restrictions[2] = tableName;
-            var dtCols = conn.GetSchema("Columns", restrictions);
-
-            if (dtCols.Rows.Count == 0 && schema != null)
-                throw new SqlBulkToolsException(
-                    $"Table name '{tableName}' with schema name '{schema}' not found. Check your setup and try again.");
-            if (dtCols.Rows.Count == 0)
-            {
-                throw new SqlBulkToolsException($"Table name '{tableName}' not found. Check your setup and try again.");
-            }
-
-            return dtCols;
+            return bulk.Prepare(conn, schema, tableName);
         }
 
-        internal static void InsertToTmpTable(SqlConnection conn, DataTable dt, BulkCopySettings bulkCopySettings)
+        internal static void InsertToTmpTable(SqlConnection conn, DataTable dt, BulkCopySettings bulkCopySettings, SqlTransaction transaction)
         {
-            using (var bulkcopy = new SqlBulkCopy(conn, bulkCopySettings.SqlBulkCopyOptions, null))
+            using (var bulkcopy = new SqlBulkCopy(conn, bulkCopySettings.SqlBulkCopyOptions, transaction))
             {
                 bulkcopy.DestinationTableName = Constants.TempTableName;
 
@@ -1139,7 +1131,7 @@ namespace SqlBulkTools
                 + "OUTPUT INSERTED.[" + identityColumn + "] INTO "
                 + Constants.TempOutputTableName + "([" + identityColumn + "]) "
                 + BuildSelectSet(columns, Constants.SourceAlias, identityColumn)
-                + " FROM " + Constants.TempTableName + " AS Source; " +
+                + " FROM " + Constants.TempTableName + " AS Source ORDER BY "+ Constants.InternalId + "; " +
                 "DROP TABLE " + Constants.TempTableName + ";";
 
             return comm;

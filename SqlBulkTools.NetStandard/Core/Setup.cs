@@ -26,7 +26,7 @@ namespace SqlBulkTools
         /// <returns></returns>
         public BulkForCollection<T> ForCollection<T>(IEnumerable<T> list) where T : class
         {
-            return new BulkForCollection<T>(list);
+            return new BulkForCollection<T>(_ext, list);
         }
 
     }
@@ -37,6 +37,8 @@ namespace SqlBulkTools
     /// <typeparam name="T"></typeparam>
     public class Setup<T> where T : class
     {
+        private readonly BulkOperations _ext;
+
         private readonly List<SqlParameter> _sqlParams;
         /// <summary>
         /// 
@@ -44,6 +46,7 @@ namespace SqlBulkTools
         /// <param name="ext"></param>
         public Setup(BulkOperations ext)
         {
+            this._ext = ext;
             _sqlParams = new List<SqlParameter>();
         }
 
@@ -70,7 +73,7 @@ namespace SqlBulkTools
         /// <returns></returns>
         public BulkForCollection<T> ForCollection(IEnumerable<T> list)
         {
-            return new BulkForCollection<T>(list);
+            return new BulkForCollection<T>(_ext, list);
         }
 
         /// <summary>
