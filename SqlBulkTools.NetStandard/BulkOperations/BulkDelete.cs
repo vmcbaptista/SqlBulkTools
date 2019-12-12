@@ -29,10 +29,10 @@ namespace SqlBulkTools
         /// <param name="customColumnMappings"></param>
         /// <param name="bulkCopySettings"></param>
         /// <param name="propertyInfoList"></param>
-        public BulkDelete(IEnumerable<T> list, string tableName, string schema, HashSet<string> columns,
+        public BulkDelete(BulkOperations bulk, IEnumerable<T> list, string tableName, string schema, HashSet<string> columns,
             Dictionary<string, string> customColumnMappings, BulkCopySettings bulkCopySettings, List<PropertyInfo> propertyInfoList)
             :
-            base(list, tableName, schema, columns, customColumnMappings, bulkCopySettings, propertyInfoList)
+            base(bulk, list, tableName, schema, columns, customColumnMappings, bulkCopySettings, propertyInfoList)
         {
             _deletePredicates = new List<PredicateCondition>();
             _parameters = new List<SqlParameter>();
@@ -130,12 +130,18 @@ namespace SqlBulkTools
             return this;
         }
 
-        public int Commit(IDbConnection connection)
+
+        public BulkDelete<T> WithTimeout(int timeout)
+        {
+            this._sqlTimeout = timeout;
+            return this;
+        }
+        public int Commit(IDbConnection connection, IDbTransaction transaction = null)
         {
             if (connection is SqlConnection == false)
                 throw new ArgumentException("Parameter must be a SqlConnection instance");
 
-            return Commit((SqlConnection)connection);
+            return Commit((SqlConnection)connection, (SqlTransaction)transaction);
         }
 
         /// <summary>
@@ -144,7 +150,7 @@ namespace SqlBulkTools
         /// </summary>
         /// <param name="connection"></param>
         /// <returns></returns>
-        public int Commit(SqlConnection connection)
+        public int Commit(SqlConnection connection, SqlTransaction transaction)
         {
             int affectedRecords = 0;
             if (!_list.Any())
@@ -164,11 +170,12 @@ namespace SqlBulkTools
             if (connection.State == ConnectionState.Closed)
                 connection.Open();
 
-            var dtCols = BulkOperationsHelper.GetDatabaseSchema(connection, _schema, _tableName);
+            var dtCols = BulkOperationsHelper.GetDatabaseSchema(bulk, connection, _schema, _tableName);
 
             SqlCommand command = connection.CreateCommand();
             command.Connection = connection;
             command.CommandTimeout = _sqlTimeout;
+            command.Transaction = transaction;
 
             _nullableColumnDic = BulkOperationsHelper.GetNullableColumnDic(dtCols);
 
@@ -176,7 +183,7 @@ namespace SqlBulkTools
             command.CommandText = BulkOperationsHelper.BuildCreateTempTable(_columns, dtCols, _outputIdentity);
             command.ExecuteNonQuery();
 
-            BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopySettings);
+            BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopySettings, transaction);
 
             string comm = BulkOperationsHelper.GetOutputCreateTableCmd(_outputIdentity, Constants.TempOutputTableName,
             OperationType.InsertOrUpdate, _identityColumn);
@@ -212,7 +219,7 @@ namespace SqlBulkTools
         /// </summary>
         /// <param name="connection"></param>
         /// <returns></returns>
-        public async Task<int> CommitAsync(SqlConnection connection)
+        public async Task<int> CommitAsync(SqlConnection connection, SqlTransaction transaction)
         {
             int affectedRecords = 0;
             if (!_list.Any())
@@ -232,11 +239,12 @@ namespace SqlBulkTools
             if (connection.State != ConnectionState.Open)
                 await connection.OpenAsync();
 
-            var dtCols = BulkOperationsHelper.GetDatabaseSchema(connection, _schema, _tableName);
+            var dtCols = BulkOperationsHelper.GetDatabaseSchema(bulk, connection, _schema, _tableName);
 
             SqlCommand command = connection.CreateCommand();
             command.Connection = connection;
             command.CommandTimeout = _sqlTimeout;
+            command.Transaction = transaction;
 
             _nullableColumnDic = BulkOperationsHelper.GetNullableColumnDic(dtCols);
 
@@ -244,7 +252,7 @@ namespace SqlBulkTools
             command.CommandText = BulkOperationsHelper.BuildCreateTempTable(_columns, dtCols, _outputIdentity);
             await command.ExecuteNonQueryAsync();
 
-            BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopySettings);
+            BulkOperationsHelper.InsertToTmpTable(connection, dt, _bulkCopySettings, transaction);
 
             string comm = BulkOperationsHelper.GetOutputCreateTableCmd(_outputIdentity, Constants.TempOutputTableName,
             OperationType.InsertOrUpdate, _identityColumn);

@@ -8,7 +8,7 @@ namespace SqlBulkTools
     public class BulkCopySettings
     {
         /// <summary>
-        /// Number of seconds for the operation to complete before it times out. Default 600.
+        /// Number of seconds for the operation to complete before it times out.
         /// </summary>
         public int BulkCopyTimeout { get; set; } = 600;
         /// <summary>
@@ -22,9 +22,9 @@ namespace SqlBulkTools
         public SqlBulkCopyOptions SqlBulkCopyOptions { get; set; } = SqlBulkCopyOptions.Default;
 
         /// <summary>
-        /// Number of rows in each batch. At the end of each batch, the rows in the batch are sent to the server. Default 0 - single batch
+        /// Number of rows in each batch. At the end of each batch, the rows in the batch are sent to the server.
         /// </summary>
-        public int BatchSize { get; set; } = 0;
+        public int BatchSize { get; set; } = 5000;
 
         /// <summary>
         /// 
