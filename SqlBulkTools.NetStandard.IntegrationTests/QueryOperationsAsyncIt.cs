@@ -770,7 +770,7 @@ namespace SqlBulkTools.IntegrationTests
             // Assert
             Assert.True(_dataAccess.GetCustomColumnMappingTests().First().ColumnXIsDifferent == "updated");
         }
-
+        
         private async Task DeleteAllBooks()
         {
             BulkOperations bulk = new BulkOperations();

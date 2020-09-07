@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using SqlBulkTools.Enumeration;
 
+[assembly: InternalsVisibleTo("SqlBulkTools.NetStandard.IntegrationTests")]
 // ReSharper disable once CheckNamespace
 namespace SqlBulkTools
 {
-    public class SqlBulkToolsException : Exception
+    internal class SqlBulkToolsException : Exception
     {
         public SqlBulkToolsException(string message) : base(message)
         {
