@@ -986,13 +986,13 @@ namespace SqlBulkTools
         /// <summary>
         ///     Gets schema information for a table. Used to get SQL type of property.
         /// </summary>
-        /// <param name="conn"></param>
+        /// <param name="connection"></param>
         /// <param name="schema"></param>
         /// <param name="tableName"></param>
         /// <returns></returns>
-        internal static DataTable GetDatabaseSchema(BulkOperations bulk, SqlConnection conn, string schema, string tableName)
+        internal static DataTable GetDatabaseSchema(BulkOperations bulk, SqlConnection connection, SqlTransaction transaction, string schema, string tableName)
         {
-            return bulk.Prepare(conn, schema, tableName);
+            return bulk.Prepare(connection, transaction, schema, tableName);
         }
 
         internal static void InsertToTmpTable(SqlConnection conn, DataTable dt, BulkCopySettings bulkCopySettings, SqlTransaction transaction)

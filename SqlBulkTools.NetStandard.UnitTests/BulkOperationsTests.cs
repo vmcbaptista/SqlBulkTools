@@ -269,7 +269,7 @@ namespace SqlBulkTools.UnitTests
       
 
         [Fact]
-        public void BulkOperationsHelpers_GetIndexManagementCmd_WhenDisableAllIndexesIsTrueReturnsCorrectCmd()
+        public void BulkOperationsHelpers_GetIndexManagementCmd_WhenDisableAllIndexesTrueReturnsCorrectCmd()
         {
             // Arrange
             const string expected = @"DECLARE @sql AS VARCHAR(MAX)=''; SELECT @sql = @sql + 'ALTER INDEX ' + sys.indexes.name + ' ON ' + sys.objects.name + ' DISABLE;' FROM sys.indexes JOIN sys.objects ON sys.indexes.object_id = sys.objects.object_id WHERE sys.indexes.type_desc = 'NONCLUSTERED' AND sys.objects.type_desc = 'USER_TABLE' AND sys.objects.name = '[SqlBulkTools].[dbo].[Books]'; EXEC(@sql);";

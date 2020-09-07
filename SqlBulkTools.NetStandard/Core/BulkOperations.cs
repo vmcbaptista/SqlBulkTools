@@ -38,21 +38,30 @@ namespace SqlBulkTools
         /// Utility to prefetch schema information meta data for a given SQL table.
         /// Necessary when using Transaction around Bulk Operations.
         /// </summary>
-        public void Prepare(SqlConnection conn, string tableName)
+        public void Prepare(SqlConnection connection, SqlTransaction transaction, string tableName)
         {
             var table = BulkOperationsHelper.GetTableAndSchema(tableName);
-            Prepare(conn, table.Schema, table.Name);
+            Prepare(connection, transaction, table.Schema, table.Name);
         }
-        internal DataTable Prepare(SqlConnection conn, string schema, string tableName)
+        internal DataTable Prepare(SqlConnection connection, SqlTransaction transaction, string schema, string tableName)
         {
-            var sk = new SchemaKey(conn.Database, schema, tableName);
+            var sk = new SchemaKey(connection.Database, schema, tableName);
             if (schemaCache.TryGetValue(sk, out var result))
                 return result;
 
-            if (conn.State != ConnectionState.Open)
-                conn.Open();
+            if (connection.State != ConnectionState.Open)
+                connection.Open();
 
-            var dtCols = conn.GetSchema("Columns", sk.ToRestrictions());
+            var command = new SqlCommand("SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = @SchemaName AND TABLE_NAME = @TableName", connection);
+            command.Parameters.AddWithValue("@SchemaName", schema);
+            command.Parameters.AddWithValue("@TableName", tableName);
+            command.Transaction = transaction;
+
+            DataTable dtCols = new DataTable();
+            using (var adapter = new SqlDataAdapter(command))
+            {
+                adapter.Fill(dtCols);
+            }
 
             if (dtCols.Rows.Count == 0 && schema != null)
                 throw new SqlBulkToolsException(

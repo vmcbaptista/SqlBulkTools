@@ -170,7 +170,7 @@ namespace SqlBulkTools
             if (connection.State == ConnectionState.Closed)
                 connection.Open();
 
-            var dtCols = BulkOperationsHelper.GetDatabaseSchema(bulk, connection, _schema, _tableName);
+            var dtCols = BulkOperationsHelper.GetDatabaseSchema(bulk, connection, transaction, _schema, _tableName);
 
             SqlCommand command = connection.CreateCommand();
             command.Connection = connection;
@@ -239,7 +239,7 @@ namespace SqlBulkTools
             if (connection.State != ConnectionState.Open)
                 await connection.OpenAsync();
 
-            var dtCols = BulkOperationsHelper.GetDatabaseSchema(bulk, connection, _schema, _tableName);
+            var dtCols = BulkOperationsHelper.GetDatabaseSchema(bulk, connection, transaction, _schema, _tableName);
 
             SqlCommand command = connection.CreateCommand();
             command.Connection = connection;
